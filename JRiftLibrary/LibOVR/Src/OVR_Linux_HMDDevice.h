@@ -3,7 +3,7 @@
 Filename    :   OVR_Linux_HMDDevice.h
 Content     :   Linux HMDDevice implementation
 Created     :   September 21, 2012
-Authors     :   Michael Antonov
+Authors     :   Michael Antonov, Mark Browning
 
 Copyright   :   Copyright 2012 Oculus VR, Inc. All Rights reserved.
 

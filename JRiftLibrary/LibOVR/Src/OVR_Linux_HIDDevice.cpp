@@ -1,8 +1,9 @@
 /************************************************************************************
+
 Filename    :   OVR_Linux_HIDDevice.cpp
 Content     :   Linux HID device implementation.
 Created     :   February 26, 2013
-Authors     :   Lee Cooper
+Authors     :   Lee Cooper, Mark Browning
  
 Copyright   :   Copyright 2013 Oculus VR, Inc. All Rights reserved.
  

@@ -3,7 +3,7 @@
 Filename    :   OVR_Linux_SensorDevice.cpp
 Content     :   Linux SensorDevice implementation
 Created     :   March 14, 2013
-Authors     :   Lee Cooper
+Authors     :   Lee Cooper, Mark Browning
 
 Copyright   :   Copyright 2013 Oculus VR, Inc. All Rights reserved.
 

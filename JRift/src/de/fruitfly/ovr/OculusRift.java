@@ -1,5 +1,10 @@
 package de.fruitfly.ovr;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.IOException;
 
 public class OculusRift implements IOculusRift {
 	
@@ -264,20 +269,52 @@ public class OculusRift implements IOculusRift {
                                                        float clipFar);
 	
 	static {
-        String dataModel = System.getProperty("sun.arch.data.model");
+		String os = System.getProperty("os.name");
+		boolean is64bit = System.getProperty("sun.arch.data.model").equalsIgnoreCase("64"); 
+		String libName = "FILE_DOESN'T_EXIST";
 
-        if (dataModel.equalsIgnoreCase("64"))
+        if ( os.contains("Win") )
         {
-            System.out.println("Loading JRiftLibrary64.dll (64-bit)");
-            System.loadLibrary("JRiftLibrary64");
-            System.out.println("JRiftLibrary64.dll loaded");
+			if( is64bit )
+				libName = "JRiftLibrary64.dll";
+			else
+				libName = "JRiftLibrary.dll";
+		}
+		else if (os.contains("Mac") )
+		{
+			if( is64bit )
+				libName = "libJRiftLibrary64.dylib";
+			else
+				libName = "libJRiftLibrary.dylib";
         }
-        else
+        else if (os.contains("Linux") )
         {
-            System.out.println("Loading JRiftLibrary.dll (32-bit)");
-            System.loadLibrary("JRiftLibrary");
-            System.out.println("JRiftLibrary.dll loaded");
+			if( is64bit )
+				libName = "libJRiftLibrary64.so";
+			else
+				libName = "libJRiftLibrary.so";
         }
+		else
+		{
+            System.out.println("Operating System not supported: " + os );
+		}
+		try {
+			System.out.println("Loading jar:/"+libName+" ... ");
+			InputStream libStream = OculusRift.class.getResourceAsStream( "/" + libName );
+			File outFile = new File(System.getProperty("java.io.tmpdir") + "/" + libName );
+			OutputStream out = new FileOutputStream( outFile );
+
+			byte[] buffer = new byte[1024];
+			int len = libStream.read(buffer);
+			while (len != -1) {
+				out.write(buffer, 0, len);
+				len = libStream.read(buffer);
+			}
+			out.close();
+			System.load( outFile.toString() );
+
+			System.out.println( libName + " loaded");
+		} catch( IOException e ) { }
     }
 	
 	public static void main(String[] args) {

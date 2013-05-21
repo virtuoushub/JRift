@@ -9,8 +9,8 @@
   <version>1.0-SNAPSHOT</version>
 
   <name>JRift</name>
-  <description>Java Wrapper (JNI) for the Oculus Rift HMD and Sensors under Windows.</description>
-  <url>https://github.com/38leinaD/JRift</url>
+  <description>Java Wrapper (JNI) for the Oculus Rift HMD and Sensors under Windows and OSX with Linux stubs.</description>
+  <url>https://github.com/mabrowning/JRift</url>
 
   <build>
   	<sourceDirectory>${project.basedir}/src</sourceDirectory>

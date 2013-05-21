@@ -1,0 +1,49 @@
+SRCS:= OVR_DeviceHandle.cpp \
+OVR_DeviceImpl.cpp \
+OVR_LatencyTestImpl.cpp \
+OVR_Linux_DeviceManager.cpp \
+OVR_Linux_HIDDevice.cpp \
+OVR_Linux_HMDDevice.cpp \
+OVR_Linux_SensorDevice.cpp \
+OVR_SensorFilter.cpp \
+OVR_SensorFusion.cpp \
+OVR_SensorImpl.cpp \
+OVR_ThreadCommandQueue.cpp \
+Kernel/OVR_Alg.cpp \
+Kernel/OVR_Allocator.cpp \
+Kernel/OVR_Atomic.cpp \
+Kernel/OVR_File.cpp \
+Kernel/OVR_FileFILE.cpp \
+Kernel/OVR_Log.cpp \
+Kernel/OVR_Math.cpp \
+Kernel/OVR_RefCount.cpp \
+Kernel/OVR_Std.cpp \
+Kernel/OVR_String.cpp \
+Kernel/OVR_String_FormatUtil.cpp \
+Kernel/OVR_String_PathUtil.cpp \
+Kernel/OVR_SysFile.cpp \
+Kernel/OVR_System.cpp \
+Kernel/OVR_ThreadsPthread.cpp \
+Kernel/OVR_Timer.cpp \
+Kernel/OVR_UTF8Util.cpp \
+Util/Util_LatencyTest.cpp \
+Util/Util_MagCalibration.cpp \
+Util/Util_Render_Stereo.cpp 
+
+OBJS=$(SRCS:.cpp=.o)
+OBJS32=$(SRCS:.cpp=.ox)
+
+
+all: libOVR.a  libOVR32.a
+
+.cpp.o:
+	g++ -I. -c $< -o $@ -Wno-attributes
+
+%.ox: %.cpp
+	g++ -m32 -I. -c $< -o $@ -Wno-attributes
+
+libOVR.a: $(OBJS)
+	ar rcs $@ $(OBJS) 
+
+libOVR32.a: $(OBJS32)
+	ar rcs $@ $(OBJS32) 

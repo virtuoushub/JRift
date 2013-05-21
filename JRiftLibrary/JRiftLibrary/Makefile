@@ -26,42 +26,53 @@ libJRiftLibrary.jnilib: JRiftLibrary.o
 else
 ifeq ($(UNAME), Linux)
 
+OCULUS_SDK:=..
+
+
 all: libJRiftLibrary64.so libJRiftLibrary.so
 
 
-JRiftLibrary.o: JRiftStub.cpp
+JRiftLibrary.o: JRiftLibrary.cpp
 	g++ \
 	-m32 \
 	-fPIC \
 	-fno-rtti \
 	"-I/usr/lib/jvm/java-6-openjdk-amd64/include/" \
-	-c JRiftStub.cpp \
+	"-I${OCULUS_SDK}/LibOVR/Include" \
+	-c $< \
 	-o $@
 
-libJRiftLibrary.so: JRiftLibrary.o
+JRiftLibrary64.o: JRiftLibrary.cpp
+	g++ \
+	-fPIC \
+	-fno-rtti \
+	"-I/usr/lib/jvm/java-6-openjdk-amd64/include/" \
+	"-I${OCULUS_SDK}/LibOVR/Include" \
+	-c $< \
+	-o $@
+
+libJRiftLibrary.so: JRiftLibrary.o ${OCULUS_SDK}/LibOVR/Src/libOVR32.a
 	g++ \
 		-m32 \
 		-fno-rtti \
 		-shared \
 		-o $@ \
 		"-I/usr/lib/jvm/java-6-openjdk-amd64/include/" \
-		$<
+		$< \
+		${OCULUS_SDK}/LibOVR/Src/libOVR32.a
 
-JRiftLibrary64.o: JRiftStub.cpp
-	g++ \
-	-fPIC \
-	-fno-rtti \
-	"-I/usr/lib/jvm/java-6-openjdk-amd64/include/" \
-	-c JRiftStub.cpp \
-	-o $@
-
-libJRiftLibrary64.so: JRiftLibrary64.o
+libJRiftLibrary64.so: JRiftLibrary64.o ${OCULUS_SDK}/LibOVR/Src/libOVR.a
 	g++ \
 		-fno-rtti \
 		-shared \
 		-o $@ \
 		"-I/usr/lib/jvm/java-6-openjdk-amd64/include/" \
-		$<
+		$< \
+		${OCULUS_SDK}/LibOVR/Src/libOVR.a
+
+${OCULUS_SDK}/LibOVR/Src/libOVR.a ${OCULUS_SDK}/LibOVR/Src/libOVR32.a : 
+	make -C ${OCULUS_SDK}/LibOVR/Src
+.PHONY: ${OCULUS_SDK}/LibOVR/Src/libOVR.a ${OCULUS_SDK}/LibOVR/Src/libOVR32.a
 endif
 endif
 

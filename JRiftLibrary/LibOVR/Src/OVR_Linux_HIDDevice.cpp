@@ -33,7 +33,7 @@ HIDDeviceManager::~HIDDeviceManager()
 bool HIDDeviceManager::initializeManager()
 {
 	//TODO: initialize
-	return false;
+	return true;
 }
     
 bool HIDDeviceManager::Initialize()

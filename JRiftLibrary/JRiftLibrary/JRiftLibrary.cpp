@@ -3,7 +3,7 @@
 
 #include <cstring>
 #include <iostream>
-#include <conio.h>
+//#include <conio.h>
 
 using namespace OVR;
 
@@ -53,7 +53,7 @@ JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift_initSubsystem(JNIEnv 
 		printf(" DisplayDeviceName: %s\n", Info.DisplayDeviceName);
 		printf(" ProductName: %s\n", Info.ProductName);
 		printf(" Manufacturer: %s\n", Info.Manufacturer);
-		printf(" Version: %s\n", Info.Version);
+		printf(" Version: %d\n", Info.Version);
 		printf(" HResolution: %i\n", Info.HResolution);
 		printf(" VResolution: %i\n", Info.VResolution);
 		printf(" HScreenSize: %f\n", Info.HScreenSize);

@@ -25,10 +25,6 @@ otherwise accompanies this software in either electronic or hard copy form.
 #include "Kernel/OVR_Std.h"
 #include "Kernel/OVR_Log.h"
 
-//#include <IOKit/hid/IOHIDManager.h>
-//#include <IOKit/hid/IOHIDKeys.h>
-
-
 namespace OVR { namespace Linux {
 
 //-------------------------------------------------------------------------------------
@@ -185,6 +181,11 @@ int DeviceManagerThread::Run()
                             waitMs = waitAllowed;
                     }
                 }
+				struct timespec tsSleep;
+				tsSleep.tv_sec = 0;
+				tsSleep.tv_nsec = 1000000;
+				nanosleep( &tsSleep, NULL );
+				break;
 				/*
                 
                 // Enter blocking run loop. We may continue until we timeout in which

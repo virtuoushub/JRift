@@ -1,10 +1,6 @@
 SRCS:= OVR_DeviceHandle.cpp \
 OVR_DeviceImpl.cpp \
 OVR_LatencyTestImpl.cpp \
-OVR_Linux_DeviceManager.cpp \
-OVR_Linux_HIDDevice.cpp \
-OVR_Linux_HMDDevice.cpp \
-OVR_Linux_SensorDevice.cpp \
 OVR_SensorFilter.cpp \
 OVR_SensorFusion.cpp \
 OVR_SensorImpl.cpp \
@@ -30,11 +26,34 @@ Util/Util_LatencyTest.cpp \
 Util/Util_MagCalibration.cpp \
 Util/Util_Render_Stereo.cpp 
 
+UNAME := $(shell uname)
+
+OCULUS_SDK:=..
+
+LIBS=libOVR.a
+
+ifeq ($(UNAME), Darwin)
+
+SRCS+= OVR_OSX_DeviceManager.cpp \
+OVR_OSX_HIDDevice.cpp \
+OVR_OSX_HMDDevice.cpp \
+OVR_OSX_SensorDevice.cpp
+
+else
+SRCS+= OVR_Linux_DeviceManager.cpp \
+OVR_Linux_HIDDevice.cpp \
+OVR_Linux_HMDDevice.cpp \
+OVR_Linux_SensorDevice.cpp
+
+LIBS += libOVR32.a
+
+endif
+
 OBJS=$(SRCS:.cpp=.o)
 OBJS32=$(SRCS:.cpp=.ox)
 
 
-all: libOVR.a  libOVR32.a
+all: $(LIBS)
 
 .cpp.o:
 	g++ -g -fPIC -I. -c $< -o $@ -Wno-attributes

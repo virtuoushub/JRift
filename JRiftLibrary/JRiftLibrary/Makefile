@@ -1,8 +1,10 @@
 UNAME := $(shell uname)
 
+OCULUS_SDK:=..
+
 ifeq ($(UNAME), Darwin)
 
-all: libJRiftLibrary.jnilib
+all: libJRiftLibrary.dynlib
 
 
 JRiftLibrary.o:
@@ -13,20 +15,18 @@ JRiftLibrary.o:
 	"-I${OCULUS_SDK}/LibOVR/Include" \
 	-c JRiftLibrary.cpp
 
-libJRiftLibrary.jnilib: JRiftLibrary.o
+libJRiftLibrary.dynlib: JRiftLibrary.o
 	g++ \
 		-dynamiclib \
 		-fno-rtti \
 		-framework ApplicationServices \
 		-framework IOKit \
-		-o libJRiftLibrary.jnilib \
+		-o libJRiftLibrary.dynlib \
 		JRiftLibrary.o \
-	 	${OCULUS_SDK}/LibOVR/Lib/MacOS/Release/libovr.a
+		${OCULUS_SDK}/LibOVR/Src/libOVR.a
 
 else
 ifeq ($(UNAME), Linux)
-
-OCULUS_SDK:=..
 
 
 all: libJRiftLibrary64.so libJRiftLibrary.so
@@ -79,6 +79,6 @@ endif
 clean:
 	rm -f *.o
 	rm -f a.out
-	rm -f *.jnilib
+	rm -f *.dynlib
 	rm -rf *.so
 

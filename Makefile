@@ -9,7 +9,7 @@ clean:
 
 install: all
 	cp JRift/target/ovr-1.0-SNAPSHOT.jar JRift.jar
-	cd JRiftLibrary/JRiftLibrary/; zip ../../JRift.jar lib*so
+	cd JRiftLibrary/JRiftLibrary/; zip ../../JRift.jar lib*so lib*dynlib
 
 
 run:

@@ -56,10 +56,10 @@ OBJS32=$(SRCS:.cpp=.ox)
 all: $(LIBS)
 
 .cpp.o:
-	g++ -g -fPIC -I. -c $< -o $@ -Wno-attributes
+	g++ -Os -fPIC -I. -c $< -o $@ -Wno-attributes
 
 %.ox: %.cpp
-	g++ -g -fPIC -m32 -I. -c $< -o $@ -Wno-attributes
+	g++ -Os -fPIC -m32 -I. -c $< -o $@ -Wno-attributes
 
 clean:
 	find -name '*.ox' -delete -o -name '*.o' -delete

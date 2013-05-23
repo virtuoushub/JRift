@@ -4,7 +4,7 @@ OCULUS_SDK:=..
 
 ifeq ($(UNAME), Darwin)
 
-all: libJRiftLibrary.dynlib
+all: libJRiftLibrary.dylib
 
 
 JRiftLibrary.o:
@@ -15,13 +15,13 @@ JRiftLibrary.o:
 	"-I${OCULUS_SDK}/LibOVR/Include" \
 	-c JRiftLibrary.cpp
 
-libJRiftLibrary.dynlib: JRiftLibrary.o
+libJRiftLibrary.dylib: JRiftLibrary.o
 	g++ \
 		-dynamiclib \
 		-fno-rtti \
 		-framework ApplicationServices \
 		-framework IOKit \
-		-o libJRiftLibrary.dynlib \
+		-o libJRiftLibrary.dylib \
 		JRiftLibrary.o \
 		${OCULUS_SDK}/LibOVR/Src/libOVR.a
 
@@ -79,6 +79,6 @@ endif
 clean:
 	rm -f *.o
 	rm -f a.out
-	rm -f *.dynlib
+	rm -f *.dylib
 	rm -rf *.so
 

@@ -295,7 +295,8 @@ public class OculusRift implements IOculusRift {
                                                        float distortionFitX,
                                                        float distortionFitY);
 	
-	static {
+	public static void LoadLibrary( File nativeDir )
+	{
 		String os = System.getProperty("os.name");
 		boolean is64bit = System.getProperty("sun.arch.data.model").equalsIgnoreCase("64"); 
 		String libName = "FILE_DOESN'T_EXIST";
@@ -310,9 +311,9 @@ public class OculusRift implements IOculusRift {
 		else if (os.contains("Mac") )
 		{
 			if( is64bit )
-				libName = "libJRiftLibrary64.dylib";
+				libName = "libJRiftLibrary64.jnilib";
 			else
-				libName = "libJRiftLibrary.dylib";
+				libName = "libJRiftLibrary.jnilib";
         }
         else if (os.contains("Linux") )
         {
@@ -325,26 +326,38 @@ public class OculusRift implements IOculusRift {
 		{
             System.out.println("Operating System not supported: " + os );
 		}
-		try {
+		try 
+		{
 			System.out.println("Loading jar:/"+libName+" ... ");
 			InputStream libStream = OculusRift.class.getResourceAsStream( "/" + libName );
-			File outFile = new File(System.getProperty("java.io.tmpdir") + "/" + libName );
+			File outFile = new File( nativeDir, libName );
 			OutputStream out = new FileOutputStream( outFile );
 
 			byte[] buffer = new byte[1024];
 			int len = libStream.read(buffer);
-			while (len != -1) {
+			while (len != -1) 
+			{
 				out.write(buffer, 0, len);
 				len = libStream.read(buffer);
 			}
 			out.close();
-			System.load( outFile.toString() );
+			System.load( outFile.getAbsolutePath() );
 
 			System.out.println( libName + " loaded");
-		} catch( IOException e ) { }
+		} 
+		catch( Exception e ) 
+		{ 
+			System.out.println( e.toString() );
+			System.out.println( "Couldn't load "+libName+"... trying alternative way" );
+			if( is64bit )
+				System.loadLibrary( "JRiftLibrary64" );
+			else
+				System.loadLibrary( "JRiftLibrary" );
+		}
     }
 	
 	public static void main(String[] args) {
+		OculusRift.LoadLibrary(new File(System.getProperty("java.io.tmpdir")) );
 		OculusRift or = new OculusRift();
 		or.init();
 		

@@ -18,9 +18,6 @@ public class OculusRift implements IOculusRift {
     public float testPitchAngle;
     public float testRollAngle;
 
-    public final float MAXPITCH = (90 * 0.98f);
-    public final float MAXROLL = (180 * 0.98f);
-
     public float rawYaw;
     public float rawPitch;
     public float rawRoll;
@@ -67,6 +64,11 @@ public class OculusRift implements IOculusRift {
         hmdInfo.ChromaticAb[2]         = 1.0f;
         hmdInfo.ChromaticAb[3]         = 0.0f;
     }
+
+	public String getInitializationStatus()
+	{
+		return _initSummary;
+	}
 
     public String getVersion()
     {

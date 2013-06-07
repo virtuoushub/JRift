@@ -33,6 +33,8 @@ public class OculusRift implements IOculusRift {
     public String _initSummary = "Not initialised";
 
     public boolean use = true;
+
+	private static boolean libraryLoaded = false;
 	
 	public OculusRift()
     {
@@ -299,6 +301,7 @@ public class OculusRift implements IOculusRift {
 	
 	public static void LoadLibrary( File nativeDir )
 	{
+		if( libraryLoaded ) return;
 		String os = System.getProperty("os.name");
 		boolean is64bit = System.getProperty("sun.arch.data.model").equalsIgnoreCase("64"); 
 		String libName = "FILE_DOESN'T_EXIST";
@@ -344,6 +347,7 @@ public class OculusRift implements IOculusRift {
 			}
 			out.close();
 			System.load( outFile.getAbsolutePath() );
+			libraryLoaded = true;
 
 			System.out.println( libName + " loaded");
 		} 
@@ -355,6 +359,7 @@ public class OculusRift implements IOculusRift {
 				System.loadLibrary( "JRiftLibrary64" );
 			else
 				System.loadLibrary( "JRiftLibrary" );
+			libraryLoaded = true;
 		}
     }
 	

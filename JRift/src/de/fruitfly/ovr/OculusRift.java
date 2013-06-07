@@ -77,6 +77,12 @@ public class OculusRift implements IOculusRift {
         return VERSION;
     }
 	
+	public boolean init( File nativeDir )
+	{
+		OculusRift.LoadLibrary( nativeDir );
+		return init();
+	}
+
 	public boolean init() {
 
         _initSummary = "Last initialisation attempt failed";

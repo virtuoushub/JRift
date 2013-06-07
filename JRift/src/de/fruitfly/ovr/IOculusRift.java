@@ -1,4 +1,5 @@
 package de.fruitfly.ovr;
+import java.io.File;
 
 public interface IOculusRift {
 
@@ -7,6 +8,7 @@ public interface IOculusRift {
 
 	public String getInitializationStatus();
     public String getVersion();
+	public boolean init(File nativeDir);
 	public boolean init();
 	public boolean isInitialized();
 	public void poll();

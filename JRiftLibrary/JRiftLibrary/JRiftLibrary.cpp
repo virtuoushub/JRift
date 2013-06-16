@@ -3,7 +3,6 @@
 
 #include <cstring>
 #include <iostream>
-//#include <conio.h>
 
 using namespace OVR;
 
@@ -11,6 +10,7 @@ Ptr<DeviceManager>	pManager;
 Ptr<HMDDevice>		pHMD;
 Ptr<SensorDevice>	pSensor;
 SensorFusion		FusionResult;
+Util::MagCalibration      MagCal;
 HMDInfo			Info;
 bool			InfoLoaded;
 bool			Initialized = false;
@@ -318,4 +318,29 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getEyeRenderParams(
 											);
 												
 	return eyeRenderParams;
+}
+JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift_beginAutomaticCalibration
+  (JNIEnv *, jobject)
+{
+	MagCal.BeginAutoCalibration(FusionResult);
+}
+
+JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift_isCalibrated
+  (JNIEnv *, jobject)
+{
+	return MagCal.IsCalibrated();
+}
+
+JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift_updateAutomaticCalibration
+  (JNIEnv *, jobject)
+{
+    if (MagCal.IsAutoCalibrating()) 
+    {
+        MagCal.UpdateAutoCalibration(FusionResult);
+        if (MagCal.IsCalibrated())
+        {
+            if (FusionResult.IsMagReady())
+                FusionResult.SetYawCorrectionEnabled(true);
+        }
+    }
 }

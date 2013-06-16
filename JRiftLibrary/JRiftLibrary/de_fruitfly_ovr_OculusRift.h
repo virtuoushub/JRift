@@ -33,11 +33,35 @@ JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift_destroySubsystem
 
 /*
  * Class:     de_fruitfly_ovr_OculusRift
- * Method:    setPredictionEnabled
- * Signature: (FB)V
+ * Method:    beginAutomaticCalibration
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift_beginAutomaticCalibration
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     de_fruitfly_ovr_OculusRift
+ * Method:    updateAutomaticCalibration
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift_updateAutomaticCalibration
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     de_fruitfly_ovr_OculusRift
+ * Method:    isCalibrated
+ * Signature: ()Z
+ */
+JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift_isCalibrated
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     de_fruitfly_ovr_OculusRift
+ * Method:    _setPredictionEnabled
+ * Signature: (FZ)V
  */
 JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1setPredictionEnabled
-  (JNIEnv *, jobject, jfloat delta, jboolean enable);
+  (JNIEnv *, jobject, jfloat, jboolean);
 
 /*
  * Class:     de_fruitfly_ovr_OculusRift
@@ -109,7 +133,7 @@ JNIEXPORT jfloat JNICALL Java_de_fruitfly_ovr_OculusRift__1getInterpupillaryDist
  * Signature: (F)V
  */
 JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1setInterpupillaryDistance
-  (JNIEnv *, jobject, jfloat ipd);
+  (JNIEnv *, jobject, jfloat);
 
 /*
  * Class:     de_fruitfly_ovr_OculusRift
@@ -202,21 +226,10 @@ JNIEXPORT jfloat JNICALL Java_de_fruitfly_ovr_OculusRift__1getRoll
 /*
  * Class:     de_fruitfly_ovr_OculusRift
  * Method:    _getEyeRenderParams
- * Signature: ()F
+ * Signature: (IIIIFFFFF)Lde/fruitfly/ovr/EyeRenderParams;
  */
-JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getEyeRenderParams(
-   JNIEnv *env, 
-   jobject thisObj,
-   jint viewportX,
-   jint viewportY,
-   jint viewportWidth,
-   jint viewportHeight,
-   jfloat clipNear,
-   jfloat clipFar,
-   jfloat eyeToScreenDistanceScaleFactor,
-   jfloat distortionFitX,
-   jfloat distortionFitY
-   );
+JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getEyeRenderParams
+  (JNIEnv *, jobject, jint, jint, jint, jint, jfloat, jfloat, jfloat, jfloat, jfloat);
 
 #ifdef __cplusplus
 }

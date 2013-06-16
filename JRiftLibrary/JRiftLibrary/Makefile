@@ -21,7 +21,7 @@ libJRiftLibrary64.jnilib: JRiftLibrary.o
 		-fno-rtti \
 		-framework ApplicationServices \
 		-framework IOKit \
-		-o libJRiftLibrary.jnilib \
+		-o $@ \
 		JRiftLibrary.o \
 		${OCULUS_SDK}/LibOVR/Src/libOVR.a
 

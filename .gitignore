@@ -19,6 +19,10 @@ build/
 [Bb]in/
 [Oo]bj/
 JRift/target
+*.o
+*.a
+*.jnilib
+JRiftLibrary/LibOVR/Lib/
 
 # MSTest test Results
 [Tt]est[Rr]esult*/

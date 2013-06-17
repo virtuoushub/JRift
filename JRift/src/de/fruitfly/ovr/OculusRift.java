@@ -271,9 +271,9 @@ public class OculusRift implements IOculusRift {
 	private native boolean initSubsystem();
 	private native void pollSubsystem();
 	private native void destroySubsystem();
-	private native void beginAutomaticCalibration();
-	private native void updateAutomaticCalibration();
-	private native boolean isCalibrated();
+	public native void beginAutomaticCalibration();
+	public native void updateAutomaticCalibration();
+	public native boolean isCalibrated();
 
     private native void _setPredictionEnabled(float delta, boolean enable);
 	private native int _getHResolution();

@@ -12,7 +12,7 @@ extern "C" {
  * Method:    initSubsystem
  * Signature: ()Z
  */
-JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift_initSubsystem
+JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift__initSubsystem
   (JNIEnv *, jobject);
 
 /*
@@ -20,7 +20,7 @@ JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift_initSubsystem
  * Method:    pollSubsystem
  * Signature: ()V
  */
-JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift_pollSubsystem
+JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__pollSubsystem
   (JNIEnv *, jobject);
 
 /*
@@ -28,7 +28,7 @@ JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift_pollSubsystem
  * Method:    destroySubsystem
  * Signature: ()V
  */
-JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift_destroySubsystem
+JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__destroySubsystem
   (JNIEnv *, jobject);
 
 /*
@@ -36,7 +36,7 @@ JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift_destroySubsystem
  * Method:    beginAutomaticCalibration
  * Signature: ()V
  */
-JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift_beginAutomaticCalibration
+JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__beginAutomaticCalibration
   (JNIEnv *, jobject);
 
 /*
@@ -44,7 +44,7 @@ JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift_beginAutomaticCalibration
  * Method:    updateAutomaticCalibration
  * Signature: ()V
  */
-JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift_updateAutomaticCalibration
+JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__updateAutomaticCalibration
   (JNIEnv *, jobject);
 
 /*
@@ -52,7 +52,15 @@ JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift_updateAutomaticCalibratio
  * Method:    isCalibrated
  * Signature: ()Z
  */
-JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift_isCalibrated
+JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift__isCalibrated
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     de_fruitfly_ovr_OculusRift
+ * Method:    setCalibrationReference
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__setCalibrationReference
   (JNIEnv *, jobject);
 
 /*

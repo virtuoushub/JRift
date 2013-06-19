@@ -87,7 +87,7 @@ public class OculusRift implements IOculusRift {
 
         _initSummary = "Last initialisation attempt failed";
 
-		initialized = initSubsystem();
+		initialized = _initSubsystem();
         //initialized = true;
 
         if (initialized)
@@ -141,7 +141,7 @@ public class OculusRift implements IOculusRift {
     {
 		if (initialized)
         {
-            pollSubsystem();
+            _pollSubsystem();
 
             // Yaw
             rawYaw = _getYaw();   // -PI to PI, RH
@@ -227,7 +227,7 @@ public class OculusRift implements IOculusRift {
 
         if (initialized)
         {
-            destroySubsystem();
+            _destroySubsystem();
         }
 
         _initSummary = "Not initialised";
@@ -268,45 +268,48 @@ public class OculusRift implements IOculusRift {
         return _getEyeRenderParams(viewPortX, viewPortY, viewPortWidth, viewPortHeight, clipNear, clipFar, eyeToScreenDistanceScaleFactor, distortionFitX, distortionFitY);
     }
 
-	private native boolean initSubsystem();
-	private native void pollSubsystem();
-	private native void destroySubsystem();
-	private native void beginAutomaticCalibration();
-	private native void updateAutomaticCalibration();
-	private native boolean isCalibrated();
+	protected native boolean _initSubsystem();
+    protected native void _pollSubsystem();
+    protected native void _destroySubsystem();
 
-    private native void _setPredictionEnabled(float delta, boolean enable);
-	private native int _getHResolution();
-	private native int _getVResolution();
-	private native float _getHScreenSize();
-	private native float _getVScreenSize();
-	private native float _getVScreenCenter();
-	private native float _getEyeToScreenDistance();
-	private native float _getLensSeparationDistance();
-	private native float _getInterpupillaryDistance();
-    private native void  _setInterpupillaryDistance(float ipd);
-	private native float _getDistortionK0();
-	private native float _getDistortionK1();
-	private native float _getDistortionK2();
-	private native float _getDistortionK3();
-    private native float _getChromaAbCorrection0();
-    private native float _getChromaAbCorrection1();
-    private native float _getChromaAbCorrection2();
-    private native float _getChromaAbCorrection3();
-	
-	private native float _getYaw();
-	private native float _getPitch();
-	private native float _getRoll();
+    protected native void _beginAutomaticCalibration();
+    protected native void _updateAutomaticCalibration();
+    protected native boolean _isCalibrated();
+    protected native void _setCalibrationReference();
 
-    private native EyeRenderParams _getEyeRenderParams(int currentViewportX,
-                                                       int currentViewportY,
-                                                       int currentViewportWidth,
-                                                       int currentViewportHeight,
-                                                       float clipNear,
-                                                       float clipFar,
-                                                       float eyeToScreenDistanceScaleFactor,
-                                                       float distortionFitX,
-                                                       float distortionFitY);
+    protected native void _setPredictionEnabled(float delta, boolean enable);
+
+    protected native int _getHResolution();
+    protected native int _getVResolution();
+    protected native float _getHScreenSize();
+    protected native float _getVScreenSize();
+    protected native float _getVScreenCenter();
+    protected native float _getEyeToScreenDistance();
+    protected native float _getLensSeparationDistance();
+    protected native float _getInterpupillaryDistance();
+    protected native void  _setInterpupillaryDistance(float ipd);
+    protected native float _getDistortionK0();
+    protected native float _getDistortionK1();
+    protected native float _getDistortionK2();
+    protected native float _getDistortionK3();
+    protected native float _getChromaAbCorrection0();
+    protected native float _getChromaAbCorrection1();
+    protected native float _getChromaAbCorrection2();
+    protected native float _getChromaAbCorrection3();
+
+    protected native float _getYaw();
+    protected native float _getPitch();
+    protected native float _getRoll();
+
+    protected native EyeRenderParams _getEyeRenderParams(int currentViewportX,
+                                                         int currentViewportY,
+                                                         int currentViewportWidth,
+                                                         int currentViewportHeight,
+                                                         float clipNear,
+                                                         float clipFar,
+                                                         float eyeToScreenDistanceScaleFactor,
+                                                         float distortionFitX,
+                                                         float distortionFitY);
 	
 	public static void LoadLibrary( File nativeDir )
 	{

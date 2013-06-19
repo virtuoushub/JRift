@@ -22,7 +22,7 @@ static jclass eyeRenderParams_Class;
 static jmethodID eyeRenderParams_constructor_MethodID;
 
 
-JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift_initSubsystem(JNIEnv *env, jobject jobj) 
+JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift__initSubsystem(JNIEnv *env, jobject jobj) 
 {
 	Initialized = false;
 
@@ -75,7 +75,7 @@ JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift_initSubsystem(JNIEnv 
 	return Initialized;
 }
 
-JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift_destroySubsystem(JNIEnv *env, jobject jobj) 
+JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__destroySubsystem(JNIEnv *env, jobject jobj) 
 {
 	if (Initialized)
 	{
@@ -98,7 +98,7 @@ JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1setPredictionEnabled(JN
 	}
 }
 
-JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift_pollSubsystem(JNIEnv *, jobject) {
+JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__pollSubsystem(JNIEnv *, jobject) {
 	if (!Initialized) return;
 	if (!pSensor) return;
 
@@ -319,21 +319,27 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getEyeRenderParams(
 												
 	return eyeRenderParams;
 }
-JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift_beginAutomaticCalibration
+JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__beginAutomaticCalibration
   (JNIEnv *, jobject)
 {
+	if (!Initialized) return;
+
 	MagCal.BeginAutoCalibration(FusionResult);
 }
 
-JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift_isCalibrated
+JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift__isCalibrated
   (JNIEnv *, jobject)
 {
+	if (!Initialized) return false;
+
 	return MagCal.IsCalibrated();
 }
 
-JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift_updateAutomaticCalibration
+JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__updateAutomaticCalibration
   (JNIEnv *, jobject)
 {
+	if (!Initialized) return;
+
     if (MagCal.IsAutoCalibrating()) 
     {
         MagCal.UpdateAutoCalibration(FusionResult);
@@ -343,4 +349,14 @@ JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift_updateAutomaticCalibratio
                 FusionResult.SetYawCorrectionEnabled(true);
         }
     }
+}
+
+JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__setCalibrationReference
+  (JNIEnv *, jobject)
+{
+	if (!Initialized) return;
+
+    FusionResult.SetMagReference();
+    if (FusionResult.IsMagReady())
+	    FusionResult.SetYawCorrectionEnabled(true);
 }

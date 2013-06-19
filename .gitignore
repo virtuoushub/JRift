@@ -22,6 +22,8 @@ JRift/target
 *.o
 *.a
 *.jnilib
+*.ox
+*.so
 JRiftLibrary/LibOVR/Lib/
 
 # MSTest test Results

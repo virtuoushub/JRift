@@ -79,6 +79,7 @@
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>Z:\mc-dev\minecrift\JRift\JRiftLibrary\JDK\Win32\include;Z:\mc-dev\minecrift\JRift\JRiftLibrary\JDK\Win32\include\win32;Z:\mc-dev\minecrift\JRift\JRiftLibrary\LibOVR\Include;$(IncludePath)</IncludePath>
     <LibraryPath>Z:\mc-dev\minecrift\JRift\JRiftLibrary\LibOVR\Lib\x64;$(LibraryPath)</LibraryPath>
+    <TargetName>JRiftLibrary64</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

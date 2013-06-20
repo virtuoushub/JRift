@@ -83,6 +83,8 @@ public:
     // Default to current HMD orientation
     void        SetMagReference() { SetMagReference(Q); }
 
+	const Quatf GetMagReference() { return MagRefQ; };
+
     bool        HasMagReference() const { return MagReferenced; }
 
     void        ClearMagReference() 

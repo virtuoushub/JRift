@@ -33,6 +33,14 @@ JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1destroySubsystem
 
 /*
  * Class:     de_fruitfly_ovr_OculusRift
+ * Method:    reset
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1reset
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     de_fruitfly_ovr_OculusRift
  * Method:    beginAutomaticCalibration
  * Signature: ()V
  */
@@ -62,6 +70,14 @@ JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift__1isCalibrated
  */
 JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1setCalibrationReference
   (JNIEnv *, jobject);
+
+/*
+ * Class:     de_fruitfly_ovr_OculusRift
+ * Method:    setMagRefDistance
+ * Signature: (F)V
+ */
+JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1setMagRefDistance
+  (JNIEnv *, jobject, jfloat magRefDistance);
 
 /*
  * Class:     de_fruitfly_ovr_OculusRift

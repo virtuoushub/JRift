@@ -285,19 +285,17 @@ void SensorFusion::handleMessage(const MessageBodyFrame& msg)
     }
 }
 
-
 void SensorFusion::SetMagReference(const Quatf& q) 
 {
-        MagRefQ = q;
-        MagRefM = FMag.Mean();
+    MagRefQ = q;
+    MagRefM = FMag.Mean();
 
-        float pitch, roll, yaw;
-        Q.GetEulerAngles<Axis_X, Axis_Z, Axis_Y>(&pitch, &roll, &yaw);
-        MagRefYaw = yaw;
-        if (MagCalibrated)
-            MagReady = true;
+    float pitch, roll, yaw;
+    Q.GetEulerAngles<Axis_X, Axis_Z, Axis_Y>(&pitch, &roll, &yaw);
+    MagRefYaw = yaw;
+    if (MagCalibrated)
+        MagReady = true;
 }
-
 
 float SensorFusion::AngleDifference(float theta1, float theta2) 
 {

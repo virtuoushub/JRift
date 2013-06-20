@@ -223,6 +223,14 @@ public class OculusRift implements IOculusRift {
         }
     }
 
+    public void setMagRefDistance(float magRefDistance)
+    {
+        if (initialized)
+        {
+            _setMagRefDistance(magRefDistance);
+        }
+    }
+
 	public void destroy() {
 
         if (initialized)
@@ -271,11 +279,13 @@ public class OculusRift implements IOculusRift {
 	protected native boolean _initSubsystem();
     protected native void _pollSubsystem();
     protected native void _destroySubsystem();
+    protected native void _reset(); // Resets sensor data, including Yaw
 
     protected native void _beginAutomaticCalibration();
     protected native void _updateAutomaticCalibration();
     protected native boolean _isCalibrated();
     protected native void _setCalibrationReference();
+    protected native void _setMagRefDistance(float magRefDistance);
 
     protected native void _setPredictionEnabled(float delta, boolean enable);
 

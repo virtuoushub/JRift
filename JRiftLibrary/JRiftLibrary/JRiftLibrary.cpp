@@ -15,6 +15,8 @@ HMDInfo			Info;
 bool			InfoLoaded;
 bool			Initialized = false;
 Quatf quaternion;
+Quatf _lastMagRef;
+
 float yaw, pitch, roll;
 float _ipd;
 
@@ -343,11 +345,13 @@ JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1updateAutomaticCalibrat
     if (MagCal.IsAutoCalibrating()) 
     {
         MagCal.UpdateAutoCalibration(FusionResult);
-        if (MagCal.IsCalibrated())
-        {
+		if (MagCal.IsCalibrated())
+		{
+			FusionResult.SetMagReference(_lastMagRef);  // Need to ensure we enable yaw correction by 
+			                                            // setting a mag reference after calibration is complete
             if (FusionResult.IsMagReady())
-                FusionResult.SetYawCorrectionEnabled(true);
-        }
+                FusionResult.SetYawCorrectionEnabled(true);														
+		}
     }
 }
 
@@ -356,7 +360,28 @@ JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1setCalibrationReference
 {
 	if (!Initialized) return;
 
-    FusionResult.SetMagReference();
+	FusionResult.SetMagReference();
+	_lastMagRef = FusionResult.GetMagReference(); // Custom SDK call
+	
     if (FusionResult.IsMagReady())
 	    FusionResult.SetYawCorrectionEnabled(true);
+}
+
+JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1setMagRefDistance
+  (JNIEnv *, jobject, jfloat magRefDistance)
+{
+	if (!Initialized) return;
+
+    FusionResult.SetMagRefDistance(magRefDistance);
+}
+
+JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1reset
+  (JNIEnv *, jobject)
+{
+	if (!Initialized) return;
+
+	// Reset the sensor data and calibration settings. Also resets Yaw position
+	// which will be noticable if yaw drift has occurred.
+
+	FusionResult.Reset();
 }

@@ -73,6 +73,14 @@ JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift__1initSubsystem(JNIEn
 		printf(" ChromaticAb[2]: %f\n", Info.ChromaAbCorrection[2]);
 		printf(" ChromaticAb[3]: %f\n", Info.ChromaAbCorrection[3]);
 	}
+	if( !Initialized )
+	{
+		pSensor.Clear();
+		pManager.Clear();
+		pHMD.Clear(); // Ensure HMDDevice is also cleared
+
+		System::Destroy();
+	}
 
 	return Initialized;
 }

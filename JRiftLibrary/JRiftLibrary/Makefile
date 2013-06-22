@@ -7,7 +7,7 @@ ifeq ($(UNAME), Darwin)
 all: libJRiftLibrary64.jnilib
 
 
-JRiftLibrary.o:
+JRiftLibrary.o: JRiftLibrary.cpp
 	g++ \
 	-fno-rtti \
 	"-I/System/Library/Frameworks/JavaVM.framework/Versions/Current/Headers" \

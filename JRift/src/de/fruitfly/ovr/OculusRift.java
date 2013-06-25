@@ -389,11 +389,13 @@ public class OculusRift implements IOculusRift {
 		{
 			System.out.println("Loading jar:/"+libName+" ... ");
 			InputStream libStream = OculusRift.class.getResourceAsStream( "/" + libName );
+
+			byte[] buffer = new byte[1024];
+			int len = libStream.read(buffer); //Try to read before opening FileOutputStream
+
 			File outFile = new File( nativeDir, libName );
 			OutputStream out = new FileOutputStream( outFile );
 
-			byte[] buffer = new byte[1024];
-			int len = libStream.read(buffer);
 			while (len != -1) 
 			{
 				out.write(buffer, 0, len);

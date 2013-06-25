@@ -68,6 +68,9 @@ public:
         MagCalibrated = true;
     }
 
+	// Get the current calibration matrix for the magnetometer
+	const Matrix4f GetMagCalibration() { return MagCalibrationMatrix; }
+
     // True only if the mag has calibration values stored
     bool        HasMagCalibration() const { return MagCalibrated;}
     

@@ -162,6 +162,12 @@ public class OculusRift implements IOculusRift {
                 rollAngleDegrees = MAXROLL;
             if (rollAngleDegrees < -MAXROLL)
                 rollAngleDegrees = -MAXROLL;
+
+//            System.out.println("Yaw: " + yawAngleDegrees + ", Pitch: " + pitchAngleDegrees + ", Roll: " + rollAngleDegrees);
+//
+//            yawAngleDegrees = 0.0f;
+//            pitchAngleDegrees = 0.0f;
+//            rollAngleDegrees = 0.0f;
         }
         else
         {
@@ -276,6 +282,25 @@ public class OculusRift implements IOculusRift {
         return _getEyeRenderParams(viewPortX, viewPortY, viewPortWidth, viewPortHeight, clipNear, clipFar, eyeToScreenDistanceScaleFactor, distortionFitX, distortionFitY);
     }
 
+    public MagCalibrationData getMagCalibrationData()
+    {
+        return _getMagCalibrationData();
+    }
+
+    public boolean setMagCalibrationData(MagCalibrationData cal)
+    {
+        return _setMagCalibrationData(cal._reference[0], cal._reference[1], cal._reference[2], cal._reference[3],
+                cal._calibrationM[0][0], cal._calibrationM[0][1], cal._calibrationM[0][2], cal._calibrationM[0][3],
+                cal._calibrationM[1][0], cal._calibrationM[1][1], cal._calibrationM[1][2], cal._calibrationM[1][3],
+                cal._calibrationM[2][0], cal._calibrationM[2][1], cal._calibrationM[2][2], cal._calibrationM[2][3],
+                cal._calibrationM[3][0], cal._calibrationM[3][1], cal._calibrationM[3][2], cal._calibrationM[3][3]);
+    }
+
+    public boolean isYawCorrectionInProgress()
+    {
+        return _isYawCorrectionInProgress();
+    }
+
 	protected native boolean _initSubsystem();
     protected native void _pollSubsystem();
     protected native void _destroySubsystem();
@@ -286,6 +311,13 @@ public class OculusRift implements IOculusRift {
     protected native boolean _isCalibrated();
     protected native void _setCalibrationReference();
     protected native void _setMagRefDistance(float magRefDistance);
+    protected native MagCalibrationData _getMagCalibrationData();
+    protected native boolean _setMagCalibrationData(float refX, float refY, float refZ, float refW,
+                                                    float calM00, float calM01, float calM02, float calM03,
+                                                    float calM10, float calM11, float calM12, float calM13,
+                                                    float calM20, float calM21, float calM22, float calM23,
+                                                    float calM30, float calM31, float calM32, float calM33);
+    protected native boolean _isYawCorrectionInProgress();
 
     protected native void _setPredictionEnabled(float delta, boolean enable);
 
@@ -320,7 +352,7 @@ public class OculusRift implements IOculusRift {
                                                          float eyeToScreenDistanceScaleFactor,
                                                          float distortionFitX,
                                                          float distortionFitY);
-	
+
 	public static void LoadLibrary( File nativeDir )
 	{
 		if( libraryLoaded ) return;

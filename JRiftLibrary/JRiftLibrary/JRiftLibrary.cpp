@@ -14,14 +14,16 @@ Util::MagCalibration      MagCal;
 HMDInfo			Info;
 bool			InfoLoaded;
 bool			Initialized = false;
-Quatf quaternion;
-Quatf _lastMagRef;
+Quatf			quaternion;
+Quatf			_lastMagRef;
 
 float yaw, pitch, roll;
 float _ipd;
 
 static jclass eyeRenderParams_Class;
 static jmethodID eyeRenderParams_constructor_MethodID;
+static jclass magCalibrationData_Class;
+static jmethodID magCalibrationData_constructor_MethodID;
 
 
 JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift__1initSubsystem(JNIEnv *env, jobject jobj) 
@@ -347,8 +349,11 @@ JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1updateAutomaticCalibrat
         MagCal.UpdateAutoCalibration(FusionResult);
 		if (MagCal.IsCalibrated())
 		{
-			FusionResult.SetMagReference(_lastMagRef);  // Need to ensure we enable yaw correction by 
-			                                            // setting a mag reference after calibration is complete
+			Quatf identity;
+
+			if (_lastMagRef != identity)
+				FusionResult.SetMagReference(_lastMagRef);  // Need to ensure we enable yaw correction by 
+			                                                // setting a mag reference after calibration is complete
             if (FusionResult.IsMagReady())
                 FusionResult.SetYawCorrectionEnabled(true);														
 		}
@@ -384,4 +389,70 @@ JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1reset
 	// which will be noticable if yaw drift has occurred.
 
 	FusionResult.Reset();
+}
+
+JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift__1isYawCorrectionInProgress
+  (JNIEnv *, jobject)
+{
+	if (!Initialized) return false;
+
+	return FusionResult.IsYawCorrectionInProgress();
+}
+
+JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getMagCalData(
+   JNIEnv *env, jobject)
+{
+	if (magCalibrationData_Class == NULL)
+	{
+		jclass localMagCalibrationDataClass = env->FindClass("de/fruitfly/ovr/MagCalibrationData");
+		magCalibrationData_Class = (jclass)env->NewGlobalRef(localMagCalibrationDataClass);
+		env->DeleteLocalRef(localMagCalibrationDataClass);
+	}
+
+	if (magCalibrationData_constructor_MethodID == NULL)
+	{
+		magCalibrationData_constructor_MethodID = env->GetMethodID(magCalibrationData_Class, 
+			"<init>", "("
+			          "FFFF"
+					  "FFFFFFFFFFFFFFFF"
+					  ")V");
+	}
+
+	Quatf reference = FusionResult.GetMagReference(); // Custom SDK call
+	Matrix4f calibration = FusionResult.GetMagCalibration(); // Custom SDK call
+
+	jobject magCalData = env->NewObject(magCalibrationData_Class, magCalibrationData_constructor_MethodID,
+		reference.x, reference.y, reference.z, reference.w,
+		calibration.M[0][0], calibration.M[0][1], calibration.M[0][2], calibration.M[0][3],
+		calibration.M[1][0], calibration.M[1][1], calibration.M[1][2], calibration.M[1][3],
+		calibration.M[2][0], calibration.M[2][1], calibration.M[2][2], calibration.M[2][3],
+		calibration.M[3][0], calibration.M[3][1], calibration.M[3][2], calibration.M[3][3]
+	);
+
+	return magCalData;
+}
+
+JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift__1setMagCalData(
+   JNIEnv *env, jobject,
+   jfloat refX, jfloat refY, jfloat refZ, jfloat refW,
+   jfloat calM00, jfloat calM01, jfloat calM02, jfloat calM03,
+   jfloat calM10, jfloat calM11, jfloat calM12, jfloat calM13,
+   jfloat calM20, jfloat calM21, jfloat calM22, jfloat calM23,
+   jfloat calM30, jfloat calM31, jfloat calM32, jfloat calM33)
+{
+	Quatf reference(refX, refY, refZ, refW);
+	Matrix4f calibration(calM00, calM01, calM02, calM03,
+						 calM10, calM11, calM12, calM13,
+						 calM20, calM21, calM22, calM23,
+						 calM30, calM31, calM32, calM33);
+
+	FusionResult.ClearMagCalibration();
+	FusionResult.SetMagCalibration(calibration);  
+	FusionResult.SetMagReference(reference);
+	_lastMagRef = reference;
+	
+    if (FusionResult.IsMagReady())
+	    FusionResult.SetYawCorrectionEnabled(true);
+
+	return true;
 }

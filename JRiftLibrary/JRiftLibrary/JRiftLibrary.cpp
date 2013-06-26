@@ -14,6 +14,7 @@ Util::MagCalibration      MagCal;
 HMDInfo			Info;
 bool			InfoLoaded;
 bool			Initialized = false;
+bool            LogInfo = false;
 Quatf			quaternion;
 Quatf			_lastMagRef;
 
@@ -25,6 +26,11 @@ static jmethodID eyeRenderParams_constructor_MethodID;
 static jclass magCalibrationData_Class;
 static jmethodID magCalibrationData_constructor_MethodID;
 
+void LOG(std::string s)
+{
+	if (LogInfo)
+		printf("%s\n", s.c_str());
+}
 
 JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift__1initSubsystem(JNIEnv *env, jobject jobj) 
 {
@@ -336,6 +342,7 @@ JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1beginAutomaticCalibrati
 {
 	if (!Initialized) return;
 
+	LOG("Starting Mag Cal");
 	MagCal.BeginAutoCalibration(FusionResult);
 }
 
@@ -354,16 +361,28 @@ JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1updateAutomaticCalibrat
 
     if (MagCal.IsAutoCalibrating()) 
     {
+		LOG("Updating Mag Cal");
         MagCal.UpdateAutoCalibration(FusionResult);
 		if (MagCal.IsCalibrated())
 		{
+			LOG("Mag Cal Calibrated");
 			Quatf identity;
 
 			if (_lastMagRef != identity)
+			{
+				LOG("Setting last known Mag Ref");
 				FusionResult.SetMagReference(_lastMagRef);  // Need to ensure we enable yaw correction by 
-			                                                // setting a mag reference after calibration is complete
+			}                                               // setting a mag reference after calibration is complete
+
             if (FusionResult.IsMagReady())
+			{
+				LOG("Mag Cal Enabled");
                 FusionResult.SetYawCorrectionEnabled(true);														
+			}
+			else
+			{
+				LOG("Mag Cal NOT Enabled");
+			}
 		}
     }
 }
@@ -373,11 +392,15 @@ JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1setCalibrationReference
 {
 	if (!Initialized) return;
 
+	LOG("Set Mag Reference");
 	FusionResult.SetMagReference();
 	_lastMagRef = FusionResult.GetMagReference(); // Custom SDK call
 	
     if (FusionResult.IsMagReady())
+	{
+		LOG("Enabling Yaw correction");
 	    FusionResult.SetYawCorrectionEnabled(true);
+	}
 }
 
 JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1setMagRefDistance

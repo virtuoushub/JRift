@@ -56,13 +56,13 @@ OBJS32=$(SRCS:.cpp=.ox)
 all: $(LIBS)
 
 .cpp.o:
-	g++ -Os -fPIC -I. -c $< -o $@ -Wno-attributes
+	g++ -O3 -fPIC -I. -c $< -o $@ -Wno-attributes
 
 %.ox: %.cpp
-	g++ -Os -fPIC -m32 -I. -c $< -o $@ -Wno-attributes
+	g++ -O3 -fPIC -m32 -I. -c $< -o $@ -Wno-attributes
 
 clean:
-	find -name '*.ox' -delete -o -name '*.o' -delete
+	find . -name '*.ox' -delete -o -name '*.o' -delete
 	rm libOVR*a
 
 libOVR.a: $(OBJS)

@@ -16,7 +16,6 @@ bool			InfoLoaded;
 bool			Initialized = false;
 bool            LogInfo = false;
 Quatf			quaternion;
-Quatf			_lastMagRef;
 
 float yaw, pitch, roll;
 float _ipd;
@@ -366,13 +365,6 @@ JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1updateAutomaticCalibrat
 		if (MagCal.IsCalibrated())
 		{
 			LOG("Mag Cal Calibrated");
-			Quatf identity;
-
-			if (_lastMagRef != identity)
-			{
-				LOG("Setting last known Mag Ref");
-				FusionResult.SetMagReference(_lastMagRef);  // Need to ensure we enable yaw correction by 
-			}                                               // setting a mag reference after calibration is complete
 
             if (FusionResult.IsMagReady())
 			{
@@ -394,7 +386,6 @@ JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1setCalibrationReference
 
 	LOG("Set Mag Reference");
 	FusionResult.SetMagReference();
-	_lastMagRef = FusionResult.GetMagReference(); // Custom SDK call
 	
     if (FusionResult.IsMagReady())
 	{
@@ -480,7 +471,6 @@ JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift__1setMagCalData(
 	FusionResult.ClearMagCalibration();
 	FusionResult.SetMagCalibration(calibration);  
 	FusionResult.SetMagReference(reference);
-	_lastMagRef = reference;
 	
     if (FusionResult.IsMagReady())
 	    FusionResult.SetYawCorrectionEnabled(true);

@@ -57,7 +57,27 @@ bool HIDDeviceManager::initializeManager()
         return false;
     }
     
-    IOHIDManagerSetDeviceMatching(HIDManager, NULL);
+    // Create a Matching Dictionary
+    CFMutableDictionaryRef matchDict =
+        CFDictionaryCreateMutable(kCFAllocatorDefault,
+                                  2,
+                                  &kCFTypeDictionaryKeyCallBacks,
+                                  &kCFTypeDictionaryValueCallBacks);
+    
+    // Specify a device manufacturer in the Matching Dictionary
+    UInt32 vendorId = Oculus_VendorId;
+    CFNumberRef vendorIdRef = CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &vendorId);
+    CFDictionarySetValue(matchDict,
+                         CFSTR(kIOHIDVendorIDKey),
+                         vendorIdRef);
+    // Register the Matching Dictionary to the HID Manager
+    IOHIDManagerSetDeviceMatching(HIDManager, matchDict);
+    CFRelease(vendorIdRef);
+    CFRelease(matchDict);
+    
+    // Register a callback for USB device detection with the HID Manager
+    IOHIDManagerRegisterDeviceMatchingCallback(HIDManager, &staticDeviceMatchingCallback, this);
+    
     IOHIDManagerScheduleWithRunLoop(HIDManager, getRunLoop(), kCFRunLoopDefaultMode);
 
     return true;
@@ -302,6 +322,9 @@ bool HIDDeviceManager::Enumerate(HIDEnumerateVisitor* enumVisitor)
     
 
 	CFSetRef deviceSet = IOHIDManagerCopyDevices(HIDManager);
+    if (!deviceSet)
+        return false;
+    
 	CFIndex deviceCount = CFSetGetCount(deviceSet);
     
     // Allocate a block of memory and read the set into it.
@@ -329,6 +352,16 @@ bool HIDDeviceManager::Enumerate(HIDEnumerateVisitor* enumVisitor)
             initStrings(hidDev, &devDesc);
             initSerialNumber(hidDev, &devDesc);
 
+            // Look for the device to check if it is already opened.
+            Ptr<DeviceCreateDesc> existingDevice = DevManager->FindHIDDevice(devDesc);
+            // if device exists and it is opened then most likely the CreateHIDFile
+            // will fail; therefore, we just set Enumerated to 'true' and continue.
+            if (existingDevice && existingDevice->pDevice)
+            {
+                existingDevice->Enumerated = true;
+                continue;
+            }
+            
             // Construct minimal device that the visitor callback can get feature reports from.
             OSX::HIDDevice device(this, hidDev);
             
@@ -380,6 +413,19 @@ bool HIDDeviceManager::getFullDesc(IOHIDDeviceRef device, HIDDeviceDesc* desc)
     return true;
 }
 
+// New USB device specified in the matching dictionary has been added (callback function)
+void HIDDeviceManager::staticDeviceMatchingCallback(void *inContext,
+                                                    IOReturn inResult,
+                                                    void *inSender,
+                                                    IOHIDDeviceRef inIOHIDDeviceRef)
+{
+    HIDDeviceManager* hidMgr = static_cast<HIDDeviceManager*>(inContext);
+    HIDDeviceDesc hidDevDesc;
+    hidMgr->getPath(inIOHIDDeviceRef, &hidDevDesc.Path);
+    hidMgr->getFullDesc(inIOHIDDeviceRef, &hidDevDesc);
+    
+    hidMgr->DevManager->DetectHIDDevice(hidDevDesc);
+}
 
 //-------------------------------------------------------------------------------------
 // **** OSX::HIDDevice
@@ -388,6 +434,7 @@ HIDDevice::HIDDevice(HIDDeviceManager* manager)
  :  HIDManager(manager), InMinimalMode(false)
 {
     Device = NULL;
+    RepluggedNotificationPort = 0;
 }
     
 // This is a minimal constructor used during enumeration for us to pass
@@ -395,6 +442,7 @@ HIDDevice::HIDDevice(HIDDeviceManager* manager)
 HIDDevice::HIDDevice(HIDDeviceManager* manager, IOHIDDeviceRef device)
 :   HIDManager(manager), Device(device), InMinimalMode(true)
 {
+    RepluggedNotificationPort = 0;
 }
 
 HIDDevice::~HIDDevice()
@@ -487,13 +535,18 @@ void HIDDevice::deviceAddedCallback(io_iterator_t iterator)
         if (openDevice())
         {
             LogText("OVR::OSX::HIDDevice - Reopened device : %s", DevDesc.Path.ToCStr());
+
+            Ptr<DeviceCreateDesc> existingHIDDev = HIDManager->DevManager->FindHIDDevice(DevDesc);
+            if (existingHIDDev && existingHIDDev->pDevice)
+            {
+                HIDManager->DevManager->CallOnDeviceAdded(existingHIDDev);
+            }
         }
     }
 
     // Reset callback.
     while (IOIteratorNext(iterator))
-    {
-    }
+        ;
 }
     
 bool HIDDevice::openDevice()
@@ -596,7 +649,8 @@ void HIDDevice::HIDShutdown()
     }
 
     IOObjectRelease(RepluggedNotification);
-    IONotificationPortDestroy(RepluggedNotificationPort);
+    if (RepluggedNotificationPort)
+        IONotificationPortDestroy(RepluggedNotificationPort);
     
     LogText("OVR::OSX::HIDDevice - HIDShutdown '%s'\n", DevDesc.Path.ToCStr());
 }
@@ -643,6 +697,7 @@ bool HIDDevice::setupDevicePluggedInNotification()
     if (result != KERN_SUCCESS)
     {
         CFRelease(RepluggedNotificationPort);
+        RepluggedNotificationPort = 0;
         return false;
     }
     
@@ -711,7 +766,14 @@ void HIDDevice::staticDeviceRemovedCallback(void* pContext, IOReturn result, voi
     
 void HIDDevice::deviceRemovedCallback()
 {
-    closeDevice(true);    
+    Ptr<HIDDevice> _this(this); // prevent from release
+    
+    Ptr<DeviceCreateDesc> existingHIDDev = HIDManager->DevManager->FindHIDDevice(DevDesc);
+    if (existingHIDDev && existingHIDDev->pDevice)
+    {
+        HIDManager->DevManager->CallOnDeviceRemoved(existingHIDDev);
+    }
+    closeDevice(true);
 }
 
 CFStringRef HIDDevice::generateRunLoopModeString(IOHIDDeviceRef device)

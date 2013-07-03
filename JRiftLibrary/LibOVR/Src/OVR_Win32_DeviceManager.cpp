@@ -41,6 +41,8 @@ DeviceManager::DeviceManager()
 
 DeviceManager::~DeviceManager()
 {
+    // make sure Shutdown was called.
+    OVR_ASSERT(!pThread);
 }
 
 bool DeviceManager::Initialize(DeviceBase*)
@@ -48,7 +50,7 @@ bool DeviceManager::Initialize(DeviceBase*)
     if (!DeviceManagerImpl::Initialize(0))
         return false;
 
-    pThread = *new DeviceManagerThread();
+    pThread = *new DeviceManagerThread(this);
     if (!pThread || !pThread->Start())
         return false;
          
@@ -75,6 +77,7 @@ void DeviceManager::Shutdown()
     //  - Once ExitCommand executes, ThreadCommand::Run loop will exit and release the last
     //    reference to the thread object.
     pThread->PushExitCommand(false);
+    pThread->DetachDeviceManager();
     pThread.Clear();
 
     DeviceManagerImpl::Shutdown();
@@ -101,18 +104,35 @@ bool DeviceManager::GetDeviceInfo(DeviceInfo* info) const
 DeviceEnumerator<> DeviceManager::EnumerateDevicesEx(const DeviceEnumerationArgs& args)
 {
     // TBD: Can this be avoided in the future, once proper device notification is in place?
-    pThread->PushCall((DeviceManagerImpl*)this,
-                      &DeviceManager::EnumerateAllFactoryDevices, true);
+    if (GetThreadId() != OVR::GetCurrentThreadId())
+    {
+        pThread->PushCall((DeviceManagerImpl*)this,
+            &DeviceManager::EnumerateAllFactoryDevices, true);
+    }
+    else
+        DeviceManager::EnumerateAllFactoryDevices();
 
     return DeviceManagerImpl::EnumerateDevicesEx(args);
+}
+
+ThreadId DeviceManager::GetThreadId() const
+{
+    return pThread->GetThreadId();
+}
+    
+bool DeviceManager::GetHIDDeviceDesc(const String& path, HIDDeviceDesc* pdevDesc) const
+{
+    if (GetHIDDeviceManager())
+        return static_cast<HIDDeviceManager*>(GetHIDDeviceManager())->GetHIDDeviceDesc(path, pdevDesc);
+    return false;
 }
 
 
 //-------------------------------------------------------------------------------------
 // ***** DeviceManager Thread 
 
-DeviceManagerThread::DeviceManagerThread()
-    : Thread(ThreadStackSize), hCommandEvent(0)
+DeviceManagerThread::DeviceManagerThread(DeviceManager* pdevMgr)
+    : Thread(ThreadStackSize), hCommandEvent(0), pDeviceMgr(pdevMgr)
 {    
     // Create a non-signaled manual-reset event.
     hCommandEvent = ::CreateEvent(0, TRUE, FALSE, 0);
@@ -301,17 +321,60 @@ bool DeviceManagerThread::OnMessage(MessageType type, const String& devicePath)
 	}
 
 	bool error = false;
+    bool deviceFound = false;
 	for (UPInt i = 0; i < MessageNotifiers.GetSize(); i++)
     {
 		if (MessageNotifiers[i] && 
 			MessageNotifiers[i]->OnDeviceMessage(notifierMessageType, devicePath, &error))
 		{
 			// The notifier belonged to a device with the specified device name so we're done.
+            deviceFound = true;
 			break;
 		}
     }
+    if (type == DeviceAdded && !deviceFound)
+    {
+        Lock::Locker devMgrLock(&DevMgrLock);
+        // a new device was connected. Go through all device factories and
+        // try to detect the device using HIDDeviceDesc.
+        HIDDeviceDesc devDesc;
+        if (pDeviceMgr->GetHIDDeviceDesc(devicePath, &devDesc))
+        {
+            Lock::Locker deviceLock(pDeviceMgr->GetLock());
+            DeviceFactory* factory = pDeviceMgr->Factories.GetFirst();
+            while(!pDeviceMgr->Factories.IsNull(factory))
+            {
+                if (factory->DetectHIDDevice(pDeviceMgr, devDesc))
+                {
+                    deviceFound = true;
+                    break;
+                }
+                factory = factory->pNext;
+            }
+        }
+    }
+
+    if (!deviceFound && strstr(devicePath.ToCStr(), "#OVR00"))
+    {
+        Ptr<DeviceManager> pmgr;
+        {
+            Lock::Locker devMgrLock(&DevMgrLock);
+            pmgr = pDeviceMgr;
+        }
+        // HMD plugged/unplugged
+        // This is not a final solution to enumerate HMD devices and get
+        // a first available handle. This won't work with multiple rifts.
+        // @TODO (!AB)
+        pmgr->EnumerateDevices<HMDDevice>();
+    }
 
 	return !error;
+}
+
+void DeviceManagerThread::DetachDeviceManager()
+{
+    Lock::Locker devMgrLock(&DevMgrLock);
+    pDeviceMgr = NULL;
 }
 
 } // namespace Win32

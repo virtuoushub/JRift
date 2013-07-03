@@ -49,6 +49,24 @@ void DeviceHandle::operator = (const DeviceHandle& src)
     pImpl = src.pImpl;
 }
 
+DeviceBase* DeviceHandle::GetDevice_AddRef() const
+{ 
+    if (pImpl && pImpl->pDevice)
+    {
+        pImpl->pDevice->AddRef();
+        return pImpl->pDevice;
+    }
+    return NULL;
+}
+
+// Returns true, if the handle contains the same device ptr
+// as specified in the parameter.
+bool DeviceHandle::IsDevice(DeviceBase* pdev) const
+{
+    return (pdev && pImpl && pImpl->pDevice) ? 
+        pImpl->pDevice == pdev : false;
+}
+
 DeviceType  DeviceHandle::GetType() const
 {
     return pImpl ? pImpl->Type : Device_None;
@@ -87,18 +105,23 @@ DeviceBase* DeviceHandle::CreateDevice()
         if (pImpl->pDevice)
         {
             pImpl->pDevice->AddRef();
-            return device;
+            return pImpl->pDevice;
         }
         manager = pImpl->GetManagerImpl();
     }
 
     if (manager)
     {
-        // Queue up a CreateDevice request. This fills in '&device' with AddRefed value,
-        // or keep it at null.
-        manager->GetThreadQueue()->PushCallAndWaitResult(
-            manager.GetPtr(), &DeviceManagerImpl::CreateDevice_MgrThread,
-                              &device, pImpl, (DeviceBase*)0);
+        if (manager->GetThreadId() != OVR::GetCurrentThreadId())
+        {
+            // Queue up a CreateDevice request. This fills in '&device' with AddRefed value,
+            // or keep it at null.
+            manager->GetThreadQueue()->PushCallAndWaitResult(
+                manager.GetPtr(), &DeviceManagerImpl::CreateDevice_MgrThread,
+                &device, pImpl, (DeviceBase*)0);
+        }
+        else
+            device = manager->CreateDevice_MgrThread(pImpl, (DeviceBase*)0);
     }
     return device;
 }

@@ -1,11 +1,11 @@
 /************************************************************************************
 
 Filename    :   OVR_Linux_DeviceManager.h
-Content     :   Linux specific DeviceManager header.
-Created     :   March 14, 2013
-Authors     :   Lee Cooper, Mark Browning
+Content     :   Linux-specific DeviceManager header.
+Created     :   
+Authors     :   
 
-Copyright   :   Copyright 2013 Oculus VR, Inc. All Rights reserved.
+Copyright   :   Copyright 2012 Oculus VR, Inc. All Rights reserved.
 
 Use of this software is subject to the terms of the Oculus license
 agreement provided at the time of installation or download, or which
@@ -18,7 +18,9 @@ otherwise accompanies this software in either electronic or hard copy form.
 
 #include "OVR_DeviceImpl.h"
 
-#include "Kernel/OVR_Timer.h"
+#include <unistd.h>
+#include <sys/poll.h>
+
 
 namespace OVR { namespace Linux {
 
@@ -33,13 +35,14 @@ public:
     DeviceManager();
     ~DeviceManager();
 
-    // Initialize/Shutdown manager thread.
+    // Initialize/Shutdowncreate and shutdown manger thread.
     virtual bool Initialize(DeviceBase* parent);
     virtual void Shutdown();
 
     virtual ThreadCommandQueue* GetThreadQueue();
+    virtual ThreadId GetThreadId() const;
 
-    virtual DeviceEnumerator<> EnumerateDevicesEx(const DeviceEnumerationArgs& args);
+    virtual DeviceEnumerator<> EnumerateDevicesEx(const DeviceEnumerationArgs& args);    
 
     virtual bool  GetDeviceInfo(DeviceInfo* info) const;
 
@@ -52,7 +55,7 @@ public:
 class DeviceManagerThread : public Thread, public ThreadCommandQueue
 {
     friend class DeviceManager;
-    enum { ThreadStackSize = 32 * 1024 };
+    enum { ThreadStackSize = 64 * 1024 };
 public:
     DeviceManagerThread();
     ~DeviceManagerThread();
@@ -60,49 +63,47 @@ public:
     virtual int Run();
 
     // ThreadCommandQueue notifications for CommandEvent handling.
-    virtual void OnPushNonEmpty_Locked()
-    {
-        //CFRunLoopSourceSignal(CommandQueueSource);
-        //CFRunLoopWakeUp(RunLoop);
-    }
-    
-    virtual void OnPopEmpty_Locked()     {}
+    virtual void OnPushNonEmpty_Locked() { write(CommandFd[1], this, 1); }
+    virtual void OnPopEmpty_Locked()     { }
 
-
-    // Notifier used for different updates (EVENT or regular timing or messages).
-    class Notifier  
+    class Notifier
     {
     public:
+        // Called when I/O is received
+        virtual void OnEvent(int i, int fd) = 0;
 
-        // Called when timing ticks are updated. // Returns the largest number of microseconds
-        // this function can wait till next call.
+        // Called when timing ticks are updated.
+        // Returns the largest number of microseconds this function can
+        // wait till next call.
         virtual UInt64  OnTicks(UInt64 ticksMks)
-        { OVR_UNUSED1(ticksMks);  return Timer::MksPerSecond * 1000; }
+        {
+            OVR_UNUSED1(ticksMks);
+            return Timer::MksPerSecond * 1000;
+        }
     };
- 
-    // Add notifier that will be called at regular intervals. 
+
+    // Add I/O notifier
+    bool AddSelectFd(Notifier* notify, int fd);
+    bool RemoveSelectFd(Notifier* notify, int fd);
+
+    // Add notifier that will be called at regular intervals.
     bool AddTicksNotifier(Notifier* notify);
     bool RemoveTicksNotifier(Notifier* notify);
 
-	/*
-    CFRunLoopRef        GetRunLoop()
-    { return RunLoop; }
-	*/
-    
 private:
-	/*
-    CFRunLoopRef        RunLoop;
-
-    CFRunLoopSourceRef  CommandQueueSource;
     
-    static void staticCommandQueueSourceCallback(void* pContext);
-    void commandQueueSourceCallback();
-	*/
+    bool threadInitialized() { return CommandFd[0] != 0; }
 
-    Event               StartupEvent;
-    
-    // Ticks notifiers. Used for time-dependent events such as keep-alive.
-    Array<Notifier*>    TicksNotifiers;
+    // pipe used to signal commands
+    int CommandFd[2];
+
+    Array<struct pollfd>    PollFds;
+    Array<Notifier*>        FdNotifiers;
+
+    Event                   StartupEvent;
+
+    // Ticks notifiers - used for time-dependent events such as keep-alive.
+    Array<Notifier*>        TicksNotifiers;
 };
 
 }} // namespace Linux::OVR

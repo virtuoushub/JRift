@@ -40,6 +40,7 @@ DeviceManager::DeviceManager()
 
 DeviceManager::~DeviceManager()
 {
+    OVR_DEBUG_LOG(("OSX::DeviceManager::~DeviceManager was called"));
 }
 
 bool DeviceManager::Initialize(DeviceBase*)
@@ -58,7 +59,8 @@ bool DeviceManager::Initialize(DeviceBase*)
     // Do this now that we know the thread's run loop.
     HidDeviceManager = *HIDDeviceManager::CreateInternal(this);
 
-        
+    CGDisplayRegisterReconfigurationCallback(displayReconfigurationCallBack, this);
+         
     pCreateDesc->pDevice = this;
     LogText("OVR::DeviceManager - initialized.\n");
 
@@ -69,6 +71,8 @@ void DeviceManager::Shutdown()
 {
     LogText("OVR::DeviceManager - shutting down.\n");
 
+    CGDisplayRemoveReconfigurationCallback(displayReconfigurationCallBack, this);
+    
     // Set Manager shutdown marker variable; this prevents
     // any existing DeviceHandle objects from accessing device.
     pCreateDesc->pLock->pManager = 0;
@@ -82,7 +86,7 @@ void DeviceManager::Shutdown()
     //    after pManager is null.
     //  - Once ExitCommand executes, ThreadCommand::Run loop will exit and release the last
     //    reference to the thread object.
-    pThread->PushExitCommand(false);
+    pThread->Shutdown();
     pThread.Clear();
 
     DeviceManagerImpl::Shutdown();
@@ -91,6 +95,11 @@ void DeviceManager::Shutdown()
 ThreadCommandQueue* DeviceManager::GetThreadQueue()
 {
     return pThread;
+}
+
+ThreadId DeviceManager::GetThreadId() const
+{
+    return pThread->GetThreadId();
 }
 
 bool DeviceManager::GetDeviceInfo(DeviceInfo* info) const
@@ -115,6 +124,24 @@ DeviceEnumerator<> DeviceManager::EnumerateDevicesEx(const DeviceEnumerationArgs
     return DeviceManagerImpl::EnumerateDevicesEx(args);
 }
 
+void DeviceManager::displayReconfigurationCallBack (CGDirectDisplayID display,
+                                                    CGDisplayChangeSummaryFlags flags,
+                                                    void *userInfo)
+{
+    DeviceManager* manager = reinterpret_cast<DeviceManager*>(userInfo);
+    OVR_UNUSED(manager);
+    
+    if (flags & kCGDisplayAddFlag)
+    {
+        LogText("Display Added, id = %d\n", int(display));
+        manager->EnumerateDevices<HMDDevice>();
+    }
+    else if (flags & kCGDisplayRemoveFlag)
+    {
+        LogText("Display Removed, id = %d\n", int(display));
+        manager->EnumerateDevices<HMDDevice>();
+    }
+}
 
 //-------------------------------------------------------------------------------------
 // ***** DeviceManager Thread 
@@ -262,6 +289,24 @@ bool DeviceManagerThread::RemoveTicksNotifier(Notifier* notify)
     return false;
 }
 
+void DeviceManagerThread::Shutdown()
+{
+    // Push for thread shutdown *WITH NO WAIT*.
+    // This will have the following effect:
+    //  - Exit command will get enqueued, which will be executed later on the thread itself.
+    //  - Beyond this point, this DeviceManager object may be deleted by our caller.
+    //  - Other commands, such as CreateDevice, may execute before ExitCommand, but they will
+    //    fail gracefully due to pLock->pManager == 0. Future commands can't be enqued
+    //    after pManager is null.
+    //  - Once ExitCommand executes, ThreadCommand::Run loop will exit and release the last
+    //    reference to the thread object.
+    PushExitCommand(false);
+
+    // make sure CFRunLoopRunInMode is woken up
+    CFRunLoopSourceSignal(CommandQueueSource);
+    CFRunLoopWakeUp(RunLoop);
+}
+    
 } // namespace OSX
 
 

@@ -1,8 +1,8 @@
 /************************************************************************************
 Filename    :   OVR_Linux_HIDDevice.h
 Content     :   Linux HID device implementation.
-Created     :   February 26, 2013
-Authors     :   Lee Cooper, Mark Browning
+Created     :   June 13, 2013
+Authors     :   Brant Lewis
 
 Copyright   :   Copyright 2013 Oculus VR, Inc. All Rights reserved.
 
@@ -12,12 +12,12 @@ otherwise accompanies this software in either electronic or hard copy form.
 
 *************************************************************************************/
 
-#ifndef OVR_Linux_HIDDevice_h
-#define OVR_Linux_HIDDevice_h
+#ifndef OVR_LINUX_HIDDevice_h
+#define OVR_LINUX_HIDDevice_h
 
 #include "OVR_HIDDevice.h"
-
 #include "OVR_Linux_DeviceManager.h"
+#include <libudev.h>
 
 namespace OVR { namespace Linux {
 
@@ -36,56 +36,35 @@ public:
 
     // This is a minimal constructor used during enumeration for us to pass
     // a HIDDevice to the visit function (so that it can query feature reports).
-    // HIDDevice(HIDDeviceManager* manager, IOHIDDeviceRef device);
+    HIDDevice(HIDDeviceManager* manager, int device_handle);
     
     virtual ~HIDDevice();
 
     bool HIDInitialize(const String& path);
     void HIDShutdown();
     
-    bool SetFeatureReport(UByte* data, UInt32 length);
-	bool GetFeatureReport(UByte* data, UInt32 length);
-
-    bool Write(UByte* data, UInt32 length);
-
-    bool Read(UByte* pData, UInt32 length, UInt32 timeoutMilliS);
-    bool ReadBlocking(UByte* pData, UInt32 length);
-
+    virtual bool SetFeatureReport(UByte* data, UInt32 length);
+	virtual bool GetFeatureReport(UByte* data, UInt32 length);
 
     // DeviceManagerThread::Notifier
+    void OnEvent(int i, int fd);
     UInt64 OnTicks(UInt64 ticksMks);
-    
-private:
-	/*
-    bool initInfo();
-    bool openDevice();
-    void closeDevice(bool wasUnplugged);
-    bool setupDevicePluggedInNotification();
-    CFStringRef generateRunLoopModeString(IOHIDDeviceRef device);
-    
-    static void staticHIDReportCallback(void* pContext,
-                                        IOReturn result,
-                                        void* pSender,
-                                        IOHIDReportType reportType,
-                                        uint32_t reportId,
-                                        uint8_t* pReport,
-                                        CFIndex reportLength);
-    void hidReportCallback(UByte* pData, UInt32 length);
 
-    static void staticDeviceRemovedCallback(void* pContext,
-                                            IOReturn result,
-                                            void* pSender);
-    void deviceRemovedCallback();
-    
-    static void staticDeviceAddedCallback(void* pContext,
-                                          io_iterator_t iterator);
-    void deviceAddedCallback(io_iterator_t iterator);
-    
-    IOHIDDeviceRef          Device;
-    HIDDeviceDesc           DevDesc;
-	*/
+    bool OnDeviceNotification(MessageType messageType,
+                              HIDDeviceDesc* device_info,
+                              bool* error);
+
+private:
+    bool initInfo();
+    bool openDevice(const char* dev_path);
+    void closeDevice(bool wasUnplugged);
+    void closeDeviceOnIOError();
+    bool setupDevicePluggedInNotification();
+
     bool                    InMinimalMode;
     HIDDeviceManager*       HIDManager;
+    int                     DeviceHandle;     // file handle to the device
+    HIDDeviceDesc           DevDesc;
     
     enum { ReadBufferSize = 96 };
     UByte                   ReadBuffer[ReadBufferSize];
@@ -93,18 +72,13 @@ private:
     UInt16                  InputReportBufferLength;
     UInt16                  OutputReportBufferLength;
     UInt16                  FeatureReportBufferLength;
-    
-	/*
-    IONotificationPortRef   RepluggedNotificationPort;
-    io_iterator_t           RepluggedNotification;
-	*/
 };
 
 
 //-------------------------------------------------------------------------------------
 // ***** Linux HIDDeviceManager
 
-class HIDDeviceManager : public OVR::HIDDeviceManager
+class HIDDeviceManager : public OVR::HIDDeviceManager, public DeviceManagerThread::Notifier
 {
 	friend class HIDDevice;
 
@@ -119,27 +93,30 @@ public:
     virtual OVR::HIDDevice* Open(const String& path);
 
     static HIDDeviceManager* CreateInternal(DeviceManager* manager);
+
+    void OnEvent(int i, int fd);
     
 private:
     bool initializeManager();
-	/*
-    bool initVendorProductVersion(IOHIDDeviceRef device, HIDDeviceDesc* pDevDesc);
-    bool initUsage(IOHIDDeviceRef device, HIDDeviceDesc* pDevDesc);
-    bool initStrings(IOHIDDeviceRef device, HIDDeviceDesc* pDevDesc);
-    bool initSerialNumber(IOHIDDeviceRef device, HIDDeviceDesc* pDevDesc);
-    bool getVendorId(IOHIDDeviceRef device, UInt16* pResult);
-    bool getProductId(IOHIDDeviceRef device, UInt16* pResult);
-    bool getLocationId(IOHIDDeviceRef device, SInt32* pResult);
-    bool getSerialNumberString(IOHIDDeviceRef device, String* pResult);
-    bool getPath(IOHIDDeviceRef device, String* pPath);
-    bool getIntProperty(IOHIDDeviceRef device, CFStringRef key, int32_t* pResult);
-    bool getStringProperty(IOHIDDeviceRef device, CFStringRef propertyName, String* pResult);
-    bool getFullDesc(IOHIDDeviceRef device, HIDDeviceDesc* desc);
-	*/
+    bool initVendorProductVersion(udev_device* device, HIDDeviceDesc* pDevDesc);
+    bool getPath(udev_device* device, String* pPath);
+    bool getIntProperty(udev_device* device, const char* key, int32_t* pResult);
+    bool getStringProperty(udev_device* device,
+                           const char* propertyName,
+                           OVR::String* pResult);
+    bool getFullDesc(udev_device* device, HIDDeviceDesc* desc);
+    bool GetDescriptorFromPath(const char* dev_path, HIDDeviceDesc* desc);
     
-    DeviceManager* DevManager;
+    bool AddNotificationDevice(HIDDevice* device);
+    bool RemoveNotificationDevice(HIDDevice* device);
+    
+    DeviceManager*           DevManager;
 
-    //IOHIDManagerRef HIDManager;
+    udev*                    UdevInstance;     // a handle to the udev library instance
+    udev_monitor*            HIDMonitor;
+    int                      HIDMonHandle;     // the udev_monitor file handle
+
+    Array<HIDDevice*>        NotificationDevices;
 };
 
 }} // namespace OVR::Linux

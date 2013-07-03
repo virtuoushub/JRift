@@ -18,6 +18,10 @@ otherwise accompanies this software in either electronic or hard copy form.
 #include "Kernel/OVR_Log.h"
 #include "Kernel/OVR_System.h"
 
+#include "OVR_DeviceImpl.h"
+#include "OVR_SensorImpl.h"
+#include "OVR_Profile.h"
+
 namespace OVR {
 
 
@@ -62,7 +66,7 @@ Lock* SharedLock::GetLockAddRef()
 void SharedLock::ReleaseLock(Lock* plock)
 {
     OVR_UNUSED(plock);
-    OVR_ASSERT((plock = toLock()) != 0);
+    OVR_ASSERT(plock == toLock());
 
     int oldUseCount;
 
@@ -261,6 +265,11 @@ bool DeviceBase::GetDeviceInfo(DeviceInfo* info) const
     //return false;
 }
 
+// returns the MessageHandler's lock
+Lock* DeviceBase::GetHandlerLock() const
+{
+    return getDeviceCommon()->HandlerRef.GetLock();
+}
 
 // Derive DeviceManagerCreateDesc to provide abstract function implementation.
 class DeviceManagerCreateDesc : public DeviceCreateDesc
@@ -319,6 +328,9 @@ bool DeviceManagerImpl::Initialize(DeviceBase* parent)
     OVR_UNUSED(parent);
     if (!pCreateDesc || !pCreateDesc->pLock)
 		return false;
+
+    pProfileManager = *ProfileManager::Create();
+
     return true;
 }
 
@@ -344,6 +356,8 @@ void DeviceManagerImpl::Shutdown()
     // These must've been cleared by caller.
     OVR_ASSERT(pCreateDesc->pDevice == 0);
     OVR_ASSERT(pCreateDesc->pLock->pManager == 0);
+
+    pProfileManager.Clear();
 }
 
 
@@ -463,8 +477,9 @@ Void DeviceManagerImpl::EnumerateAllFactoryDevices()
         // In case 'devDesc' gets removed.
         nextdevDesc = devDesc->pNext; 
 
-        if (//(devDesc->pFactory == factory) && 
-            !devDesc->Enumerated)
+        // Note, device might be not enumerated since it is opened and
+        // in use! Do NOT notify 'device removed' in this case (!AB)
+        if (!devDesc->Enumerated)
         {
             // This deletes the devDesc for HandleCount == 0 due to Release in DeviceHandle.
             CallOnDeviceRemoved(devDesc);
@@ -484,6 +499,95 @@ Void DeviceManagerImpl::EnumerateAllFactoryDevices()
     return 0;
 }
 
+Ptr<DeviceCreateDesc> DeviceManagerImpl::AddDevice_NeedsLock(
+    const DeviceCreateDesc& createDesc)
+{
+    // If found, mark as enumerated and we are done.
+    DeviceCreateDesc* descCandidate = 0;
+
+    for(DeviceCreateDesc* devDesc = Devices.GetFirst();
+        !Devices.IsNull(devDesc);  devDesc = devDesc->pNext)
+    {
+        DeviceCreateDesc::MatchResult mr = devDesc->MatchDevice(createDesc, &descCandidate);
+        if (mr == DeviceCreateDesc::Match_Found)
+        {
+            devDesc->Enumerated = true;
+            if (!devDesc->pDevice)
+                CallOnDeviceAdded(devDesc);
+            return devDesc;
+        }
+    }
+
+    // Update candidate (this may involve writing fields to HMDDevice createDesc).
+    if (descCandidate)
+    {
+        bool newDevice = false;
+        if (descCandidate->UpdateMatchedCandidate(createDesc, &newDevice))
+        {
+            descCandidate->Enumerated = true;
+            if (!descCandidate->pDevice || newDevice)
+                CallOnDeviceAdded(descCandidate);
+            return descCandidate;
+        }
+    }
+
+    // If not found, add new device.
+    //  - This stores a new descriptor with
+    //    {pDevice = 0, HandleCount = 1, Enumerated = true}
+    DeviceCreateDesc* desc = createDesc.Clone();
+    desc->pLock = pCreateDesc->pLock;
+    Devices.PushBack(desc);
+    desc->Enumerated = true;
+
+    CallOnDeviceAdded(desc);
+
+    return desc;
+}
+
+Ptr<DeviceCreateDesc> DeviceManagerImpl::FindDevice(
+    const String& path, 
+    DeviceType deviceType)
+{
+    Lock::Locker deviceLock(GetLock());
+    DeviceCreateDesc* devDesc;
+
+    for (devDesc = Devices.GetFirst();
+        !Devices.IsNull(devDesc);  devDesc = devDesc->pNext)
+    {
+        if ((deviceType == Device_None || deviceType == devDesc->Type) &&
+            devDesc->MatchDevice(path))
+            return devDesc;
+    }
+    return NULL;
+}
+
+Ptr<DeviceCreateDesc> DeviceManagerImpl::FindHIDDevice(const HIDDeviceDesc& hidDevDesc)
+{
+    Lock::Locker deviceLock(GetLock());
+    DeviceCreateDesc* devDesc;
+    
+    for (devDesc = Devices.GetFirst();
+        !Devices.IsNull(devDesc);  devDesc = devDesc->pNext)
+    {
+        if (devDesc->MatchHIDDevice(hidDevDesc))
+            return devDesc;
+    }
+    return NULL;
+}
+  
+void DeviceManagerImpl::DetectHIDDevice(const HIDDeviceDesc& hidDevDesc)
+{
+    Lock::Locker deviceLock(GetLock());
+    DeviceFactory* factory = Factories.GetFirst();
+    while(!Factories.IsNull(factory))
+    {
+        if (factory->DetectHIDDevice(this, hidDevDesc))
+            break;
+        factory = factory->pNext;
+    }
+    
+}
+    
 // Enumerates devices for a particular factory.
 Void DeviceManagerImpl::EnumerateFactoryDevices(DeviceFactory* factory)
 {
@@ -498,37 +602,7 @@ Void DeviceManagerImpl::EnumerateFactoryDevices(DeviceFactory* factory)
 
         virtual void Visit(const DeviceCreateDesc& createDesc)
         {
-            DeviceCreateDesc* devDesc;
-            
-            // If found, mark as enumerated and we are done.
-            DeviceCreateDesc* descCandidate = 0;
-
-            for(devDesc = pManager->Devices.GetFirst();
-                !pManager->Devices.IsNull(devDesc);  devDesc = devDesc->pNext)
-            {
-                DeviceCreateDesc::MatchResult mr = devDesc->MatchDevice(createDesc, &descCandidate);
-                if (mr == DeviceCreateDesc::Match_Found)
-                {
-                    devDesc->Enumerated = true;
-                    return;
-                }
-            }
-
-            // Update candidate (this may involve writing fields to HMDDevice createDesc).
-            if (descCandidate && descCandidate->UpdateMatchedCandidate(createDesc))
-            {
-                descCandidate->Enumerated = true;
-                return;
-            }
-
-            // If not found, add new device.
-            //  - This stores a new descriptor with
-            //    {pDevice = 0, HandleCount = 1, Enumerated = true}
-            DeviceCreateDesc* desc = createDesc.Clone();
-            desc->pLock = pManager->pCreateDesc->pLock;
-            pManager->Devices.PushBack(desc);
-
-            pManager->CallOnDeviceAdded(desc);
+            pManager->AddDevice_NeedsLock(createDesc);
         }
     };
 
@@ -557,7 +631,6 @@ DeviceEnumerator<> DeviceManagerImpl::EnumerateDevicesEx(const DeviceEnumeration
     
     return e;
 }
-
 
 //-------------------------------------------------------------------------------------
 // ***** DeviceCommon
@@ -658,6 +731,58 @@ void DeviceCreateDesc::Release()
             break;
         }
     }
+}
+
+HMDDevice* HMDDevice::Disconnect(SensorDevice* psensor)
+{
+    if (!psensor)
+        return NULL;
+
+    OVR::DeviceManager* manager = GetManager();
+    if (manager)
+    {
+        //DeviceManagerImpl* mgrImpl = static_cast<DeviceManagerImpl*>(manager);
+        Ptr<DeviceCreateDesc> desc = getDeviceCommon()->pCreateDesc;
+        if (desc)
+        {
+            class Visitor : public DeviceFactory::EnumerateVisitor
+            {
+                Ptr<DeviceCreateDesc> Desc;
+            public:
+                Visitor(DeviceCreateDesc* desc) : Desc(desc) {}
+                virtual void Visit(const DeviceCreateDesc& createDesc) 
+                {
+                    Lock::Locker lock(Desc->GetLock());
+                    Desc->UpdateMatchedCandidate(createDesc);
+                }
+            } visitor(desc);
+            //SensorDeviceImpl* sImpl = static_cast<SensorDeviceImpl*>(psensor);
+
+            SensorDisplayInfoImpl displayInfo;
+
+            if (psensor->GetFeatureReport(displayInfo.Buffer, SensorDisplayInfoImpl::PacketSize))
+            {
+                displayInfo.Unpack();
+
+                // If we got display info, try to match / create HMDDevice as well
+                // so that sensor settings give preference.
+                if (displayInfo.DistortionType & SensorDisplayInfoImpl::Mask_BaseFmt)
+                {
+                    SensorDeviceImpl::EnumerateHMDFromSensorDisplayInfo(displayInfo, visitor);
+                }
+            }
+        }
+    }
+    return this;
+}
+
+bool  HMDDevice::IsDisconnected() const
+{
+    OVR::HMDInfo info;
+    GetDeviceInfo(&info);
+    // if strlen(info.DisplayDeviceName) == 0 then
+    // this HMD is 'fake' (created using sensor).
+    return (strlen(info.DisplayDeviceName) == 0);
 }
 
 

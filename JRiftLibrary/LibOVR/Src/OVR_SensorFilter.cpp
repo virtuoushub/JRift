@@ -18,7 +18,7 @@ otherwise accompanies this software in either electronic or hard copy form.
 
 namespace OVR {
 
-Vector3f SensorFilter::Total() 
+Vector3f SensorFilter::Total() const
 {
     Vector3f total = Vector3f(0.0f, 0.0f, 0.0f);
     for (int i = 0; i < Size; i++)
@@ -26,7 +26,7 @@ Vector3f SensorFilter::Total()
     return total;
 }
 
-Vector3f SensorFilter::Mean() 
+Vector3f SensorFilter::Mean() const
 {
     Vector3f total = Vector3f(0.0f, 0.0f, 0.0f);
     for (int i = 0; i < Size; i++)
@@ -34,7 +34,7 @@ Vector3f SensorFilter::Mean()
     return total / (float) Size;
 }
 
-Vector3f SensorFilter::Median() 
+Vector3f SensorFilter::Median() const
 {
     int half_window = (int) Size / 2;
     float sortx[MaxFilterSize];
@@ -83,7 +83,7 @@ Vector3f SensorFilter::Median()
 }
 
 //  Only the diagonal of the covariance matrix.
-Vector3f SensorFilter::Variance() 
+Vector3f SensorFilter::Variance() const
 {
     Vector3f mean = Mean();
     Vector3f total = Vector3f(0.0f, 0.0f, 0.0f);
@@ -97,7 +97,7 @@ Vector3f SensorFilter::Variance()
 }
 
 // Should be a 3x3 matrix returned, but OVR_math.h doesn't have one
-Matrix4f SensorFilter::Covariance() 
+Matrix4f SensorFilter::Covariance() const
 {
     Vector3f mean = Mean();
     Matrix4f total = Matrix4f(0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0);
@@ -119,7 +119,7 @@ Matrix4f SensorFilter::Covariance()
     return total;
 }
 
-Vector3f SensorFilter::PearsonCoefficient() 
+Vector3f SensorFilter::PearsonCoefficient() const
 {
     Matrix4f cov = Covariance();
     Vector3f pearson = Vector3f();
@@ -131,20 +131,20 @@ Vector3f SensorFilter::PearsonCoefficient()
 }
 
 
-Vector3f SensorFilter::SavitzkyGolaySmooth8() 
+Vector3f SensorFilter::SavitzkyGolaySmooth8() const
 {
     OVR_ASSERT(Size >= 8);
     return GetPrev(0)*0.41667f +
             GetPrev(1)*0.33333f +
             GetPrev(2)*0.25f +
-            GetPrev(3)*0.1667f +
+            GetPrev(3)*0.16667f +
             GetPrev(4)*0.08333f -
             GetPrev(6)*0.08333f -
-            GetPrev(7)*0.1667f;
+            GetPrev(7)*0.16667f;
 }
 
 
-Vector3f SensorFilter::SavitzkyGolayDerivative4() 
+Vector3f SensorFilter::SavitzkyGolayDerivative4() const
 {
     OVR_ASSERT(Size >= 4);
     return GetPrev(0)*0.3f +
@@ -153,7 +153,7 @@ Vector3f SensorFilter::SavitzkyGolayDerivative4()
             GetPrev(3)*0.3f;
 }
 
-Vector3f SensorFilter::SavitzkyGolayDerivative5() 
+Vector3f SensorFilter::SavitzkyGolayDerivative5() const
 {
     OVR_ASSERT(Size >= 5);
     return GetPrev(0)*0.2f +
@@ -162,7 +162,7 @@ Vector3f SensorFilter::SavitzkyGolayDerivative5()
             GetPrev(4)*0.2f;
 }
 
-Vector3f SensorFilter::SavitzkyGolayDerivative12() 
+Vector3f SensorFilter::SavitzkyGolayDerivative12() const
 {
     OVR_ASSERT(Size >= 12);
     return GetPrev(0)*0.03846f +
@@ -179,7 +179,7 @@ Vector3f SensorFilter::SavitzkyGolayDerivative12()
             GetPrev(11)*0.03846f;
 }
 
-Vector3f SensorFilter::SavitzkyGolayDerivativeN(const int &n) 
+Vector3f SensorFilter::SavitzkyGolayDerivativeN(int n) const
 {    
     OVR_ASSERT(Size >= n);
     int m = (n-1)/2;

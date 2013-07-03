@@ -193,7 +193,7 @@ public:
     void        SetEyeToScreenDistanceScaleFactor(float esdsf) { HMD.EyeToScreenDistanceScaleFactor = esdsf; DirtyFlag = true; }
 
     // Interpupillary distance used for stereo, in meters. Default is 0.064m (64 mm).
-    void        SetIPD(float ipd)               { InterpupillaryDistance = ipd; DirtyFlag = true; }
+    void        SetIPD(float ipd)               { InterpupillaryDistance = ipd; IPDOverride = DirtyFlag = true; }
     float       GetIPD() const                  { return InterpupillaryDistance; }
 
     // Set full render target viewport; for HMD this includes both eyes. 
@@ -248,7 +248,7 @@ public:
     // Positive return value should be used for left eye, negative for right eye. 
     float      GetProjectionCenterOffset()      { updateIfDirty(); return ProjectionCenterOffset; }
 
-    // GetDistortionConfig isn't const because XCenterOffset may need to be recomputed.  
+    // GetDistortionConfig isn't const because XCenterOffset bay need to be recomputed.  
     const DistortionConfig& GetDistortionConfig() { updateIfDirty(); return Distortion; }
 
     // Returns DistortionScale factor by which input texture size is increased to make
@@ -260,7 +260,6 @@ public:
 
     // Returns full set of Stereo rendering parameters for the specified eye.
     const StereoEyeParams& GetEyeRenderParams(StereoEye eye);
-
    
 private:    
 
@@ -284,13 +283,14 @@ private:
     Viewport           FullView;                       // Entire window viewport.
 
     float              Area2DFov;                      // FOV range mapping to [-1, 1] 2D area.
-
+ 
 	float			   ClipNear;
 	float			   ClipFar;
- 
+
     // *** Computed State
  
     bool               DirtyFlag;   // Set when any if the modifiable state changed.
+    bool               IPDOverride; // True after SetIPD was called.    
     float              YFov;        // Vertical FOV.
     float              Aspect;      // Aspect ratio: (w/h)*AspectMultiplier.
     float              ProjectionCenterOffset;

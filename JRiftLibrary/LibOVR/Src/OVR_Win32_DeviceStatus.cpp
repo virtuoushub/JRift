@@ -81,7 +81,7 @@ bool DeviceStatus::Initialize()
 
 	// Register notification for additional HID messages.
     HIDDeviceManager* hidDeviceManager = new HIDDeviceManager(NULL);
-	GUID hidguid = hidDeviceManager->GetHIDGuid();
+	HidGuid = hidDeviceManager->GetHIDGuid();
     hidDeviceManager->Release();
 
 	DEV_BROADCAST_DEVICEINTERFACE notificationFilter;
@@ -89,11 +89,14 @@ bool DeviceStatus::Initialize()
 	ZeroMemory(&notificationFilter, sizeof(notificationFilter));
 	notificationFilter.dbcc_size = sizeof(DEV_BROADCAST_DEVICEINTERFACE);
 	notificationFilter.dbcc_devicetype = DBT_DEVTYP_DEVICEINTERFACE;
-	notificationFilter.dbcc_classguid = hidguid;
+	//notificationFilter.dbcc_classguid = hidguid;
 
-	hDeviceNotify = RegisterDeviceNotification(	hMessageWindow,
-												&notificationFilter,
-												DEVICE_NOTIFY_WINDOW_HANDLE);
+    // We need DEVICE_NOTIFY_ALL_INTERFACE_CLASSES to detect
+    // HDMI plug/unplug events.
+	hDeviceNotify = RegisterDeviceNotification(	
+        hMessageWindow,
+		&notificationFilter,
+		DEVICE_NOTIFY_ALL_INTERFACE_CLASSES|DEVICE_NOTIFY_WINDOW_HANDLE);
 
 	if (hDeviceNotify == NULL)
 	{
@@ -204,7 +207,6 @@ LRESULT CALLBACK DeviceStatus::WindowsMessageCallback(  HWND hwnd,
                                                         WPARAM wParam, 
                                                         LPARAM lParam)
 {
-
 	switch (message)
 	{
 	case WM_CREATE:
@@ -246,32 +248,43 @@ LRESULT CALLBACK DeviceStatus::WindowsMessageCallback(  HWND hwnd,
 			DeviceStatus* pDeviceStatus = (DeviceStatus*) userData;
 			String devicePath(hdr->dbcc_name);
 
-            // check if recovery timer is already running; stop it and 
-            // remove it, if so.
-            pDeviceStatus->FindAndCleanupRecoveryTimer(devicePath);
+            // check if HID device caused the event...
+            if (pDeviceStatus->HidGuid == hdr->dbcc_classguid)
+            {
+                // check if recovery timer is already running; stop it and 
+                // remove it, if so.
+                pDeviceStatus->FindAndCleanupRecoveryTimer(devicePath);
 
-			if (!pDeviceStatus->MessageCallback(loword, devicePath))
-			{
-				// hmmm.... unsuccessful
-				if (loword == DBT_DEVICEARRIVAL)
-				{
-                    // Windows sometimes may return errors ERROR_SHARING_VIOLATION and
-                    // ERROR_FILE_NOT_FOUND when trying to open an USB device via
-                    // CreateFile. Need to start a recovery timer that will try to 
-                    // re-open the device again.
-					OVR_DEBUG_LOG(("Adding failed, recovering through a timer..."));
-                    UINT_PTR tid = ::SetTimer(hwnd, ++pDeviceStatus->LastTimerId, 
-                                              USBRecoveryTimeInterval, NULL);
-                    RecoveryTimerDesc rtDesc;
-                    rtDesc.TimerId = tid;
-                    rtDesc.DevicePath = devicePath;
-                    rtDesc.NumAttempts= 0;
-                    pDeviceStatus->RecoveryTimers.PushBack(rtDesc);
-                    // wrap around the timer counter, avoid timerId == 0...
-                    if (pDeviceStatus->LastTimerId + 1 == 0)
-                        pDeviceStatus->LastTimerId = 0;
-				}
-			}
+                if (!pDeviceStatus->MessageCallback(loword, devicePath))
+                {
+                    // hmmm.... unsuccessful
+                    if (loword == DBT_DEVICEARRIVAL)
+                    {
+                        // Windows sometimes may return errors ERROR_SHARING_VIOLATION and
+                        // ERROR_FILE_NOT_FOUND when trying to open an USB device via
+                        // CreateFile. Need to start a recovery timer that will try to 
+                        // re-open the device again.
+                        OVR_DEBUG_LOG(("Adding failed, recovering through a timer..."));
+                        UINT_PTR tid = ::SetTimer(hwnd, ++pDeviceStatus->LastTimerId, 
+                            USBRecoveryTimeInterval, NULL);
+                        RecoveryTimerDesc rtDesc;
+                        rtDesc.TimerId = tid;
+                        rtDesc.DevicePath = devicePath;
+                        rtDesc.NumAttempts= 0;
+                        pDeviceStatus->RecoveryTimers.PushBack(rtDesc);
+                        // wrap around the timer counter, avoid timerId == 0...
+                        if (pDeviceStatus->LastTimerId + 1 == 0)
+                            pDeviceStatus->LastTimerId = 0;
+                    }
+                }
+            }
+            // Check if Oculus HDMI device was plugged/unplugged, preliminary
+            // filtering. (is there any way to get GUID? !AB)
+            //else if (strstr(devicePath.ToCStr(), "DISPLAY#"))
+            else if (strstr(devicePath.ToCStr(), "#OVR00"))
+            {
+                pDeviceStatus->MessageCallback(loword, devicePath);
+            }
 		}
 		return TRUE;	// Grant WM_DEVICECHANGE request.
 

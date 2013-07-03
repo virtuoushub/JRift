@@ -367,35 +367,11 @@ JNIEXPORT jint JNICALL Java_de_fruitfly_ovr_OculusRift__1updateAutomaticCalibrat
 		if (MagCal.IsCalibrated())
 		{
 			LOG("Mag Cal Calibrated");
-
-            if (FusionResult.IsMagReady())
-			{
-				LOG("Mag Cal Enabled");
-                FusionResult.SetYawCorrectionEnabled(true);														
-			}
-			else
-			{
-				LOG("Mag Cal NOT Enabled");
-			}
+            FusionResult.SetYawCorrectionEnabled(true);														
 		}
     }
 
 	return MagCal.NumberOfSamples();
-}
-
-JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1setCalibrationReference
-  (JNIEnv *, jobject)
-{
-	if (!Initialized) return;
-
-	LOG("Set Mag Reference");
-	FusionResult.SetMagReference();
-	
-    if (FusionResult.IsMagReady())
-	{
-		LOG("Enabling Yaw correction");
-	    FusionResult.SetYawCorrectionEnabled(true);
-	}
 }
 
 JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1setMagRefDistance
@@ -428,34 +404,34 @@ JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift__1isYawCorrectionInPr
 JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getMagCalData(
    JNIEnv *env, jobject)
 {
-	if (magCalibrationData_Class == NULL)
-	{
-		jclass localMagCalibrationDataClass = env->FindClass("de/fruitfly/ovr/MagCalibrationData");
-		magCalibrationData_Class = (jclass)env->NewGlobalRef(localMagCalibrationDataClass);
-		env->DeleteLocalRef(localMagCalibrationDataClass);
-	}
+	//if (magCalibrationData_Class == NULL)
+	//{
+	//	jclass localMagCalibrationDataClass = env->FindClass("de/fruitfly/ovr/MagCalibrationData");
+	//	magCalibrationData_Class = (jclass)env->NewGlobalRef(localMagCalibrationDataClass);
+	//	env->DeleteLocalRef(localMagCalibrationDataClass);
+	//}
 
-	if (magCalibrationData_constructor_MethodID == NULL)
-	{
-		magCalibrationData_constructor_MethodID = env->GetMethodID(magCalibrationData_Class, 
-			"<init>", "("
-			          "FFFF"
-					  "FFFFFFFFFFFFFFFF"
-					  ")V");
-	}
+	//if (magCalibrationData_constructor_MethodID == NULL)
+	//{
+	//	magCalibrationData_constructor_MethodID = env->GetMethodID(magCalibrationData_Class, 
+	//		"<init>", "("
+	//		          "FFFF"
+	//				  "FFFFFFFFFFFFFFFF"
+	//				  ")V");
+	//}
 
-	Quatf reference = FusionResult.GetMagReference(); // Custom SDK call
-	Matrix4f calibration = FusionResult.GetMagCalibration(); // Custom SDK call
+	//Quatf reference = FusionResult.GetMagReference(); // Custom SDK call
+	//Matrix4f calibration = FusionResult.GetMagCalibration(); // Custom SDK call
 
-	jobject magCalData = env->NewObject(magCalibrationData_Class, magCalibrationData_constructor_MethodID,
-		reference.x, reference.y, reference.z, reference.w,
-		calibration.M[0][0], calibration.M[0][1], calibration.M[0][2], calibration.M[0][3],
-		calibration.M[1][0], calibration.M[1][1], calibration.M[1][2], calibration.M[1][3],
-		calibration.M[2][0], calibration.M[2][1], calibration.M[2][2], calibration.M[2][3],
-		calibration.M[3][0], calibration.M[3][1], calibration.M[3][2], calibration.M[3][3]
-	);
+	//jobject magCalData = env->NewObject(magCalibrationData_Class, magCalibrationData_constructor_MethodID,
+	//	reference.x, reference.y, reference.z, reference.w,
+	//	calibration.M[0][0], calibration.M[0][1], calibration.M[0][2], calibration.M[0][3],
+	//	calibration.M[1][0], calibration.M[1][1], calibration.M[1][2], calibration.M[1][3],
+	//	calibration.M[2][0], calibration.M[2][1], calibration.M[2][2], calibration.M[2][3],
+	//	calibration.M[3][0], calibration.M[3][1], calibration.M[3][2], calibration.M[3][3]
+	//);
 
-	return magCalData;
+	return 0;
 }
 
 JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift__1setMagCalData(
@@ -466,18 +442,18 @@ JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift__1setMagCalData(
    jfloat calM20, jfloat calM21, jfloat calM22, jfloat calM23,
    jfloat calM30, jfloat calM31, jfloat calM32, jfloat calM33)
 {
-	Quatf reference(refX, refY, refZ, refW);
-	Matrix4f calibration(calM00, calM01, calM02, calM03,
-						 calM10, calM11, calM12, calM13,
-						 calM20, calM21, calM22, calM23,
-						 calM30, calM31, calM32, calM33);
+	//Quatf reference(refX, refY, refZ, refW);
+	//Matrix4f calibration(calM00, calM01, calM02, calM03,
+	//					 calM10, calM11, calM12, calM13,
+	//					 calM20, calM21, calM22, calM23,
+	//					 calM30, calM31, calM32, calM33);
 
-	FusionResult.ClearMagCalibration();
-	FusionResult.SetMagCalibration(calibration);  
-	FusionResult.SetMagReference(reference);
-	
-    if (FusionResult.IsMagReady())
-	    FusionResult.SetYawCorrectionEnabled(true);
+	//FusionResult.ClearMagCalibration();
+	//FusionResult.SetMagCalibration(calibration);  
+	//FusionResult.SetMagReference(reference);
+	//
+ //   if (FusionResult.IsMagReady())
+	//    FusionResult.SetYawCorrectionEnabled(true);
 
 	return true;
 }

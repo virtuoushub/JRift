@@ -24,8 +24,9 @@ namespace OVR { namespace Win32 {
 } // namespace Win32
 
 //-------------------------------------------------------------------------------------
-void SensorDeviceImpl::EnumerateHMDFromSensorDisplayInfo(   const SensorDisplayInfoImpl& displayInfo, 
-                                                            DeviceFactory::EnumerateVisitor& visitor)
+void SensorDeviceImpl::EnumerateHMDFromSensorDisplayInfo
+    (const SensorDisplayInfoImpl& displayInfo, 
+     DeviceFactory::EnumerateVisitor& visitor)
 {
 
     Win32::HMDDeviceCreateDesc hmdCreateDesc(&Win32::HMDDeviceFactory::Instance, String(), String());

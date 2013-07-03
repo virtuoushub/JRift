@@ -65,7 +65,7 @@ StereoConfig::StereoConfig(StereoMode mode, const Viewport& vp)
     : Mode(mode),
       InterpupillaryDistance(0.064f), AspectMultiplier(1.0f),
 	  ClipNear(0.01f), ClipFar(1000.0f),
-      FullView(vp), DirtyFlag(true),
+      FullView(vp), DirtyFlag(true), IPDOverride(false),
       YFov(0), Aspect(vp.w / float(vp.h)), ProjectionCenterOffset(0),
       OrthoPixelOffset(0)
 {
@@ -83,7 +83,6 @@ StereoConfig::StereoConfig(StereoMode mode, const Viewport& vp)
     HMD.VResolution            = 800;
     HMD.HScreenSize            = 0.14976f;
     HMD.VScreenSize            = HMD.HScreenSize / (1280.0f / 800.0f);
-	HMD.VScreenCenter          = HMD.VScreenSize * 0.5f;
     HMD.InterpupillaryDistance = InterpupillaryDistance;
     HMD.LensSeparationDistance = 0.0635f;
     HMD.EyeToScreenDistance    = 0.041f;
@@ -91,11 +90,6 @@ StereoConfig::StereoConfig(StereoMode mode, const Viewport& vp)
     HMD.DistortionK[1]         = Distortion.K[1];
     HMD.DistortionK[2]         = Distortion.K[2];
     HMD.DistortionK[3]         = 0;
-/*	HMD.ChromaAbCorrection[0]  = src.ChromaAbCorrection[0];
-    HMD.ChromaAbCorrection[1]  = src.ChromaAbCorrection[1];
-    HMD.ChromaAbCorrection[2]  = src.ChromaAbCorrection[2];
-    HMD.ChromaAbCorrection[3]  = src.ChromaAbCorrection[3];
-	*/
     Set2DAreaFov(DegreeToRad(85.0f));
 }
 
@@ -130,6 +124,9 @@ void StereoConfig::SetHMDInfo(const HMDInfo& hmd)
 
     Distortion.SetChromaticAberration(hmd.ChromaAbCorrection[0], hmd.ChromaAbCorrection[1],
                                       hmd.ChromaAbCorrection[2], hmd.ChromaAbCorrection[3]);
+
+    if (!IPDOverride)
+        InterpupillaryDistance = HMD.InterpupillaryDistance;
 
     DirtyFlag = true;
 }
@@ -206,7 +203,7 @@ void StereoConfig::updateComputedState()
     else
     {
         float percievedHalfRTDistance = (HMD.VScreenSize / 2) * Distortion.Scale;    
-		YFov = 2.0f * atan(percievedHalfRTDistance/(HMD.EyeToScreenDistance * HMD.EyeToScreenDistanceScaleFactor));
+        YFov = 2.0f * atan(percievedHalfRTDistance/HMD.EyeToScreenDistance);
     }
     
     updateProjectionOffset();
@@ -293,7 +290,7 @@ void StereoConfig::update2D()
 void StereoConfig::updateEyeParams()
 {
     // Projection matrix for the center eye, which the left/right matrices are based on.
-	Matrix4f projCenter = Matrix4f::PerspectiveRH(YFov, Aspect, ClipNear, ClipFar);
+    Matrix4f projCenter = Matrix4f::PerspectiveRH(YFov, Aspect, 0.01f, 1000.0f);
    
     switch(Mode)
     {

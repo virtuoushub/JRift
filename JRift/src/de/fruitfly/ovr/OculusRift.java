@@ -309,7 +309,6 @@ public class OculusRift implements IOculusRift {
     protected native void _beginAutomaticCalibration();
     protected native int _updateAutomaticCalibration();
     protected native boolean _isCalibrated();
-    protected native void _setCalibrationReference();
     protected native void _setMagRefDistance(float magRefDistance);
     protected native MagCalibrationData _getMagCalibrationData();
     protected native boolean _setMagCalibrationData(float refX, float refY, float refZ, float refW,

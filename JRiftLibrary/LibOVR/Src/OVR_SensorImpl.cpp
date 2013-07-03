@@ -25,12 +25,15 @@ namespace OVR {
 // ***** Oculus Sensor-specific packet data structures
 
 enum {    
-    Sensor_VendorId  = 0x2833,
+    Sensor_VendorId  = Oculus_VendorId,
     Sensor_ProductId = 0x0001,
 
     // ST's VID used originally; should be removed in the future
     Sensor_OldVendorId  = 0x0483,
-    Sensor_OldProductId = 0x5750
+    Sensor_OldProductId = 0x5750,
+
+    Sensor_DefaultReportRate = 500, // Hz
+    Sensor_MaxReportRate     = 1000 // Hz
 };
 
 // Reported data is little-endian now
@@ -392,8 +395,7 @@ void SensorDeviceFactory::EnumerateDevices(EnumerateVisitor& visitor)
 
         virtual bool MatchVendorProduct(UInt16 vendorId, UInt16 productId)
         {
-            return ((vendorId == Sensor_VendorId) && (productId == Sensor_ProductId)) ||
-                   ((vendorId == Sensor_OldVendorId) && (productId == Sensor_OldProductId));
+            return pFactory->MatchVendorProduct(vendorId, productId);
         }
 
         virtual void Visit(HIDDevice& device, const HIDDeviceDesc& desc)
@@ -429,6 +431,21 @@ void SensorDeviceFactory::EnumerateDevices(EnumerateVisitor& visitor)
     //double totalSeconds = Timer::GetProfileSeconds() - start; 
 }
 
+bool SensorDeviceFactory::MatchVendorProduct(UInt16 vendorId, UInt16 productId) const
+{
+    return ((vendorId == Sensor_VendorId) && (productId == Sensor_ProductId)) ||
+        ((vendorId == Sensor_OldVendorId) && (productId == Sensor_OldProductId));
+}
+
+bool SensorDeviceFactory::DetectHIDDevice(DeviceManager* pdevMgr, const HIDDeviceDesc& desc)
+{
+    if (MatchVendorProduct(desc.VendorId, desc.ProductId))
+    {
+        SensorDeviceCreateDesc createDesc(this, desc);
+        return pdevMgr->AddDevice_NeedsLock(createDesc).GetPtr() != NULL;
+    }
+    return false;
+}
 
 //-------------------------------------------------------------------------------------
 // ***** SensorDeviceCreateDesc
@@ -523,6 +540,7 @@ void SensorDeviceImpl::openDevice()
 
     // Read/Apply sensor config.
     setCoordinateFrame(Coordinates);
+    setReportRate(Sensor_DefaultReportRate);
 
     // Set Keep-alive at 10 seconds.
     SensorKeepAliveImpl skeepAlive(10 * 1000);
@@ -658,6 +676,47 @@ Void SensorDeviceImpl::setCoordinateFrame(CoordinateFrame coordframe)
     {
         HWCoordinates = Coord_HMD;
     }
+    return 0;
+}
+
+void SensorDeviceImpl::SetReportRate(unsigned rateHz)
+{ 
+    // Push call with wait.
+    GetManagerImpl()->GetThreadQueue()->
+        PushCall(this, &SensorDeviceImpl::setReportRate, rateHz, true);
+}
+
+unsigned SensorDeviceImpl::GetReportRate() const
+{
+    // Read the original configuration
+    SensorConfigImpl scfg;
+    if (GetInternalDevice()->GetFeatureReport(scfg.Buffer, SensorConfigImpl::PacketSize))
+    {
+        scfg.Unpack();
+        return Sensor_MaxReportRate / (scfg.PacketInterval + 1);
+    }
+    return 0; // error
+}
+
+Void SensorDeviceImpl::setReportRate(unsigned rateHz)
+{
+    // Read the original configuration
+    SensorConfigImpl scfg;
+    if (GetInternalDevice()->GetFeatureReport(scfg.Buffer, SensorConfigImpl::PacketSize))
+    {
+        scfg.Unpack();
+    }
+
+    if (rateHz > Sensor_MaxReportRate)
+        rateHz = Sensor_MaxReportRate;
+    else if (rateHz == 0)
+        rateHz = Sensor_DefaultReportRate;
+
+    scfg.PacketInterval = UInt16((Sensor_MaxReportRate / rateHz) - 1);
+
+    scfg.Pack();
+
+    GetInternalDevice()->SetFeatureReport(scfg.Buffer, SensorConfigImpl::PacketSize);
     return 0;
 }
 

@@ -114,6 +114,16 @@ bool HIDDeviceManager::Enumerate(HIDEnumerateVisitor* enumVisitor)
         if (!pathWrapper.InitPathFromInterfaceData(hdevInfoSet, &interfaceData))
             continue;
 
+        // Look for the device to check if it is already opened.
+        Ptr<DeviceCreateDesc> existingDevice = Manager->FindDevice(pathWrapper.GetPath());
+        // if device exists and it is opened then most likely the CreateHIDFile
+        // will fail; therefore, we just set Enumerated to 'true' and continue.
+        if (existingDevice && existingDevice->pDevice)
+        {
+            existingDevice->Enumerated = true;
+            continue;
+        }
+
         // open device in non-exclusive mode for detection...
         HANDLE hidDev = CreateHIDFile(pathWrapper.GetPath(), false);
         if (hidDev == INVALID_HANDLE_VALUE)
@@ -139,6 +149,20 @@ bool HIDDeviceManager::Enumerate(HIDEnumerateVisitor* enumVisitor)
     return true;
 }
 
+bool HIDDeviceManager::GetHIDDeviceDesc(const String& path, HIDDeviceDesc* pdevDesc) const
+{
+    // open device in non-exclusive mode for detection...
+    HANDLE hidDev = CreateHIDFile(path, false);
+    if (hidDev == INVALID_HANDLE_VALUE)
+        return false;
+
+    pdevDesc->Path = path;
+    getFullDesc(hidDev, pdevDesc);
+
+    ::CloseHandle(hidDev);
+    return true;
+}
+
 OVR::HIDDevice* HIDDeviceManager::Open(const String& path)
 {
 
@@ -153,7 +177,7 @@ OVR::HIDDevice* HIDDeviceManager::Open(const String& path)
     return NULL;
 }
 
-bool HIDDeviceManager::getFullDesc(HANDLE hidDev, HIDDeviceDesc* desc)
+bool HIDDeviceManager::getFullDesc(HANDLE hidDev, HIDDeviceDesc* desc) const
 {
 
     if (!initVendorProductVersion(hidDev, desc))
@@ -171,7 +195,7 @@ bool HIDDeviceManager::getFullDesc(HANDLE hidDev, HIDDeviceDesc* desc)
     return true;
 }
 
-bool HIDDeviceManager::initVendorProductVersion(HANDLE hidDev, HIDDeviceDesc* desc)
+bool HIDDeviceManager::initVendorProductVersion(HANDLE hidDev, HIDDeviceDesc* desc) const
 {
     HIDD_ATTRIBUTES attr;
     attr.Size = sizeof(attr);
@@ -183,7 +207,7 @@ bool HIDDeviceManager::initVendorProductVersion(HANDLE hidDev, HIDDeviceDesc* de
     return true;
 }
 
-bool HIDDeviceManager::initUsage(HANDLE hidDev, HIDDeviceDesc* desc)
+bool HIDDeviceManager::initUsage(HANDLE hidDev, HIDDeviceDesc* desc) const
 {
     bool                 result = false;
     HIDP_CAPS            caps;
@@ -202,7 +226,7 @@ bool HIDDeviceManager::initUsage(HANDLE hidDev, HIDDeviceDesc* desc)
     return result;
 }
 
-void HIDDeviceManager::initStrings(HANDLE hidDev, HIDDeviceDesc* desc)
+void HIDDeviceManager::initStrings(HANDLE hidDev, HIDDeviceDesc* desc) const
 {
     // Documentation mentions 126 as being the max for USB.
     wchar_t strBuffer[196];

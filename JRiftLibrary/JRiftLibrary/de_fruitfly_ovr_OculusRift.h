@@ -54,9 +54,9 @@ JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1beginAutomaticCalibrati
 /*
  * Class:     de_fruitfly_ovr_OculusRift
  * Method:    updateAutomaticCalibration
- * Signature: ()V
+ * Signature: ()I
  */
-JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1updateAutomaticCalibration
+JNIEXPORT jint JNICALL Java_de_fruitfly_ovr_OculusRift__1updateAutomaticCalibration
   (JNIEnv *, jobject);
 
 /*

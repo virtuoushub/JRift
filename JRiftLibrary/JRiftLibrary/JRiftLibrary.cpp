@@ -353,10 +353,12 @@ JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift__1isCalibrated
 	return MagCal.IsCalibrated();
 }
 
-JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1updateAutomaticCalibration
+JNIEXPORT jint JNICALL Java_de_fruitfly_ovr_OculusRift__1updateAutomaticCalibration
   (JNIEnv *, jobject)
 {
-	if (!Initialized) return;
+	jint SampleCount = 0;
+
+	if (!Initialized) return SampleCount;
 
     if (MagCal.IsAutoCalibrating()) 
     {
@@ -377,6 +379,8 @@ JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1updateAutomaticCalibrat
 			}
 		}
     }
+
+	return MagCal.NumberOfSamples();
 }
 
 JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1setCalibrationReference

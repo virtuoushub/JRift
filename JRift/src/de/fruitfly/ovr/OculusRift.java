@@ -307,7 +307,7 @@ public class OculusRift implements IOculusRift {
     protected native void _reset(); // Resets sensor data, including Yaw
 
     protected native void _beginAutomaticCalibration();
-    protected native void _updateAutomaticCalibration();
+    protected native int _updateAutomaticCalibration();
     protected native boolean _isCalibrated();
     protected native void _setCalibrationReference();
     protected native void _setMagRefDistance(float magRefDistance);

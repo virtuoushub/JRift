@@ -9,9 +9,13 @@ using namespace OVR;
 Ptr<DeviceManager>	pManager;
 Ptr<HMDDevice>		pHMD;
 Ptr<SensorDevice>	pSensor;
-SensorFusion		FusionResult;
-Util::MagCalibration      MagCal;
+Ptr<Profile>        pUserProfile;
+
+SensorFusion		 FusionResult;
+Util::MagCalibration MagCal;
+
 HMDInfo			Info;
+
 bool			InfoLoaded;
 bool			Initialized = false;
 bool            LogInfo = false;
@@ -24,6 +28,8 @@ static jclass eyeRenderParams_Class;
 static jmethodID eyeRenderParams_constructor_MethodID;
 static jclass magCalibrationData_Class;
 static jmethodID magCalibrationData_constructor_MethodID;
+static jclass UserProfileData_Class;
+static jmethodID UserProfileData_constructor_MethodID;
 
 void LOG(std::string s)
 {
@@ -45,6 +51,7 @@ JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift__1initSubsystem(JNIEn
 	pHMD = *pManager->EnumerateDevices<HMDDevice>().CreateDevice();
 	if (pHMD) {
 		printf("Oculus Rift Device Interface created.\n");
+		pUserProfile = pHMD->GetProfile();
 		InfoLoaded = pHMD->GetDeviceInfo(&Info);
 		pSensor = *pHMD->GetSensor();
 		FusionResult.AttachToSensor(pSensor);
@@ -456,4 +463,59 @@ JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift__1setMagCalData(
 	//    FusionResult.SetYawCorrectionEnabled(true);
 
 	return true;
+}
+
+JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1updateUserProfileData(
+   JNIEnv *env, jobject)
+{
+	if (!Initialized) return;
+
+	pUserProfile = pHMD->GetProfile(); // Get latest profile
+	pHMD->GetDeviceInfo(&Info); // Get any changes to the HMDInfo based on profile settings
+}
+
+JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getUserProfileData(
+   JNIEnv *env, jobject)
+{
+	if (!Initialized) return 0;
+
+	if (!pUserProfile) return 0;
+
+	if (UserProfileData_Class == NULL)
+	{
+		jclass localUserProfileData_Class = env->FindClass("de/fruitfly/ovr/UserProfileData");
+		UserProfileData_Class = (jclass)env->NewGlobalRef(localUserProfileData_Class);
+		env->DeleteLocalRef(localUserProfileData_Class);
+	}
+
+	if (UserProfileData_constructor_MethodID == NULL)
+	{
+		UserProfileData_constructor_MethodID = env->GetMethodID(UserProfileData_Class, 
+			"<init>", "("
+			          "F"
+					  "F"
+					  "F"
+					  "I"
+					  "Ljava/lang/String;"
+					  ")V");
+	}
+
+	float playerHeight = pUserProfile->GetPlayerHeight();
+	float eyeHeight = pUserProfile->GetEyeHeight();
+	float ipd = pUserProfile->GetIPD();
+	int gender = pUserProfile->GetGender();
+	std::string name = pUserProfile->Name;
+	jstring str = env->NewStringUTF(name.c_str());
+
+	jobject profileData = env->NewObject(UserProfileData_Class, UserProfileData_constructor_MethodID,
+		playerHeight,
+		eyeHeight,
+		ipd,
+		gender,
+		str
+	);
+
+    env->DeleteLocalRef(str);
+
+	return 0;
 }

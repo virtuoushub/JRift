@@ -301,6 +301,22 @@ public class OculusRift implements IOculusRift {
         return _isYawCorrectionInProgress();
     }
 
+    public void updateUserProfile()
+    {
+        if (!isInitialized())
+            return;
+
+        _updateUserProfileData();
+    }
+
+    public UserProfileData getUserProfile()
+    {
+        if (!isInitialized())
+            return null;
+
+        return _getUserProfileData();
+    }
+
 	protected native boolean _initSubsystem();
     protected native void _pollSubsystem();
     protected native void _destroySubsystem();
@@ -351,6 +367,9 @@ public class OculusRift implements IOculusRift {
                                                          float eyeToScreenDistanceScaleFactor,
                                                          float distortionFitX,
                                                          float distortionFitY);
+
+    protected native void _updateUserProfileData();
+    protected native UserProfileData _getUserProfileData();
 
 	public static void LoadLibrary( File nativeDir )
 	{

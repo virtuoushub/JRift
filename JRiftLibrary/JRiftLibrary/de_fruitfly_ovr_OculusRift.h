@@ -288,6 +288,22 @@ JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift__1setMagCalData(
    jfloat calM20, jfloat calM21, jfloat calM22, jfloat calM23,
    jfloat calM30, jfloat calM31, jfloat calM32, jfloat calM33);
 
+/*
+ * Class:     de_fruitfly_ovr_OculusRift
+ * Method:    _updateUserProfileData
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1updateUserProfileData(
+   JNIEnv *env, jobject);
+
+/*
+ * Class:     de_fruitfly_ovr_OculusRift
+ * Method:    _getUserProfileData
+ * Signature: L de/fruitfly/ovr/UserProfileData
+ */
+JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getUserProfileData(
+   JNIEnv *env, jobject);
+
 #ifdef __cplusplus
 }
 #endif

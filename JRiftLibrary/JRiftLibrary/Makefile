@@ -4,26 +4,49 @@ OCULUS_SDK:=..
 
 ifeq ($(UNAME), Darwin)
 
-all: libJRiftLibrary64.jnilib
-
+all: libJRiftLibrary64.jnilib libJRiftLibrary.jnilib
 
 JRiftLibrary.o: JRiftLibrary.cpp
+	g++ \
+	-fno-rtti \
+	-m32 \
+	"-I/System/Library/Frameworks/JavaVM.framework/Versions/Current/Headers" \
+	"-I/Developer/SDKs/MacOSX10.6.sdk/System/Library/Frameworks/JavaVM.framework/Versions/A/Headers" \
+	"-I${OCULUS_SDK}/LibOVR/Include" \
+	-c JRiftLibrary.cpp \
+	-o $@
+
+JRiftLibrary64.o: JRiftLibrary.cpp
 	g++ \
 	-fno-rtti \
 	"-I/System/Library/Frameworks/JavaVM.framework/Versions/Current/Headers" \
 	"-I/Developer/SDKs/MacOSX10.6.sdk/System/Library/Frameworks/JavaVM.framework/Versions/A/Headers" \
 	"-I${OCULUS_SDK}/LibOVR/Include" \
-	-c JRiftLibrary.cpp
+	-c JRiftLibrary.cpp \
+	-o $@
 
-libJRiftLibrary64.jnilib: JRiftLibrary.o
+libJRiftLibrary.jnilib: JRiftLibrary.o
+	g++ \
+		-dynamiclib \
+		-fno-rtti \
+		-m32 \
+		-framework ApplicationServices \
+		-framework IOKit \
+		-L ${OCULUS_SDK}/LibOVR/Lib/OSX/Release/i386/ \
+		-o $@ \
+		JRiftLibrary.o \
+		-lovr
+
+libJRiftLibrary64.jnilib: JRiftLibrary64.o
 	g++ \
 		-dynamiclib \
 		-fno-rtti \
 		-framework ApplicationServices \
 		-framework IOKit \
+		-L ${OCULUS_SDK}/LibOVR/Lib/OSX/Release/x86_64/ \
 		-o $@ \
-		JRiftLibrary.o \
-		${OCULUS_SDK}/LibOVR/Src/libOVR.a
+		JRiftLibrary64.o \
+		-lovr
 
 else
 ifeq ($(UNAME), Linux)
@@ -51,28 +74,32 @@ JRiftLibrary64.o: JRiftLibrary.cpp
 	-c $< \
 	-o $@
 
-libJRiftLibrary.so: JRiftLibrary.o ${OCULUS_SDK}/LibOVR/Src/libOVR32.a
+libJRiftLibrary.so: JRiftLibrary.o ${OCULUS_SDK}/LibOVR/Linux/Release/i386/libOVR.a 
 	g++ \
 		-m32 \
 		-fno-rtti \
 		-shared \
 		-o $@ \
 		"-I/usr/lib/jvm/java-6-openjdk-amd64/include/" \
+		-L ${OCULUS_SDK}/LibOVR/Lib/Linux/Release/i386/ \
 		$< \
-		${OCULUS_SDK}/LibOVR/Src/libOVR32.a
+		-lovr
 
-libJRiftLibrary64.so: JRiftLibrary64.o ${OCULUS_SDK}/LibOVR/Src/libOVR.a
+libJRiftLibrary64.so: JRiftLibrary64.o ${OCULUS_SDK}/LibOVR/Lib/Linux/Release/x86_64/libOVR.a 
 	g++ \
 		-fno-rtti \
 		-shared \
 		-o $@ \
 		"-I/usr/lib/jvm/java-6-openjdk-amd64/include/" \
+		-L ${OCULUS_SDK}/LibOVR/Lib/Linux/Release/x86_64/ \
 		$< \
-		${OCULUS_SDK}/LibOVR/Src/libOVR.a
+		-lovr
 
-${OCULUS_SDK}/LibOVR/Src/libOVR.a ${OCULUS_SDK}/LibOVR/Src/libOVR32.a : 
-	make -C ${OCULUS_SDK}/LibOVR/Src
-.PHONY: ${OCULUS_SDK}/LibOVR/Src/libOVR.a ${OCULUS_SDK}/LibOVR/Src/libOVR32.a
+${OCULUS_SDK}/LibOVR/Lib/Linux/Release/x86_64/libOVR.a:
+	make -C ${OCULUS_SDK}/LibOVR
+${OCULUS_SDK}/LibOVR/Linux/Release/i386/libOVR.a : 
+	linux32 make -C ${OCULUS_SDK}/LibOVR
+.PHONY: ${OCULUS_SDK}/LibOVR/Lib/Linux/Release/x86_64/libOVR.a ${OCULUS_SDK}/LibOVR/Linux/Release/i386/libOVR.a
 endif
 endif
 

@@ -17,7 +17,7 @@ install-bin: bin
 	cd JRiftLibrary/Release/; zip ../../JRift.jar *dll
 
 zipmerge: install-bin
-	zipmerge JRift.jar JRift/target/ovr-1.0-SNAPSHOT.jar 
+	zipmerge JRift.jar JRift/target/ovr-*.jar 
 install-java:
 	cp JRift/target/ovr-1.0-SNAPSHOT.jar JRift.jar
 

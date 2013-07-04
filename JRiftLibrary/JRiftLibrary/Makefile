@@ -4,27 +4,49 @@ OCULUS_SDK:=..
 
 ifeq ($(UNAME), Darwin)
 
-all: libJRiftLibrary64.jnilib
-
+all: libJRiftLibrary64.jnilib libJRiftLibrary.jnilib
 
 JRiftLibrary.o: JRiftLibrary.cpp
+	g++ \
+	-fno-rtti \
+	-m32 \
+	"-I/System/Library/Frameworks/JavaVM.framework/Versions/Current/Headers" \
+	"-I/Developer/SDKs/MacOSX10.6.sdk/System/Library/Frameworks/JavaVM.framework/Versions/A/Headers" \
+	"-I${OCULUS_SDK}/LibOVR/Include" \
+	-c JRiftLibrary.cpp \
+	-o $@
+
+JRiftLibrary64.o: JRiftLibrary.cpp
 	g++ \
 	-fno-rtti \
 	"-I/System/Library/Frameworks/JavaVM.framework/Versions/Current/Headers" \
 	"-I/Developer/SDKs/MacOSX10.6.sdk/System/Library/Frameworks/JavaVM.framework/Versions/A/Headers" \
 	"-I${OCULUS_SDK}/LibOVR/Include" \
-	-c JRiftLibrary.cpp
+	-c JRiftLibrary.cpp \
+	-o $@
 
-libJRiftLibrary64.jnilib: JRiftLibrary.o
+libJRiftLibrary.jnilib: JRiftLibrary.o
+	g++ \
+		-dynamiclib \
+		-fno-rtti \
+		-m32 \
+		-framework ApplicationServices \
+		-framework IOKit \
+		-L ${OCULUS_SDK}/LibOVR/Lib/OSX/Release/i386/ \
+		-o $@ \
+		JRiftLibrary.o \
+		-lovr
+
+libJRiftLibrary64.jnilib: JRiftLibrary64.o
 	g++ \
 		-dynamiclib \
 		-fno-rtti \
 		-framework ApplicationServices \
 		-framework IOKit \
-		-L ${OCULUS_SDK}/LibOVR/Lib/Release/Mac/x86_64/
+		-L ${OCULUS_SDK}/LibOVR/Lib/OSX/Release/x86_64/ \
 		-o $@ \
-		JRiftLibrary.o \
-		-lOVR
+		JRiftLibrary64.o \
+		-lovr
 
 else
 ifeq ($(UNAME), Linux)

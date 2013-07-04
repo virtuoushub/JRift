@@ -29,6 +29,26 @@
 #
 #############################################################################
 
+UNAME:= $(shell uname)
+
+ifeq ($(shell uname), Darwin)
+
+LIBDIR:=OSX
+
+ADDOBJS :=  \
+		$(OBJPATH)/OVR_OSX_HIDDevice.o \
+		$(OBJPATH)/OVR_OSX_SensorDevice.o \
+		$(OBJPATH)/OVR_OSX_DeviceManager.o \
+		$(OBJPATH)/OVR_OSX_HMDDevice.o
+else
+
+LIBDIR=Linux
+ADDOBJS :=  \
+		$(OBJPATH)/OVR_Linux_HIDDevice.o \
+		$(OBJPATH)/OVR_Linux_SensorDevice.o \
+		$(OBJPATH)/OVR_Linux_DeviceManager.o \
+		$(OBJPATH)/OVR_Linux_HMDDevice.o
+endif
 
 ####### Compiler, tools and options
 
@@ -54,17 +74,18 @@ ifeq ($(shell uname -m),i686)
 SYSARCH       = i386
 CXXFLAGS += -m32
 endif
+SYSARCH       = i386
+CXXFLAGS += -m32
 ####### Paths
 
 LIBOVRPATH    = .
 3RDPARTYPATH  = ../3rdParty
 INCPATH       = -I. -I.. -I$(LIBOVRPATH)/Include -I$(LIBOVRPATH)/Src
-OBJPATH       = ./Obj/Linux/$(RELEASETYPE)/$(SYSARCH)
-CXXBUILD      = $(CXX) -c $(CXXFLAGS) $(INCPATH) -o $(OBJPATH)/
+OBJPATH       = ./Obj/$(LIBDIR)/$(RELEASETYPE)/$(SYSARCH)
 
 ####### Files
 
-TARGET        = ./Lib/Linux/$(RELEASETYPE)/$(SYSARCH)/libovr.a
+TARGET        = ./Lib/$(LIBDIR)/$(RELEASETYPE)/$(SYSARCH)/libovr.a
 
 OBJECTS       = $(OBJPATH)/OVR_DeviceHandle.o \
 		$(OBJPATH)/OVR_DeviceImpl.o \
@@ -95,12 +116,26 @@ OBJECTS       = $(OBJPATH)/OVR_DeviceHandle.o \
 		$(OBJPATH)/Util_MagCalibration.o \
 		$(OBJPATH)/Util_Render_Stereo.o \
 		$(OBJPATH)/OVR_ThreadsPthread.o \
+		$(OBJPATH)/tinyxml2.o
+
+ifeq ($(shell uname), Darwin)
+
+LIBDIR:=OSX
+
+OBJECTS+=  \
+		$(OBJPATH)/OVR_OSX_HIDDevice.o \
+		$(OBJPATH)/OVR_OSX_SensorDevice.o \
+		$(OBJPATH)/OVR_OSX_DeviceManager.o \
+		$(OBJPATH)/OVR_OSX_HMDDevice.o
+else
+
+LIBDIR=Linux
+OBJECTS+=  \
 		$(OBJPATH)/OVR_Linux_HIDDevice.o \
 		$(OBJPATH)/OVR_Linux_SensorDevice.o \
 		$(OBJPATH)/OVR_Linux_DeviceManager.o \
-		$(OBJPATH)/OVR_Linux_HMDDevice.o \
-		$(OBJPATH)/tinyxml2.o
-
+		$(OBJPATH)/OVR_Linux_HMDDevice.o
+endif
 ####### Rules
 
 all: $(OBJPATH)   $(TARGET)
@@ -112,107 +147,15 @@ $(TARGET):  $(OBJECTS)
 $(OBJPATH):
 	mkdir -p $(OBJPATH)
 
-$(OBJPATH)/OVR_DeviceHandle.o: $(LIBOVRPATH)/Src/OVR_DeviceHandle.cpp 
-	$(CXXBUILD)OVR_DeviceHandle.o $(LIBOVRPATH)/Src/OVR_DeviceHandle.cpp
-
-$(OBJPATH)/OVR_DeviceImpl.o: $(LIBOVRPATH)/Src/OVR_DeviceImpl.cpp 
-	$(CXXBUILD)OVR_DeviceImpl.o $(LIBOVRPATH)/Src/OVR_DeviceImpl.cpp
-
-$(OBJPATH)/OVR_JSON.o: $(LIBOVRPATH)/Src/OVR_JSON.cpp 
-	$(CXXBUILD)OVR_JSON.o $(LIBOVRPATH)/Src/OVR_JSON.cpp
-
-$(OBJPATH)/OVR_LatencyTestImpl.o: $(LIBOVRPATH)/Src/OVR_LatencyTestImpl.cpp 
-	$(CXXBUILD)OVR_LatencyTestImpl.o $(LIBOVRPATH)/Src/OVR_LatencyTestImpl.cpp
-
-$(OBJPATH)/OVR_Profile.o: $(LIBOVRPATH)/Src/OVR_Profile.cpp 
-	$(CXXBUILD)OVR_Profile.o $(LIBOVRPATH)/Src/OVR_Profile.cpp
-
-$(OBJPATH)/OVR_SensorFilter.o: $(LIBOVRPATH)/Src/OVR_SensorFilter.cpp 
-	$(CXXBUILD)OVR_SensorFilter.o $(LIBOVRPATH)/Src/OVR_SensorFilter.cpp
-
-$(OBJPATH)/OVR_SensorFusion.o: $(LIBOVRPATH)/Src/OVR_SensorFusion.cpp 
-	$(CXXBUILD)OVR_SensorFusion.o $(LIBOVRPATH)/Src/OVR_SensorFusion.cpp
-
-$(OBJPATH)/OVR_SensorImpl.o: $(LIBOVRPATH)/Src/OVR_SensorImpl.cpp 
-	$(CXXBUILD)OVR_SensorImpl.o $(LIBOVRPATH)/Src/OVR_SensorImpl.cpp
-
-$(OBJPATH)/OVR_ThreadCommandQueue.o: $(LIBOVRPATH)/Src/OVR_ThreadCommandQueue.cpp 
-	$(CXXBUILD)OVR_ThreadCommandQueue.o $(LIBOVRPATH)/Src/OVR_ThreadCommandQueue.cpp
-
-$(OBJPATH)/OVR_Alg.o: $(LIBOVRPATH)/Src/Kernel/OVR_Alg.cpp 
-	$(CXXBUILD)OVR_Alg.o $(LIBOVRPATH)/Src/Kernel/OVR_Alg.cpp
-
-$(OBJPATH)/OVR_Allocator.o: $(LIBOVRPATH)/Src/Kernel/OVR_Allocator.cpp 
-	$(CXXBUILD)OVR_Allocator.o $(LIBOVRPATH)/Src/Kernel/OVR_Allocator.cpp
-
-$(OBJPATH)/OVR_Atomic.o: $(LIBOVRPATH)/Src/Kernel/OVR_Atomic.cpp 
-	$(CXXBUILD)OVR_Atomic.o $(LIBOVRPATH)/Src/Kernel/OVR_Atomic.cpp
-
-$(OBJPATH)/OVR_File.o: $(LIBOVRPATH)/Src/Kernel/OVR_File.cpp 
-	$(CXXBUILD)OVR_File.o $(LIBOVRPATH)/Src/Kernel/OVR_File.cpp
-
-$(OBJPATH)/OVR_FileFILE.o: $(LIBOVRPATH)/Src/Kernel/OVR_FileFILE.cpp 
-	$(CXXBUILD)OVR_FileFILE.o $(LIBOVRPATH)/Src/Kernel/OVR_FileFILE.cpp
-
-$(OBJPATH)/OVR_Log.o: $(LIBOVRPATH)/Src/Kernel/OVR_Log.cpp 
-	$(CXXBUILD)OVR_Log.o $(LIBOVRPATH)/Src/Kernel/OVR_Log.cpp
-
-$(OBJPATH)/OVR_Math.o: $(LIBOVRPATH)/Src/Kernel/OVR_Math.cpp 
-	$(CXXBUILD)OVR_Math.o $(LIBOVRPATH)/Src/Kernel/OVR_Math.cpp
-
-$(OBJPATH)/OVR_RefCount.o: $(LIBOVRPATH)/Src/Kernel/OVR_RefCount.cpp 
-	$(CXXBUILD)OVR_RefCount.o $(LIBOVRPATH)/Src/Kernel/OVR_RefCount.cpp
-
-$(OBJPATH)/OVR_Std.o: $(LIBOVRPATH)/Src/Kernel/OVR_Std.cpp 
-	$(CXXBUILD)OVR_Std.o $(LIBOVRPATH)/Src/Kernel/OVR_Std.cpp
-
-$(OBJPATH)/OVR_String.o: $(LIBOVRPATH)/Src/Kernel/OVR_String.cpp 
-	$(CXXBUILD)OVR_String.o $(LIBOVRPATH)/Src/Kernel/OVR_String.cpp
-
-$(OBJPATH)/OVR_String_FormatUtil.o: $(LIBOVRPATH)/Src/Kernel/OVR_String_FormatUtil.cpp 
-	$(CXXBUILD)OVR_String_FormatUtil.o $(LIBOVRPATH)/Src/Kernel/OVR_String_FormatUtil.cpp
-
-$(OBJPATH)/OVR_String_PathUtil.o: $(LIBOVRPATH)/Src/Kernel/OVR_String_PathUtil.cpp 
-	$(CXXBUILD)OVR_String_PathUtil.o $(LIBOVRPATH)/Src/Kernel/OVR_String_PathUtil.cpp
-
-$(OBJPATH)/OVR_SysFile.o: $(LIBOVRPATH)/Src/Kernel/OVR_SysFile.cpp 
-	$(CXXBUILD)OVR_SysFile.o $(LIBOVRPATH)/Src/Kernel/OVR_SysFile.cpp
-
-$(OBJPATH)/OVR_System.o: $(LIBOVRPATH)/Src/Kernel/OVR_System.cpp 
-	$(CXXBUILD)OVR_System.o $(LIBOVRPATH)/Src/Kernel/OVR_System.cpp
-
-$(OBJPATH)/OVR_Timer.o: $(LIBOVRPATH)/Src/Kernel/OVR_Timer.cpp 
-	$(CXXBUILD)OVR_Timer.o $(LIBOVRPATH)/Src/Kernel/OVR_Timer.cpp
-
-$(OBJPATH)/OVR_UTF8Util.o: $(LIBOVRPATH)/Src/Kernel/OVR_UTF8Util.cpp 
-	$(CXXBUILD)OVR_UTF8Util.o $(LIBOVRPATH)/Src/Kernel/OVR_UTF8Util.cpp
-
-$(OBJPATH)/Util_LatencyTest.o: $(LIBOVRPATH)/Src/Util/Util_LatencyTest.cpp 
-	$(CXXBUILD)Util_LatencyTest.o $(LIBOVRPATH)/Src/Util/Util_LatencyTest.cpp
-
-$(OBJPATH)/Util_MagCalibration.o: $(LIBOVRPATH)/Src/Util/Util_MagCalibration.cpp 
-	$(CXXBUILD)Util_MagCalibration.o $(LIBOVRPATH)/Src/Util/Util_MagCalibration.cpp
-
-$(OBJPATH)/Util_Render_Stereo.o: $(LIBOVRPATH)/Src/Util/Util_Render_Stereo.cpp 
-	$(CXXBUILD)Util_Render_Stereo.o $(LIBOVRPATH)/Src/Util/Util_Render_Stereo.cpp
-
-$(OBJPATH)/OVR_ThreadsPthread.o: $(LIBOVRPATH)/Src/Kernel/OVR_ThreadsPthread.cpp 
-	$(CXXBUILD)OVR_ThreadsPthread.o $(LIBOVRPATH)/Src/Kernel/OVR_ThreadsPthread.cpp
-
-$(OBJPATH)/OVR_Linux_HIDDevice.o: $(LIBOVRPATH)/Src/OVR_Linux_HIDDevice.cpp 
-	$(CXXBUILD)OVR_Linux_HIDDevice.o $(LIBOVRPATH)/Src/OVR_Linux_HIDDevice.cpp
-
-$(OBJPATH)/OVR_Linux_SensorDevice.o: $(LIBOVRPATH)/Src/OVR_Linux_SensorDevice.cpp 
-	$(CXXBUILD)OVR_Linux_SensorDevice.o $(LIBOVRPATH)/Src/OVR_Linux_SensorDevice.cpp
-
-$(OBJPATH)/OVR_Linux_DeviceManager.o: $(LIBOVRPATH)/Src/OVR_Linux_DeviceManager.cpp 
-	$(CXXBUILD)OVR_Linux_DeviceManager.o $(LIBOVRPATH)/Src/OVR_Linux_DeviceManager.cpp
-
-$(OBJPATH)/OVR_Linux_HMDDevice.o: $(LIBOVRPATH)/Src/OVR_Linux_HMDDevice.cpp 
-	$(CXXBUILD)OVR_Linux_HMDDevice.o $(LIBOVRPATH)/Src/OVR_Linux_HMDDevice.cpp
+$(OBJPATH)/%.o: $(LIBOVRPATH)/Src/Util/%.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $@ $<
+$(OBJPATH)/%.o: $(LIBOVRPATH)/Src/Kernel/%.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $@ $<
+$(OBJPATH)/%.o: $(LIBOVRPATH)/Src/%.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $@ $<
 
 $(OBJPATH)/tinyxml2.o: $(3RDPARTYPATH)/TinyXml/tinyxml2.cpp 
-	$(CXXBUILD)tinyxml2.o $(3RDPARTYPATH)/TinyXml/tinyxml2.cpp
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $@ $<
 
 clean:
 	-$(DELETEFILE) $(OBJECTS)

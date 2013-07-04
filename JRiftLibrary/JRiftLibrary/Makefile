@@ -21,9 +21,10 @@ libJRiftLibrary64.jnilib: JRiftLibrary.o
 		-fno-rtti \
 		-framework ApplicationServices \
 		-framework IOKit \
+		-L ${OCULUS_SDK}/LibOVR/Lib/Release/Mac/x86_64/
 		-o $@ \
 		JRiftLibrary.o \
-		${OCULUS_SDK}/LibOVR/Src/libOVR.a
+		-lOVR
 
 else
 ifeq ($(UNAME), Linux)
@@ -51,28 +52,32 @@ JRiftLibrary64.o: JRiftLibrary.cpp
 	-c $< \
 	-o $@
 
-libJRiftLibrary.so: JRiftLibrary.o ${OCULUS_SDK}/LibOVR/Src/libOVR32.a
+libJRiftLibrary.so: JRiftLibrary.o ${OCULUS_SDK}/LibOVR/Linux/Release/i386/libOVR.a 
 	g++ \
 		-m32 \
 		-fno-rtti \
 		-shared \
 		-o $@ \
 		"-I/usr/lib/jvm/java-6-openjdk-amd64/include/" \
+		-L ${OCULUS_SDK}/LibOVR/Lib/Linux/Release/i386/ \
 		$< \
-		${OCULUS_SDK}/LibOVR/Src/libOVR32.a
+		-lovr
 
-libJRiftLibrary64.so: JRiftLibrary64.o ${OCULUS_SDK}/LibOVR/Src/libOVR.a
+libJRiftLibrary64.so: JRiftLibrary64.o ${OCULUS_SDK}/LibOVR/Lib/Linux/Release/x86_64/libOVR.a 
 	g++ \
 		-fno-rtti \
 		-shared \
 		-o $@ \
 		"-I/usr/lib/jvm/java-6-openjdk-amd64/include/" \
+		-L ${OCULUS_SDK}/LibOVR/Lib/Linux/Release/x86_64/ \
 		$< \
-		${OCULUS_SDK}/LibOVR/Src/libOVR.a
+		-lovr
 
-${OCULUS_SDK}/LibOVR/Src/libOVR.a ${OCULUS_SDK}/LibOVR/Src/libOVR32.a : 
-	make -C ${OCULUS_SDK}/LibOVR/Src
-.PHONY: ${OCULUS_SDK}/LibOVR/Src/libOVR.a ${OCULUS_SDK}/LibOVR/Src/libOVR32.a
+${OCULUS_SDK}/LibOVR/Lib/Linux/Release/x86_64/libOVR.a:
+	make -C ${OCULUS_SDK}/LibOVR
+${OCULUS_SDK}/LibOVR/Linux/Release/i386/libOVR.a : 
+	linux32 make -C ${OCULUS_SDK}/LibOVR
+.PHONY: ${OCULUS_SDK}/LibOVR/Lib/Linux/Release/x86_64/libOVR.a ${OCULUS_SDK}/LibOVR/Linux/Release/i386/libOVR.a
 endif
 endif
 

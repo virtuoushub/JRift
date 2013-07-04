@@ -92,6 +92,7 @@ JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift__1initSubsystem(JNIEn
 		pSensor.Clear();
 		pManager.Clear();
 		pHMD.Clear(); // Ensure HMDDevice is also cleared
+		pUserProfile.Clear();
 
 		System::Destroy();
 	}

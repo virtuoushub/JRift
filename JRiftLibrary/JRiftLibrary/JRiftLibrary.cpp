@@ -518,5 +518,5 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getUserProfileData(
 
     env->DeleteLocalRef(str);
 
-	return 0;
+	return profileData;
 }

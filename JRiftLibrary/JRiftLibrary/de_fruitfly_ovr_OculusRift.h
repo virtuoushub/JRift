@@ -290,14 +290,6 @@ JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift__1setMagCalData(
 
 /*
  * Class:     de_fruitfly_ovr_OculusRift
- * Method:    _updateUserProfileData
- * Signature: ()V
- */
-JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1updateUserProfileData(
-   JNIEnv *env, jobject);
-
-/*
- * Class:     de_fruitfly_ovr_OculusRift
  * Method:    _getUserProfileData
  * Signature: L de/fruitfly/ovr/UserProfileData
  */

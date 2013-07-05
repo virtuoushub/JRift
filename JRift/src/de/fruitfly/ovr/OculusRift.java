@@ -301,14 +301,6 @@ public class OculusRift implements IOculusRift {
         return _isYawCorrectionInProgress();
     }
 
-    public void updateUserProfile()
-    {
-        if (!isInitialized())
-            return;
-
-        _updateUserProfileData();
-    }
-
     public UserProfileData getUserProfile()
     {
         if (!isInitialized())
@@ -368,7 +360,6 @@ public class OculusRift implements IOculusRift {
                                                          float distortionFitX,
                                                          float distortionFitY);
 
-    protected native void _updateUserProfileData();
     protected native UserProfileData _getUserProfileData();
 
 	public static void LoadLibrary( File nativeDir )

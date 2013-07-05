@@ -466,15 +466,6 @@ JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift__1setMagCalData(
 	return true;
 }
 
-JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1updateUserProfileData(
-   JNIEnv *env, jobject)
-{
-	if (!Initialized) return;
-
-	pUserProfile = pHMD->GetProfile(); // Get latest profile
-	pHMD->GetDeviceInfo(&Info); // Get any changes to the HMDInfo based on profile settings
-}
-
 JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getUserProfileData(
    JNIEnv *env, jobject)
 {

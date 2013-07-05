@@ -20,7 +20,7 @@ public class UserProfileData
     public float _playerHeight;
     public float _eyeHeight;
     public float _ipd;
-    String _name;
+    public String _name;
 
     UserProfileData(float playerHeight, float eyeHeight, float ipd,
                     int gender, String name)
@@ -41,5 +41,21 @@ public class UserProfileData
                 _gender = GenderType.Gender_Unspecified;
                 break;
         }
+    }
+
+    public String getGenderString()
+    {
+        String gender = "Unspecified";
+
+        switch(_gender)
+        {
+            case Gender_Male:
+                gender = "Male";
+                break;
+            case Gender_Female:
+                gender = "Female";
+        }
+
+        return gender;
     }
 }

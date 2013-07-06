@@ -19,7 +19,7 @@ install-bin: bin
 zipmerge: install-bin
 	zipmerge JRift.jar JRift/target/ovr-*.jar 
 install-java:
-	cp JRift/target/ovr-1.0-SNAPSHOT.jar JRift.jar
+	cp JRift/target/ovr-*.jar JRift.jar
 
 run:
 	make -C JRift run

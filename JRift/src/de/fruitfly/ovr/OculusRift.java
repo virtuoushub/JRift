@@ -10,7 +10,7 @@ public class OculusRift implements IOculusRift {
 	
 	private boolean initialized = false;
 
-    public final String VERSION = "1.12";
+    public final String VERSION = "1.13";
 	
 	private HMDInfo hmdInfo = new HMDInfo();
 
@@ -22,13 +22,9 @@ public class OculusRift implements IOculusRift {
     public float rawPitch;
     public float rawRoll;
 
-    public float yawAngleDegrees;
-    public float pitchAngleDegrees;
-    public float rollAngleDegrees;
-
-    public float testPitchAngleDelta = 0.0f;
-    public float testRollAngleDelta = 0.0f;
-    public float testYawAngleDelta = 0.0f;
+    public float yawAngleDegrees = 0.0f;
+    public float pitchAngleDegrees = 0.0f;
+    public float rollAngleDegrees = 0.0f;
 
     public String _initSummary = "Not initialised";
 
@@ -162,19 +158,9 @@ public class OculusRift implements IOculusRift {
                 rollAngleDegrees = MAXROLL;
             if (rollAngleDegrees < -MAXROLL)
                 rollAngleDegrees = -MAXROLL;
+        }
 
-//            System.out.println("Yaw: " + yawAngleDegrees + ", Pitch: " + pitchAngleDegrees + ", Roll: " + rollAngleDegrees);
-//
-//            yawAngleDegrees = 0.0f;
-//            pitchAngleDegrees = 0.0f;
-//            rollAngleDegrees = 0.0f;
-        }
-        else
-        {
-            testPitchAngle += testPitchAngleDelta;
-            testRollAngle += testRollAngleDelta;
-            testYawAngle += testYawAngleDelta;
-        }
+        //System.out.println("Yaw: " + yawAngleDegrees + ", Pitch: " + pitchAngleDegrees + ", Roll: " + rollAngleDegrees);
 	}
 	
 	public HMDInfo getHMDInfo() {
@@ -187,38 +173,17 @@ public class OculusRift implements IOculusRift {
 	
 	public float getYawDegrees_LH()
     {
-	    if (initialized)
-        {
-            return yawAngleDegrees;
-        }
-        else
-        {
-            return testYawAngle;
-        }
+        return yawAngleDegrees;
 	}
 	
 	public float getPitchDegrees_LH()
     {
-        if (initialized)
-        {
-            return pitchAngleDegrees;
-        }
-        else
-        {
-            return testPitchAngle;
-        }
+        return pitchAngleDegrees;
     }
 
 	public float getRollDegrees_LH()
     {
-        if (initialized)
-        {
-            return rollAngleDegrees;
-        }
-        else
-        {
-            return testRollAngle;
-        }
+        return rollAngleDegrees;
 	}
 
     public void setPrediction(float delta, boolean enable)

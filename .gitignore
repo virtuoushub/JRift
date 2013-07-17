@@ -159,3 +159,6 @@ $RECYCLE.BIN/
 .DS_Store
 JRift/.idea/
 JRift/JRift.iml
+
+# vim swp file
+.*.swp

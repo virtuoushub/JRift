@@ -5,12 +5,19 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>de.fruitfly.ovr</groupId>
-  <artifactId>ovr</artifactId>
+  <artifactId>JRift</artifactId>
   <version>0.2.3.0</version>
 
   <name>JRift</name>
   <description>Java Wrapper (JNI) for the Oculus Rift HMD and Sensors under Windows, OSX, and Linux.</description>
   <url>https://github.com/mabrowning/JRift</url>
+
+  <distributionManagement>
+	<repository>
+	  <id>minecrift</id>
+	  <url>file:../../repo/</url>
+    </repository>
+  </distributionManagement>
 
   <build>
   	<sourceDirectory>${project.basedir}/src</sourceDirectory>

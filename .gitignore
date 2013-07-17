@@ -19,6 +19,7 @@ build/
 [Bb]in/
 [Oo]bj/
 JRift/target
+JRiftLibrary/target
 *.o
 *.a
 *.jnilib

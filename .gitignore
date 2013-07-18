@@ -19,6 +19,7 @@ build/
 [Bb]in/
 [Oo]bj/
 JRift/target
+JRiftLibrary/target
 *.o
 *.a
 *.jnilib
@@ -159,3 +160,6 @@ $RECYCLE.BIN/
 .DS_Store
 JRift/.idea/
 JRift/JRift.iml
+
+# vim swp file
+.*.swp

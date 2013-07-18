@@ -83,7 +83,7 @@ libJRiftLibrary.so: JRiftLibrary.o ${OCULUS_SDK}/LibOVR/Linux/Release/i386/libOV
 		"-I/usr/lib/jvm/java-6-openjdk-amd64/include/" \
 		-L ${OCULUS_SDK}/LibOVR/Lib/Linux/Release/i386/ \
 		$< \
-		-lovr
+		-lovr -l:libudev.so.0 -l:libXinerama.so.1
 
 libJRiftLibrary64.so: JRiftLibrary64.o ${OCULUS_SDK}/LibOVR/Lib/Linux/Release/x86_64/libOVR.a 
 	g++ \
@@ -93,7 +93,7 @@ libJRiftLibrary64.so: JRiftLibrary64.o ${OCULUS_SDK}/LibOVR/Lib/Linux/Release/x8
 		"-I/usr/lib/jvm/java-6-openjdk-amd64/include/" \
 		-L ${OCULUS_SDK}/LibOVR/Lib/Linux/Release/x86_64/ \
 		$< \
-		-lovr
+		-lovr -ludev -lXinerama
 
 ${OCULUS_SDK}/LibOVR/Lib/Linux/Release/x86_64/libOVR.a:
 	make -C ${OCULUS_SDK}/LibOVR

@@ -61,6 +61,7 @@ public class OculusRift implements IOculusRift {
         hmdInfo.ChromaticAb[1]         = 0.0f;
         hmdInfo.ChromaticAb[2]         = 1.0f;
         hmdInfo.ChromaticAb[3]         = 0.0f;
+        hmdInfo.isFakeData             = true;
     }
 
 	public String getInitializationStatus()
@@ -104,6 +105,7 @@ public class OculusRift implements IOculusRift {
             hmdInfo.ChromaticAb[1] = _getChromaAbCorrection1();
             hmdInfo.ChromaticAb[2] = _getChromaAbCorrection2();
             hmdInfo.ChromaticAb[3] = _getChromaAbCorrection3();
+            hmdInfo.isFakeData     = false;
 
             _initSummary = "OK";
         }

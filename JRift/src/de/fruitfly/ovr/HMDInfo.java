@@ -13,6 +13,7 @@ public class HMDInfo {
 	public float InterpupillaryDistance;
 	public float[] DistortionK = new float[4];
     public float[] ChromaticAb = new float[4];
+    public boolean isFakeData = true;
 	
 	public int DesktopX; // Not queried from OVR AP yet
 	public int DesktopY; // Not queried from OVR API yet
@@ -31,6 +32,7 @@ public class HMDInfo {
 				+ Arrays.toString(DistortionK) + ", ChromaticAb="
                 + Arrays.toString(ChromaticAb) + ", DesktopX=" + DesktopX
 				+ ", DesktopY=" + DesktopY + ", DisplayDeviceName="
-				+ DisplayDeviceName + ", DisplayId=" + DisplayId + "]";
+				+ DisplayDeviceName + ", DisplayId=" + DisplayId + ", IsFakeData="
+                + isFakeData + "]";
 	}
 }

@@ -332,6 +332,7 @@ public class OculusRift implements IOculusRift {
 		if( libraryLoaded ) return;
 		String os = System.getProperty("os.name");
 		boolean is64bit = System.getProperty("sun.arch.data.model").equalsIgnoreCase("64"); 
+		/*
 		String libName = "FILE_DOESN'T_EXIST";
 
         if ( os.contains("Win") )
@@ -391,6 +392,15 @@ public class OculusRift implements IOculusRift {
 				System.loadLibrary( "JRiftLibrary" );
 			libraryLoaded = true;
 		}
+		*/
+
+		//Launcher takes care of extracting natives
+		if( is64bit )
+			System.loadLibrary( "JRiftLibrary64" );
+		else
+			System.loadLibrary( "JRiftLibrary" );
+		System.out.println("Loaded JRift");
+		libraryLoaded = true;
     }
 	
 	public static void main(String[] args) {

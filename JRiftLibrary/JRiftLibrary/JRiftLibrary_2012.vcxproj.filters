@@ -26,5 +26,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\LibOVR\Projects\Win32\LibOVR_Msvc2010.vcxproj" />
+    <None Include="..\pom.xml" />
   </ItemGroup>
 </Project>

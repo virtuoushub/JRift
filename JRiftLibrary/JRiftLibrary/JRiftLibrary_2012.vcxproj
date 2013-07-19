@@ -69,11 +69,11 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>..\bin\Win32\</OutDir>
-    <TargetName>JRiftLibraryd</TargetName>
+    <TargetName>JRiftLibrary</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <TargetName>JRiftLibrary64d</TargetName>
+    <TargetName>JRiftLibrary64</TargetName>
     <OutDir>..\bin\x64\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -166,7 +166,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\LibOVR\Projects\Win32\LibOVR_Msvc2010.vcxproj" />
-    <None Include="..\pom.xml" />
+    <None Include="..\pom.xml">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

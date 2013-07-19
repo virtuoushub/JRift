@@ -296,6 +296,12 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getEyeRenderParams(
 	stereo.SetStereoMode(Util::Render::Stereo_LeftRight_Multipass);
 	stereo.SetFullViewport(viewPort);
 	stereo.SetDistortionFitPointVP(distortionFitX, distortionFitY); // Defaults to -1.0f, 0.0f. 0.0f, 0.0f is 'No fit'.
+
+	// Calculate aspect ratio multiplier to correct for incorrect display aspect ratio
+	double HmdRequiredAspect = (double)Info.HResolution / (double)Info.VResolution;
+	double SuppliedAspect = (double)viewPort.w / (double)viewPort.h;
+	float AspectMultiplier = HmdRequiredAspect / SuppliedAspect;
+	stereo.SetAspectMultiplier(AspectMultiplier);
 	
 	// Set custom clip plane
 	stereo.SetClipNear(clipNear);

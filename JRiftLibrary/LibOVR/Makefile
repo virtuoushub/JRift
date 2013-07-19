@@ -74,8 +74,8 @@ ifeq ($(shell uname -m),i686)
 SYSARCH       = i386
 CXXFLAGS += -m32
 endif
-SYSARCH       = i386
-CXXFLAGS += -m32
+#SYSARCH       = i386
+#CXXFLAGS += -m32
 ####### Paths
 
 LIBOVRPATH    = .

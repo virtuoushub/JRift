@@ -203,7 +203,7 @@ void StereoConfig::updateComputedState()
     else
     {
         float percievedHalfRTDistance = (HMD.VScreenSize / 2) * Distortion.Scale;    
-        YFov = 2.0f * atan(percievedHalfRTDistance/HMD.EyeToScreenDistance);
+		YFov = 2.0f * atan(percievedHalfRTDistance/(HMD.EyeToScreenDistance * HMD.EyeToScreenDistanceScaleFactor));
     }
     
     updateProjectionOffset();
@@ -290,7 +290,7 @@ void StereoConfig::update2D()
 void StereoConfig::updateEyeParams()
 {
     // Projection matrix for the center eye, which the left/right matrices are based on.
-    Matrix4f projCenter = Matrix4f::PerspectiveRH(YFov, Aspect, 0.01f, 1000.0f);
+	Matrix4f projCenter = Matrix4f::PerspectiveRH(YFov, Aspect, ClipNear, ClipFar);
    
     switch(Mode)
     {

@@ -10,13 +10,9 @@ public class OculusRift implements IOculusRift {
 	
 	private boolean initialized = false;
 
-    public final String VERSION = "1.13";
-	
-	private HMDInfo hmdInfo = new HMDInfo();
+    public final String VERSION = "1.14";
 
-    public float testYawAngle;
-    public float testPitchAngle;
-    public float testRollAngle;
+	private HMDInfo hmdInfo = new HMDInfo();
 
     public float rawYaw;
     public float rawPitch;
@@ -28,17 +24,10 @@ public class OculusRift implements IOculusRift {
 
     public String _initSummary = "Not initialised";
 
-    public boolean use = true;
-
 	private static boolean libraryLoaded = false;
 	
 	public OculusRift()
     {
-        use = true;
-        testYawAngle = 0.0F;
-        testPitchAngle = 0.0F;
-        testRollAngle = 0.0F;
-
         resetHMDInfo();
 	}
 
@@ -62,6 +51,10 @@ public class OculusRift implements IOculusRift {
         hmdInfo.ChromaticAb[2]         = 1.0f;
         hmdInfo.ChromaticAb[3]         = 0.0f;
         hmdInfo.isFakeData             = true;
+
+        yawAngleDegrees = 0.0f;
+        pitchAngleDegrees = 0.0f;
+        rollAngleDegrees = 0.0f;
     }
 
 	public String getInitializationStatus()
@@ -73,7 +66,7 @@ public class OculusRift implements IOculusRift {
     {
         return VERSION;
     }
-	
+
 	public boolean init( File nativeDir )
 	{
 		OculusRift.LoadLibrary( nativeDir );

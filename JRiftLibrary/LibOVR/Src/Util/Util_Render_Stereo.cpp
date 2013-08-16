@@ -90,6 +90,7 @@ StereoConfig::StereoConfig(StereoMode mode, const Viewport& vp)
     HMD.DistortionK[1]         = Distortion.K[1];
     HMD.DistortionK[2]         = Distortion.K[2];
     HMD.DistortionK[3]         = 0;
+
     Set2DAreaFov(DegreeToRad(85.0f));
 }
 
@@ -259,7 +260,7 @@ void StereoConfig::update2D()
     // eye, where hmd screen projection surface is at 0.05m distance.
     // This introduces an extra off-center pixel projection shift based on eye distance.
     // This offCenterShift is the pixel offset of the other camera's center
-    // in your reference camera based on surface distance.
+    // in your reference camera based on surface distance.    
     float metersToPixels          = (HMD.HResolution / HMD.HScreenSize);
     float lensDistanceScreenPixels= metersToPixels * HMD.LensSeparationDistance;
     float eyeDistanceScreenPixels = metersToPixels * InterpupillaryDistance;

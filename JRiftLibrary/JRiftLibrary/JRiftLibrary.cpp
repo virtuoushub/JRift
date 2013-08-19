@@ -3,6 +3,8 @@
 
 #include <cstring>
 #include <iostream>
+#include <string>
+#include <vector>
 
 using namespace OVR;
 
@@ -10,6 +12,9 @@ Ptr<DeviceManager>	pManager;
 Ptr<HMDDevice>		pHMD;
 Ptr<SensorDevice>	pSensor;
 Ptr<Profile>        pUserProfile;
+Ptr<ProfileManager> pm;
+OVR::ProfileType    CurrentProfileType = OVR::Profile_Unknown;
+bool                IsDefaultProfile = true;
 
 SensorFusion		 FusionResult;
 Util::MagCalibration MagCal;
@@ -44,6 +49,7 @@ JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift__1initSubsystem(JNIEn
 	System::Init();
 
 	pManager = *DeviceManager::Create();
+	pm = *ProfileManager::Create();
 
 	_ipd = 0.0635f; // Default
 	Info.InterpupillaryDistance = _ipd;
@@ -51,7 +57,9 @@ JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift__1initSubsystem(JNIEn
 	pHMD = *pManager->EnumerateDevices<HMDDevice>().CreateDevice();
 	if (pHMD) {
 		printf("Oculus Rift Device Interface created.\n");
-		pUserProfile = pHMD->GetProfile();
+		pUserProfile = pHMD->GetProfile(); // Get the current default profile
+		if (pUserProfile != 0)
+			CurrentProfileType = pUserProfile->Type;  // Get the current default profile type
 		InfoLoaded = pHMD->GetDeviceInfo(&Info);
 		pSensor = *pHMD->GetSensor();
 		FusionResult.AttachToSensor(pSensor);
@@ -89,12 +97,7 @@ JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift__1initSubsystem(JNIEn
 	}
 	if( !Initialized )
 	{
-		pSensor.Clear();
-		pManager.Clear();
-		pHMD.Clear(); // Ensure HMDDevice is also cleared
-		pUserProfile.Clear();
-
-		System::Destroy();
+		Reset();
 	}
 
 	return Initialized;
@@ -102,17 +105,29 @@ JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift__1initSubsystem(JNIEn
 
 JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1destroySubsystem(JNIEnv *env, jobject jobj) 
 {
+	printf("Destroying Oculus Rift device interface.\n");	
+		
 	if (Initialized)
 	{
-		printf("Destroying Oculus Rift device interface.\n");
-		pSensor.Clear();
-		pManager.Clear();
-		pHMD.Clear(); // Ensure HMDDevice is also cleared
-
-		System::Destroy();
-
-		Initialized = false;
+		Reset();
 	}
+}
+
+void Reset()
+{
+	pSensor.Clear();
+	pManager.Clear();
+	pHMD.Clear(); // Ensure HMDDevice is also cleared
+	pm.Clear();
+	if (pUserProfile != 0)
+		pUserProfile.Clear();
+	FusionResult.AttachToSensor(0); // Workaround for SDK 0.2.4 System::Destroy() hang
+	CurrentProfileType = OVR::Profile_Unknown;
+	IsDefaultProfile   = true;
+
+	System::Destroy();
+
+	Initialized = false;
 }
 
 JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1setPredictionEnabled(JNIEnv *, jobject, jfloat delta, jboolean enable) 
@@ -418,69 +433,17 @@ JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift__1isYawCorrectionInPr
 	return FusionResult.IsYawCorrectionInProgress();
 }
 
-JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getMagCalData(
-   JNIEnv *env, jobject)
-{
-	//if (magCalibrationData_Class == NULL)
-	//{
-	//	jclass localMagCalibrationDataClass = env->FindClass("de/fruitfly/ovr/MagCalibrationData");
-	//	magCalibrationData_Class = (jclass)env->NewGlobalRef(localMagCalibrationDataClass);
-	//	env->DeleteLocalRef(localMagCalibrationDataClass);
-	//}
-
-	//if (magCalibrationData_constructor_MethodID == NULL)
-	//{
-	//	magCalibrationData_constructor_MethodID = env->GetMethodID(magCalibrationData_Class, 
-	//		"<init>", "("
-	//		          "FFFF"
-	//				  "FFFFFFFFFFFFFFFF"
-	//				  ")V");
-	//}
-
-	//Quatf reference = FusionResult.GetMagReference(); // Custom SDK call
-	//Matrix4f calibration = FusionResult.GetMagCalibration(); // Custom SDK call
-
-	//jobject magCalData = env->NewObject(magCalibrationData_Class, magCalibrationData_constructor_MethodID,
-	//	reference.x, reference.y, reference.z, reference.w,
-	//	calibration.M[0][0], calibration.M[0][1], calibration.M[0][2], calibration.M[0][3],
-	//	calibration.M[1][0], calibration.M[1][1], calibration.M[1][2], calibration.M[1][3],
-	//	calibration.M[2][0], calibration.M[2][1], calibration.M[2][2], calibration.M[2][3],
-	//	calibration.M[3][0], calibration.M[3][1], calibration.M[3][2], calibration.M[3][3]
-	//);
-
-	return 0;
-}
-
-JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift__1setMagCalData(
-   JNIEnv *env, jobject,
-   jfloat refX, jfloat refY, jfloat refZ, jfloat refW,
-   jfloat calM00, jfloat calM01, jfloat calM02, jfloat calM03,
-   jfloat calM10, jfloat calM11, jfloat calM12, jfloat calM13,
-   jfloat calM20, jfloat calM21, jfloat calM22, jfloat calM23,
-   jfloat calM30, jfloat calM31, jfloat calM32, jfloat calM33)
-{
-	//Quatf reference(refX, refY, refZ, refW);
-	//Matrix4f calibration(calM00, calM01, calM02, calM03,
-	//					 calM10, calM11, calM12, calM13,
-	//					 calM20, calM21, calM22, calM23,
-	//					 calM30, calM31, calM32, calM33);
-
-	//FusionResult.ClearMagCalibration();
-	//FusionResult.SetMagCalibration(calibration);  
-	//FusionResult.SetMagReference(reference);
-	//
- //   if (FusionResult.IsMagReady())
-	//    FusionResult.SetYawCorrectionEnabled(true);
-
-	return true;
-}
-
 JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getUserProfileData(
    JNIEnv *env, jobject)
 {
 	if (!Initialized) return 0;
 
+	if (!pUserProfile) 
+		pUserProfile = pm->GetDeviceDefaultProfile(CurrentProfileType);
+
 	if (!pUserProfile) return 0;
+
+	CurrentProfileType = pUserProfile->Type;
 
 	if (UserProfileData_Class == NULL)
 	{
@@ -497,6 +460,7 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getUserProfileData(
 					  "F"
 					  "F"
 					  "I"
+					  "Z"
 					  "Ljava/lang/String;"
 					  ")V");
 	}
@@ -513,10 +477,62 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getUserProfileData(
 		eyeHeight,
 		ipd,
 		gender,
+		IsDefaultProfile,
 		str
 	);
 
     env->DeleteLocalRef(str);
 
 	return profileData;
+}
+
+JNIEXPORT jobjectArray JNICALL Java_de_fruitfly_ovr_OculusRift__1getUserProfiles(
+   JNIEnv *env, jobject)
+{
+	if (!Initialized) return 0;
+
+	if (!pUserProfile) return 0;
+
+	int ProfileCount = pm->GetProfileCount(CurrentProfileType);
+	jobjectArray profileList = (jobjectArray)env->NewObjectArray(ProfileCount, 
+		                                                         env->FindClass("java/lang/String"), 
+																 env->NewStringUTF(""));
+
+	for (int i = 0; i < ProfileCount; i++)
+		env->SetObjectArrayElement(profileList, i, env->NewStringUTF(pm->GetProfileName(CurrentProfileType, i)));
+  
+    return profileList; 
+}
+
+JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift__1loadUserProfile(
+   JNIEnv *env, jobject, jstring profileName)
+{
+	if (!Initialized) return false;
+
+	jboolean success = true;
+	jboolean isCopy = false;
+	const char* cname = env->GetStringUTFChars(profileName, &isCopy);
+	std::string name = cname;
+
+	if (pm->HasProfile(CurrentProfileType, name.c_str()))
+	{
+		pUserProfile = pm->LoadProfile(CurrentProfileType, name.c_str());
+		std::string defaultname = pm->GetDefaultProfileName(CurrentProfileType);
+		if (name.compare(defaultname) == 0)
+		{
+			IsDefaultProfile = true;
+		}
+		else
+		{
+			IsDefaultProfile = false;	
+		}
+	}
+	else
+	{
+		success = false;
+	}
+
+	env->ReleaseStringUTFChars(profileName, cname);
+  
+    return success; 
 }

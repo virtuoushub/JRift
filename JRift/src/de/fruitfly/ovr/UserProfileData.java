@@ -21,14 +21,17 @@ public class UserProfileData
     public float _eyeHeight;
     public float _ipd;
     public String _name;
+    public boolean _isDefault;
 
     UserProfileData(float playerHeight, float eyeHeight, float ipd,
-                    int gender, String name)
+                    int gender, boolean isDefault, String name)
     {
          _name = name;
         _playerHeight = playerHeight;
         _eyeHeight = eyeHeight;
         _ipd = ipd;
+        _isDefault = isDefault;
+
         switch (gender)
         {
             case 1:

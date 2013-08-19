@@ -10,6 +10,7 @@ extern "C" {
 #endif
 
 void LOG(std::string s);
+void Reset();
 
 /*
  * Class:     de_fruitfly_ovr_OculusRift
@@ -261,32 +262,11 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getEyeRenderParams
 
 /*
  * Class:     de_fruitfly_ovr_OculusRift
- * Method:    isYawCorrectionInProgress
+ * Method:    _isYawCorrectionInProgress
  * Signature: ()Z
  */
 JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift__1isYawCorrectionInProgress
   (JNIEnv *, jobject);
-
-/*
- * Class:     de_fruitfly_ovr_OculusRift
- * Method:    _getMagCalData
- * Signature: ()L de/fruitfly/ovr/MagCalibrationData;
- */
-JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getMagCalData(
-   JNIEnv *env, jobject);
-
-/*
- * Class:     de_fruitfly_ovr_OculusRift
- * Method:    _setMagCalData
- * Signature: (FFFFFFFFFFFFFFFFFFFF)Z
- */
-JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift__1setMagCalData(
-   JNIEnv *env, jobject,
-   jfloat refX, jfloat refY, jfloat refZ, jfloat refW,
-   jfloat calM00, jfloat calM01, jfloat calM02, jfloat calM03,
-   jfloat calM10, jfloat calM11, jfloat calM12, jfloat calM13,
-   jfloat calM20, jfloat calM21, jfloat calM22, jfloat calM23,
-   jfloat calM30, jfloat calM31, jfloat calM32, jfloat calM33);
 
 /*
  * Class:     de_fruitfly_ovr_OculusRift
@@ -295,6 +275,22 @@ JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift__1setMagCalData(
  */
 JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getUserProfileData(
    JNIEnv *env, jobject);
+
+/*
+ * Class:     de_fruitfly_ovr_OculusRift
+ * Method:    _getUserProfiles
+ * Signature: [L java/lang/String
+ */
+JNIEXPORT jobjectArray JNICALL Java_de_fruitfly_ovr_OculusRift__1getUserProfiles(
+   JNIEnv *env, jobject);
+
+/*
+ * Class:     de_fruitfly_ovr_OculusRift
+ * Method:    _loadUserProfile
+ * Signature: ()Z
+ */
+JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift__1loadUserProfile(
+   JNIEnv *env, jobject, jstring);
 
 #ifdef __cplusplus
 }

@@ -121,7 +121,7 @@ void Reset()
 	pm.Clear();
 	if (pUserProfile != 0)
 		pUserProfile.Clear();
-	FusionResult.AttachToSensor(0); // Workaround for SDK 0.2.4 System::Destroy() hang
+	FusionResult.AttachToSensor(0); // Workaround for SDK 0.2.4(a) System::Destroy() hang
 	CurrentProfileType = OVR::Profile_Unknown;
 	IsDefaultProfile   = true;
 
@@ -382,7 +382,7 @@ JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift__1isCalibrated
 {
 	if (!Initialized) return false;
 
-	return MagCal.IsCalibrated();
+	return FusionResult.HasMagCalibration();
 }
 
 JNIEXPORT jint JNICALL Java_de_fruitfly_ovr_OculusRift__1updateAutomaticCalibration

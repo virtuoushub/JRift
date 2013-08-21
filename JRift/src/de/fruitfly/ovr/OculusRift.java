@@ -78,8 +78,8 @@ public class OculusRift implements IOculusRift {
 
         _initSummary = "Last initialisation attempt failed";
 
-		initialized = _initSubsystem();
-        //initialized = true;
+        if (!initialized)
+		    initialized = _initSubsystem();
 
         if (initialized)
         {
@@ -394,7 +394,7 @@ public class OculusRift implements IOculusRift {
 			System.loadLibrary( "JRiftLibrary64" );
 		else
 			System.loadLibrary( "JRiftLibrary" );
-		System.out.println("Loaded JRift");
+		System.out.println("Loaded JRift native library");
 		libraryLoaded = true;
     }
 	

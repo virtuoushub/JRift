@@ -382,7 +382,7 @@ JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift__1isCalibrated
 {
 	if (!Initialized) return false;
 
-	return FusionResult.HasMagCalibration();
+	return FusionResult.HasMagCalibration() && FusionResult.IsYawCorrectionEnabled();
 }
 
 JNIEXPORT jint JNICALL Java_de_fruitfly_ovr_OculusRift__1updateAutomaticCalibration

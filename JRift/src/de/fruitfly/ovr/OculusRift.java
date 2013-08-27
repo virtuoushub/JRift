@@ -216,18 +216,7 @@ public class OculusRift implements IOculusRift {
 
     public EyeRenderParams getEyeRenderParams(int viewPortX, int viewPortY, int viewPortWidth, int viewPortHeight, float clipNear, float clipFar)
     {
-        return getEyeRenderParams(viewPortX, viewPortY, viewPortWidth, viewPortHeight, clipNear, clipFar, 1.0f);
-    }
-
-    public EyeRenderParams getEyeRenderParams(int viewPortX,
-                                              int viewPortY,
-                                              int viewPortWidth,
-                                              int viewPortHeight,
-                                              float clipNear,
-                                              float clipFar,
-                                              float eyeToScreenDistanceScaleFactor)
-    {
-        return getEyeRenderParams(viewPortX, viewPortY, viewPortWidth, viewPortHeight, clipNear, clipFar, eyeToScreenDistanceScaleFactor, -1.0f, 0.0f);
+        return getEyeRenderParams(viewPortX, viewPortY, viewPortWidth, viewPortHeight, clipNear, clipFar, 1.0f, 1.0f);
     }
 
     public EyeRenderParams getEyeRenderParams(int viewPortX,
@@ -237,10 +226,46 @@ public class OculusRift implements IOculusRift {
                                               float clipNear,
                                               float clipFar,
                                               float eyeToScreenDistanceScaleFactor,
-                                              float distortionFitX,
-                                              float distortionFitY)
+                                              float lensSeparationScaleFactor)
     {
-        return _getEyeRenderParams(viewPortX, viewPortY, viewPortWidth, viewPortHeight, clipNear, clipFar, eyeToScreenDistanceScaleFactor, distortionFitX, distortionFitY);
+        return getEyeRenderParams(
+                viewPortX,
+                viewPortY,
+                viewPortWidth,
+                viewPortHeight,
+                clipNear,
+                clipFar,
+                eyeToScreenDistanceScaleFactor,
+                lensSeparationScaleFactor,
+                -1.0f,
+                0.0f,
+                AspectCorrectionType.CORRECTION_AUTO);
+    }
+
+    public EyeRenderParams getEyeRenderParams(int viewPortX,
+                                              int viewPortY,
+                                              int viewPortWidth,
+                                              int viewPortHeight,
+                                              float clipNear,
+                                              float clipFar,
+                                              float eyeToScreenDistanceScaleFactor,
+                                              float lensSeparationScaleFactor,
+                                              float distortionFitX,
+                                              float distortionFitY,
+                                              AspectCorrectionType aspectCorrectionType)
+    {
+        return _getEyeRenderParams(
+                viewPortX,
+                viewPortY,
+                viewPortWidth,
+                viewPortHeight,
+                clipNear,
+                clipFar,
+                eyeToScreenDistanceScaleFactor,
+                lensSeparationScaleFactor,
+                distortionFitX,
+                distortionFitY,
+                aspectCorrectionType.getValue());
     }
 
     public boolean isYawCorrectionInProgress()
@@ -315,8 +340,10 @@ public class OculusRift implements IOculusRift {
                                                          float clipNear,
                                                          float clipFar,
                                                          float eyeToScreenDistanceScaleFactor,
+                                                         float lensSeparationScaleFactor,
                                                          float distortionFitX,
-                                                         float distortionFitY);
+                                                         float distortionFitY,
+                                                         int aspectCorrectionMode);
 
     protected native UserProfileData _getUserProfileData();
     protected native boolean _loadUserProfile(String profileName);

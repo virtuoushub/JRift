@@ -6,6 +6,26 @@ public interface IOculusRift {
     public final float MAXPITCH = (90 * 0.98f);
     public final float MAXROLL = (180 * 0.98f);
 
+    public enum AspectCorrectionType
+    {
+        CORRECTION_NONE          (0),
+        CORRECTION_16_9_TO_16_10 (1),
+        CORRECTION_16_10_TO_16_9 (2),
+        CORRECTION_AUTO          (3);
+
+        private int value;
+
+        AspectCorrectionType(int value)
+        {
+            this.value = value;
+        }
+
+        public int getValue()
+        {
+            return value;
+        }
+    }
+
 	public String getInitializationStatus();
     public String getVersion();
 	public boolean init(File nativeDir);
@@ -25,7 +45,8 @@ public interface IOculusRift {
                                               int viewPortHeight,
                                               float clipNear,
                                               float clipFar,
-                                              float eyeToScreenDistanceScaleFactor );
+                                              float eyeToScreenDistanceScaleFactor,
+                                              float lensSeparationScaleFactor);
     public EyeRenderParams getEyeRenderParams(int viewPortX,
                                               int viewPortY,
                                               int viewPortWidth,
@@ -33,8 +54,10 @@ public interface IOculusRift {
                                               float clipNear,
                                               float clipFar,
                                               float eyeToScreenDistanceScaleFactor,
+                                              float lensSeparationScaleFactor,
                                               float distortionFitX,
-                                              float distortionFitY);
+                                              float distortionFitY,
+                                              AspectCorrectionType aspectCorrectionType);
 	public void destroy();
     public void setIPD(float ipd);
     public float getIPD();

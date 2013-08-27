@@ -258,7 +258,7 @@ JNIEXPORT jfloat JNICALL Java_de_fruitfly_ovr_OculusRift__1getRoll
  * Signature: (IIIIFFFFF)Lde/fruitfly/ovr/EyeRenderParams;
  */
 JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getEyeRenderParams
-  (JNIEnv *, jobject, jint, jint, jint, jint, jfloat, jfloat, jfloat, jfloat, jfloat);
+  (JNIEnv *, jobject, jint, jint, jint, jint, jfloat, jfloat, jfloat, jfloat, jfloat, jfloat, jint);
 
 /*
  * Class:     de_fruitfly_ovr_OculusRift

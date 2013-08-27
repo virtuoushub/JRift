@@ -8,6 +8,14 @@
 
 using namespace OVR;
 
+typedef enum AspectCorrectionType
+{
+	CORRECTION_NONE          = 0,
+	CORRECTION_16_9_TO_16_10 = 1,
+	CORRECTION_16_10_TO_16_9 = 2,
+	CORRECTION_AUTO          = 3,
+};
+
 Ptr<DeviceManager>	pManager;
 Ptr<HMDDevice>		pHMD;
 Ptr<SensorDevice>	pSensor;
@@ -269,8 +277,10 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getEyeRenderParams(
    jfloat clipNear,
    jfloat clipFar,
    jfloat eyeToScreenDistanceScaleFactor,
+   jfloat lensSeparationScaleFactor,
    jfloat distortionFitX,
-   jfloat distortionFitY
+   jfloat distortionFitY,
+   jint aspectCorrectionMode
 )
 {
 	if (eyeRenderParams_Class == NULL)
@@ -299,11 +309,15 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getEyeRenderParams(
 	viewPort.h = viewportHeight;
 
 	Util::Render::StereoConfig stereo;
+	HMDInfo hmd = Info;
+
+	// Set lens separation distance
+	hmd.LensSeparationDistance *= lensSeparationScaleFactor;
 
 	// Use defaults (Oculus Rift DK1 parameters) if not initialised.
 	if (Initialized)
 	{
-		stereo.SetHMDInfo(Info);
+		stereo.SetHMDInfo(hmd);
 	}
 
 	stereo.SetIPD(_ipd); // Set IPD manually
@@ -313,14 +327,37 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getEyeRenderParams(
 	stereo.SetDistortionFitPointVP(distortionFitX, distortionFitY); // Defaults to -1.0f, 0.0f. 0.0f, 0.0f is 'No fit'.
 
 	// Calculate aspect ratio multiplier to correct for incorrect display aspect ratio
-	if (Initialized)
+	switch(aspectCorrectionMode)
 	{
-		double HmdRequiredAspect = (double)Info.HResolution / (double)Info.VResolution;
-		double SuppliedAspect = (double)viewPort.w / (double)viewPort.h;
-		float AspectMultiplier = HmdRequiredAspect / SuppliedAspect;
-		stereo.SetAspectMultiplier(AspectMultiplier);
+		case CORRECTION_AUTO:
+		{
+			if (Initialized)
+			{
+				double HmdRequiredAspect = (double)Info.HResolution / (double)Info.VResolution;
+				double SuppliedAspect = (double)viewPort.w / (double)viewPort.h;
+				float AspectMultiplier = HmdRequiredAspect / SuppliedAspect;
+				stereo.SetAspectMultiplier(AspectMultiplier);
+			}
+		}
+		break;
+		case CORRECTION_16_10_TO_16_9:
+		{
+			double aspect_16_10 = (double)16 / (double)10;
+			double aspect_16_9  = (double)16 / (double)9;
+			float AspectMultiplier = aspect_16_9 / aspect_16_10;
+			stereo.SetAspectMultiplier(AspectMultiplier);
+		}
+		break;
+		case CORRECTION_16_9_TO_16_10:
+		{
+			double aspect_16_10 = (double)16 / (double)10;
+			double aspect_16_9  = (double)16 / (double)9;
+			float AspectMultiplier = aspect_16_10 / aspect_16_9;
+			stereo.SetAspectMultiplier(AspectMultiplier);
+		}
+		break;
 	}
-	
+
 	// Set custom clip plane
 	stereo.SetClipNear(clipNear);
 	stereo.SetClipFar(clipFar);

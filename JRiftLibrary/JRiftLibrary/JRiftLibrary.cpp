@@ -18,6 +18,7 @@ typedef enum AspectCorrectionType
 
 Ptr<DeviceManager>	pManager;
 Ptr<HMDDevice>		pHMD;
+Ptr<LatencyTestDevice> pLatencyTester;
 Ptr<SensorDevice>	pSensor;
 Ptr<Profile>        pUserProfile;
 Ptr<ProfileManager> pm;
@@ -26,6 +27,7 @@ bool                IsDefaultProfile = true;
 
 SensorFusion		 FusionResult;
 Util::MagCalibration MagCal;
+Util::LatencyTest    LatencyUtil;
 
 HMDInfo			Info;
 
@@ -63,6 +65,8 @@ JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift__1initSubsystem(JNIEn
 	Info.InterpupillaryDistance = _ipd;
 
 	pHMD = *pManager->EnumerateDevices<HMDDevice>().CreateDevice();
+	pLatencyTester = *pManager->EnumerateDevices<LatencyTestDevice>().CreateDevice();
+
 	if (pHMD) {
 		printf("Oculus Rift Device Interface created.\n");
 		pUserProfile = pHMD->GetProfile(); // Get the current default profile
@@ -76,6 +80,11 @@ JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift__1initSubsystem(JNIEn
 	}
 	else {
 		printf("Unable to create Oculus Rift device interface.\n");
+	}
+
+	if (Initialized && pLatencyTester)
+	{
+		LatencyUtil.SetDevice(pLatencyTester);
 	}
 
 	if (InfoLoaded) {
@@ -133,6 +142,9 @@ void Reset()
 	CurrentProfileType = OVR::Profile_Unknown;
 	IsDefaultProfile   = true;
 
+	LatencyUtil.SetDevice(NULL);
+    pLatencyTester.Clear();
+
 	System::Destroy();
 
 	Initialized = false;
@@ -142,7 +154,7 @@ JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1setPredictionEnabled(JN
 {
 	if (Initialized)
 	{
-		FusionResult.SetPrediction(delta, enable);
+		FusionResult.SetPrediction(delta, enable == TRUE ? true : false);
 	}
 }
 
@@ -335,7 +347,7 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getEyeRenderParams(
 			{
 				double HmdRequiredAspect = (double)Info.HResolution / (double)Info.VResolution;
 				double SuppliedAspect = (double)viewPort.w / (double)viewPort.h;
-				float AspectMultiplier = HmdRequiredAspect / SuppliedAspect;
+				float AspectMultiplier = (float)(HmdRequiredAspect / SuppliedAspect);
 				stereo.SetAspectMultiplier(AspectMultiplier);
 			}
 		}
@@ -344,7 +356,7 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getEyeRenderParams(
 		{
 			double aspect_16_10 = (double)16 / (double)10;
 			double aspect_16_9  = (double)16 / (double)9;
-			float AspectMultiplier = aspect_16_9 / aspect_16_10;
+			float AspectMultiplier = (float)(aspect_16_9 / aspect_16_10);
 			stereo.SetAspectMultiplier(AspectMultiplier);
 		}
 		break;
@@ -352,7 +364,7 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getEyeRenderParams(
 		{
 			double aspect_16_10 = (double)16 / (double)10;
 			double aspect_16_9  = (double)16 / (double)9;
-			float AspectMultiplier = aspect_16_10 / aspect_16_9;
+			float AspectMultiplier = (float)(aspect_16_10 / aspect_16_9);
 			stereo.SetAspectMultiplier(AspectMultiplier);
 		}
 		break;
@@ -572,4 +584,45 @@ JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift__1loadUserProfile(
 	env->ReleaseStringUTFChars(profileName, cname);
   
     return success; 
+}
+
+JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1latencyTesterProcessInputs
+  (JNIEnv *, jobject)
+{
+	if (Initialized && pLatencyTester)
+		LatencyUtil.ProcessInputs();
+}
+
+JNIEXPORT jfloatArray JNICALL Java_de_fruitfly_ovr_OculusRift__1latencyTesterDisplayScreenColor
+  (JNIEnv *env, jobject)
+{
+	Color colorToDisplay;
+	bool displayColor = false;
+	if (Initialized && pLatencyTester)
+		displayColor = LatencyUtil.DisplayScreenColor(colorToDisplay);
+
+	if (!displayColor)
+		return 0;
+
+	jfloatArray result = env->NewFloatArray(4);
+	if (result == 0) 
+		return 0;
+
+	jfloat rgba[4];
+	colorToDisplay.GetRGBA(&rgba[0], &rgba[1], &rgba[2], &rgba[3]);
+	env->SetFloatArrayRegion(result, 0, 4, rgba);
+	return result;
+}
+
+JNIEXPORT jstring JNICALL Java_de_fruitfly_ovr_OculusRift__1latencyTesterGetResultsString
+  (JNIEnv *env, jobject)
+{
+	if (!Initialized || !pLatencyTester)
+		return 0;
+
+	const char* results = LatencyUtil.GetResultsString();
+	if (results == 0)
+		return 0;
+
+	return env->NewStringUTF(results);
 }

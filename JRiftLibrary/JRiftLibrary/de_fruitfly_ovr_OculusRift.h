@@ -292,6 +292,30 @@ JNIEXPORT jobjectArray JNICALL Java_de_fruitfly_ovr_OculusRift__1getUserProfiles
 JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift__1loadUserProfile(
    JNIEnv *env, jobject, jstring);
 
+/*
+ * Class:     de_fruitfly_ovr_OculusRift
+ * Method:    _latencyTesterProcessInputs
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1latencyTesterProcessInputs
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     de_fruitfly_ovr_OculusRift
+ * Method:    _latencyTesterDisplayScreenColor
+ * Signature: ()[F
+ */
+JNIEXPORT jfloatArray JNICALL Java_de_fruitfly_ovr_OculusRift__1latencyTesterDisplayScreenColor
+  (JNIEnv *env, jobject);
+
+/*
+ * Class:     de_fruitfly_ovr_OculusRift
+ * Method:    _latencyTesterGetResultsString
+ * Signature: ()L java/lang/String
+ */
+JNIEXPORT jstring JNICALL Java_de_fruitfly_ovr_OculusRift__1latencyTesterGetResultsString
+  (JNIEnv *env, jobject);
+
 #ifdef __cplusplus
 }
 #endif

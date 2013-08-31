@@ -133,6 +133,7 @@ public class OculusRift implements IOculusRift {
     {
 		if (initialized)
         {
+            _latencyTesterProcessInputs();
             _pollSubsystem();
 
             // Yaw
@@ -297,6 +298,16 @@ public class OculusRift implements IOculusRift {
         return _getUserProfiles();
     }
 
+    public float[] latencyTesterDisplayScreenColor()
+    {
+        return _latencyTesterDisplayScreenColor();
+    }
+
+    public String latencyTesterGetResultsString()
+    {
+        return _latencyTesterGetResultsString();
+    }
+
 	protected native boolean _initSubsystem();
     protected native void _pollSubsystem();
     protected native void _destroySubsystem();
@@ -348,6 +359,10 @@ public class OculusRift implements IOculusRift {
     protected native UserProfileData _getUserProfileData();
     protected native boolean _loadUserProfile(String profileName);
     protected native String[] _getUserProfiles();
+
+    protected native void    _latencyTesterProcessInputs();
+    protected native float[] _latencyTesterDisplayScreenColor();
+    protected native String  _latencyTesterGetResultsString();
 
 	public static void LoadLibrary( File nativeDir )
 	{

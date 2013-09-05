@@ -154,7 +154,7 @@ JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1setPredictionEnabled(JN
 {
 	if (Initialized)
 	{
-		FusionResult.SetPrediction(delta, enable == TRUE ? true : false);
+		FusionResult.SetPrediction(delta, enable == 1 ? true : false);
 	}
 }
 

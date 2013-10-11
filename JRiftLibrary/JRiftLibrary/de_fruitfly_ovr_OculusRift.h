@@ -46,22 +46,6 @@ JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1reset
 
 /*
  * Class:     de_fruitfly_ovr_OculusRift
- * Method:    beginAutomaticCalibration
- * Signature: ()V
- */
-JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1beginAutomaticCalibration
-  (JNIEnv *, jobject);
-
-/*
- * Class:     de_fruitfly_ovr_OculusRift
- * Method:    updateAutomaticCalibration
- * Signature: ()I
- */
-JNIEXPORT jint JNICALL Java_de_fruitfly_ovr_OculusRift__1updateAutomaticCalibration
-  (JNIEnv *, jobject);
-
-/*
- * Class:     de_fruitfly_ovr_OculusRift
  * Method:    isCalibrated
  * Signature: ()Z
  */
@@ -75,14 +59,6 @@ JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift__1isCalibrated
  */
 JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1setCalibrationReference
   (JNIEnv *, jobject);
-
-/*
- * Class:     de_fruitfly_ovr_OculusRift
- * Method:    setMagRefDistance
- * Signature: (F)V
- */
-JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1setMagRefDistance
-  (JNIEnv *, jobject, jfloat magRefDistance);
 
 /*
  * Class:     de_fruitfly_ovr_OculusRift
@@ -259,14 +235,6 @@ JNIEXPORT jfloat JNICALL Java_de_fruitfly_ovr_OculusRift__1getRoll
  */
 JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getEyeRenderParams
   (JNIEnv *, jobject, jint, jint, jint, jint, jfloat, jfloat, jfloat, jfloat, jfloat, jfloat, jint);
-
-/*
- * Class:     de_fruitfly_ovr_OculusRift
- * Method:    _isYawCorrectionInProgress
- * Signature: ()Z
- */
-JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift__1isYawCorrectionInProgress
-  (JNIEnv *, jobject);
 
 /*
  * Class:     de_fruitfly_ovr_OculusRift

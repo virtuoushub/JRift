@@ -5,6 +5,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <memory>
 
 using namespace OVR;
 
@@ -22,11 +23,10 @@ Ptr<LatencyTestDevice> pLatencyTester;
 Ptr<SensorDevice>	pSensor;
 Ptr<Profile>        pUserProfile;
 Ptr<ProfileManager> pm;
+std::auto_ptr<SensorFusion> pFusionResult; // Work-around for 0.2.5 SDK issue
 OVR::ProfileType    CurrentProfileType = OVR::Profile_Unknown;
 bool                IsDefaultProfile = true;
 
-SensorFusion		 FusionResult;
-Util::MagCalibration MagCal;
 Util::LatencyTest    LatencyUtil;
 
 HMDInfo			Info;
@@ -60,6 +60,7 @@ JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift__1initSubsystem(JNIEn
 
 	pManager = *DeviceManager::Create();
 	pm = *ProfileManager::Create();
+	pFusionResult.reset(new SensorFusion); 
 
 	_ipd = 0.0635f; // Default
 	Info.InterpupillaryDistance = _ipd;
@@ -67,14 +68,14 @@ JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift__1initSubsystem(JNIEn
 	pHMD = *pManager->EnumerateDevices<HMDDevice>().CreateDevice();
 	pLatencyTester = *pManager->EnumerateDevices<LatencyTestDevice>().CreateDevice();
 
-	if (pHMD) {
+	if (pHMD && pFusionResult.get() != 0) {
 		printf("Oculus Rift Device Interface created.\n");
 		pUserProfile = pHMD->GetProfile(); // Get the current default profile
 		if (pUserProfile != 0)
 			CurrentProfileType = pUserProfile->Type;  // Get the current default profile type
 		InfoLoaded = pHMD->GetDeviceInfo(&Info);
 		pSensor = *pHMD->GetSensor();
-		FusionResult.AttachToSensor(pSensor);
+		pFusionResult->AttachToSensor(pSensor);
 		Initialized = InfoLoaded && pSensor;
 		printf("Oculus Rift Device Interface initialized.\n");
 	}
@@ -138,13 +139,16 @@ void Reset()
 	pm.Clear();
 	if (pUserProfile != 0)
 		pUserProfile.Clear();
-	FusionResult.AttachToSensor(0); // Workaround for SDK 0.2.4(a) System::Destroy() hang
+	if (pFusionResult.get() != 0)
+		pFusionResult->AttachToSensor(0); // Workaround for SDK 0.2.4(a) System::Destroy() hang
+		
 	CurrentProfileType = OVR::Profile_Unknown;
 	IsDefaultProfile   = true;
 
 	LatencyUtil.SetDevice(NULL);
     pLatencyTester.Clear();
-
+	pFusionResult.reset();
+	
 	System::Destroy();
 
 	Initialized = false;
@@ -154,7 +158,7 @@ JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1setPredictionEnabled(JN
 {
 	if (Initialized)
 	{
-		FusionResult.SetPrediction(delta, enable == 1 ? true : false);
+		pFusionResult->SetPrediction(delta, enable == 1 ? true : false);
 	}
 }
 
@@ -162,11 +166,11 @@ JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1pollSubsystem(JNIEnv *,
 	if (!Initialized) return;
 	if (!pSensor) return;
 
-	bool isPredictionEnabled = FusionResult.IsPredictionEnabled();
+	bool isPredictionEnabled = pFusionResult->IsPredictionEnabled();
 	if (isPredictionEnabled)
-		quaternion = FusionResult.GetPredictedOrientation();
+		quaternion = pFusionResult->GetPredictedOrientation();
 	else
-		quaternion = FusionResult.GetOrientation();
+		quaternion = pFusionResult->GetOrientation();
 
 	quaternion.GetEulerAngles<Axis_Y, Axis_X, Axis_Z>(&yaw, &pitch, &roll);
 }
@@ -417,50 +421,13 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getEyeRenderParams(
 												
 	return eyeRenderParams;
 }
-JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1beginAutomaticCalibration
-  (JNIEnv *, jobject)
-{
-	if (!Initialized) return;
-
-	LOG("Starting Mag Cal");
-	MagCal.BeginAutoCalibration(FusionResult);
-}
 
 JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift__1isCalibrated
   (JNIEnv *, jobject)
 {
 	if (!Initialized) return false;
 
-	return FusionResult.HasMagCalibration() && FusionResult.IsYawCorrectionEnabled();
-}
-
-JNIEXPORT jint JNICALL Java_de_fruitfly_ovr_OculusRift__1updateAutomaticCalibration
-  (JNIEnv *, jobject)
-{
-	jint SampleCount = 0;
-
-	if (!Initialized) return SampleCount;
-
-    if (MagCal.IsAutoCalibrating()) 
-    {
-		LOG("Updating Mag Cal");
-        MagCal.UpdateAutoCalibration(FusionResult);
-		if (MagCal.IsCalibrated())
-		{
-			LOG("Mag Cal Calibrated");
-            FusionResult.SetYawCorrectionEnabled(true);														
-		}
-    }
-
-	return MagCal.NumberOfSamples();
-}
-
-JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1setMagRefDistance
-  (JNIEnv *, jobject, jfloat magRefDistance)
-{
-	if (!Initialized) return;
-
-    FusionResult.SetMagRefDistance(magRefDistance);
+	return pFusionResult->HasMagCalibration() && pFusionResult->IsYawCorrectionEnabled();
 }
 
 JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1reset
@@ -471,15 +438,7 @@ JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1reset
 	// Reset the sensor data and calibration settings. Also resets Yaw position
 	// which will be noticable if yaw drift has occurred.
 
-	FusionResult.Reset();
-}
-
-JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift__1isYawCorrectionInProgress
-  (JNIEnv *, jobject)
-{
-	if (!Initialized) return false;
-
-	return FusionResult.IsYawCorrectionInProgress();
+	pFusionResult->Reset();
 }
 
 JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getUserProfileData(

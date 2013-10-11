@@ -224,7 +224,7 @@ public:
     struct CreateParams
     {
         CreateParams(ThreadFn func = 0, void* hand = 0, UPInt ssize = 128 * 1024, 
-                     int proc = -1, ThreadState state = NotRunning, ThreadPriority prior = AboveNormalPriority)
+                     int proc = -1, ThreadState state = NotRunning, ThreadPriority prior = NormalPriority)
                      : threadFunction(func), userHandle(hand), stackSize(ssize), 
                        processor(proc), initialState(state), priority(prior) {}
         ThreadFn       threadFunction;   // Thread function

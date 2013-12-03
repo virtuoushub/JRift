@@ -1,7 +1,5 @@
 all: 
 	make -C JRift
-
-bin:
 	make -C JRiftLibrary
 
 clean:

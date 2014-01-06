@@ -60,7 +60,7 @@ JRiftLibrary.o: JRiftLibrary.cpp
 	-m32 \
 	-fPIC \
 	-fno-rtti \
-	"-I/usr/lib/jvm/java-6-openjdk-amd64/include/" \
+	"-I/usr/lib/jvm/default-java/include/" \
 	"-I${OCULUS_SDK}/LibOVR/Include" \
 	-c $< \
 	-o $@
@@ -69,7 +69,7 @@ JRiftLibrary64.o: JRiftLibrary.cpp
 	g++ \
 	-fPIC \
 	-fno-rtti \
-	"-I/usr/lib/jvm/java-6-openjdk-amd64/include/" \
+	"-I/usr/lib/jvm/default-java/include/" \
 	"-I${OCULUS_SDK}/LibOVR/Include" \
 	-c $< \
 	-o $@
@@ -80,7 +80,7 @@ libJRiftLibrary.so: JRiftLibrary.o ${OCULUS_SDK}/LibOVR/Linux/Release/i386/libOV
 		-fno-rtti \
 		-shared \
 		-o $@ \
-		"-I/usr/lib/jvm/java-6-openjdk-amd64/include/" \
+		"-I/usr/lib/jvm/default-java/include/" \
 		-L ${OCULUS_SDK}/LibOVR/Lib/Linux/Release/i386/ \
 		$< \
 		-lovr -ludev -lXinerama
@@ -90,7 +90,7 @@ libJRiftLibrary64.so: JRiftLibrary64.o ${OCULUS_SDK}/LibOVR/Lib/Linux/Release/x8
 		-fno-rtti \
 		-shared \
 		-o $@ \
-		"-I/usr/lib/jvm/java-6-openjdk-amd64/include/" \
+		"-I/usr/lib/jvm/default-java/include/" \
 		-L ${OCULUS_SDK}/LibOVR/Lib/Linux/Release/x86_64/ \
 		$< \
 		-lovr -ludev -lXinerama

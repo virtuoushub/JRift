@@ -283,6 +283,58 @@ JNIEXPORT jfloat JNICALL Java_de_fruitfly_ovr_OculusRift__1getRoll(JNIEnv *, job
 	return roll;
 }
 
+JNIEXPORT jfloatArray JNICALL Java_de_fruitfly_ovr_OculusRift__1getOrientationQuaternion
+  (JNIEnv *env, jobject)
+{
+	jfloat xyzw[4] = {0.0f, 0.0f, 0.0f, 1.0f};  // Identity quat
+	jfloatArray result = env->NewFloatArray(4);
+	if (result == 0) 
+		return 0;
+
+	if (Initialized)
+	{
+		xyzw[0] = quaternion.x;
+		xyzw[1] = quaternion.y;
+		xyzw[2] = quaternion.z;
+		xyzw[3] = quaternion.w;
+	}
+
+	env->SetFloatArrayRegion(result, 0, 4, xyzw);
+	return result;
+}
+
+JNIEXPORT jfloatArray JNICALL Java_de_fruitfly_ovr_OculusRift__1getEulerAngles
+  (JNIEnv *env, jobject, jfloat quaternion_x, jfloat quaternion_y, jfloat quaternion_z, jfloat quaternion_w, jfloat scale, jint hand, jint rotationDir)
+{
+	jfloat yawPitchRoll[3] = {0.0f, 0.0f, 0.0f};  
+	jfloatArray result = env->NewFloatArray(3);
+	if (result == 0) 
+		return 0;
+
+	Quatf quat(quaternion_x, quaternion_y, quaternion_z, quaternion_w);
+	
+	if (scale != 1.0f)
+		quat = quat.PowNormalized(scale);
+
+	if (hand == 1)
+	{
+		if (rotationDir == 1)
+			quat.GetEulerAngles<Axis_Y, Axis_X, Axis_Z, Rotate_CCW, Handed_R>(&yawPitchRoll[0], &yawPitchRoll[1], &yawPitchRoll[2]);
+		else
+			quat.GetEulerAngles<Axis_Y, Axis_X, Axis_Z, Rotate_CW, Handed_R>(&yawPitchRoll[0], &yawPitchRoll[1], &yawPitchRoll[2]);
+	}
+	else
+	{
+		if (rotationDir == 1)
+			quat.GetEulerAngles<Axis_Y, Axis_X, Axis_Z, Rotate_CCW, Handed_L>(&yawPitchRoll[0], &yawPitchRoll[1], &yawPitchRoll[2]);
+		else
+			quat.GetEulerAngles<Axis_Y, Axis_X, Axis_Z, Rotate_CW, Handed_L>(&yawPitchRoll[0], &yawPitchRoll[1], &yawPitchRoll[2]);
+	}
+
+	env->SetFloatArrayRegion(result, 0, 3, yawPitchRoll);
+	return result;
+}
+
 JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getEyeRenderParams(
    JNIEnv *env, 
    jobject thisObj,

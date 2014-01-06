@@ -22,6 +22,14 @@ public class OculusRift implements IOculusRift {
     public float pitchAngleDegrees = 0.0f;
     public float rollAngleDegrees = 0.0f;
 
+    public static final int ROTATE_CCW = 1;
+    public static final int ROTATE_CW  = -1;
+    public static final int HANDED_R = 1;
+    public static final int HANDED_L = -1;
+
+    public static final float[] IDENTITY_QUAT = {0.0f, 0.0f, 0.0f, 1.0f};   // x, y, z, w
+    public float[] orientationQuaternion_xyzw = IDENTITY_QUAT;
+
     public String _initSummary = "Not initialised";
 
 	private static boolean libraryLoaded = false;
@@ -56,6 +64,8 @@ public class OculusRift implements IOculusRift {
         yawAngleDegrees = 0.0f;
         pitchAngleDegrees = 0.0f;
         rollAngleDegrees = 0.0f;
+
+        orientationQuaternion_xyzw = IDENTITY_QUAT;
     }
 
 	public String getInitializationStatus()
@@ -155,6 +165,9 @@ public class OculusRift implements IOculusRift {
                 rollAngleDegrees = MAXROLL;
             if (rollAngleDegrees < -MAXROLL)
                 rollAngleDegrees = -MAXROLL;
+
+            // Orientation quaternion
+            orientationQuaternion_xyzw = _getOrientationQuaternion();
         }
 
         //System.out.println("Yaw: " + yawAngleDegrees + ", Pitch: " + pitchAngleDegrees + ", Roll: " + rollAngleDegrees);
@@ -182,6 +195,11 @@ public class OculusRift implements IOculusRift {
     {
         return rollAngleDegrees;
 	}
+
+    public float[] getOrientationQuaternion_xyzw()
+    {
+        return orientationQuaternion_xyzw;
+    }
 
     public void setPrediction(float delta, boolean enable)
     {
@@ -325,6 +343,8 @@ public class OculusRift implements IOculusRift {
     protected native float _getYaw();
     protected native float _getPitch();
     protected native float _getRoll();
+    protected native float[] _getOrientationQuaternion();
+    protected native static float[] _getEulerAngles(float x, float y, float z, float w, float scale, int hand, int rotationDir);
 
     protected native EyeRenderParams _getEyeRenderParams(int currentViewportX,
                                                          int currentViewportY,
@@ -420,6 +440,18 @@ public class OculusRift implements IOculusRift {
 			System.loadLibrary( "JRiftLibrary" );
 		System.out.println("Loaded JRift native library");
 		libraryLoaded = true;
+    }
+
+    public static float[] getEulerAngles(float x, float y, float z, float w, float scale, int hand, int rotationDir)
+    {
+        if( !libraryLoaded ) return new float[3];
+
+        float[] xyz_Radians = _getEulerAngles(x, y, z, w, scale, hand, rotationDir);
+        float[] xyz_Degrees = new float[3];
+        xyz_Degrees[0] = (float)Math.toDegrees(xyz_Radians[0]);
+        xyz_Degrees[1] = (float)Math.toDegrees(xyz_Radians[1]);
+        xyz_Degrees[2] = (float)Math.toDegrees(xyz_Radians[2]);
+        return xyz_Degrees;
     }
 	
 	public static void main(String[] args) {

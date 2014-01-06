@@ -35,6 +35,8 @@ public interface IOculusRift {
     public float getYawDegrees_LH();
     public float getPitchDegrees_LH();
     public float getRollDegrees_LH();
+    public float[] getOrientationQuaternion_xyzw();
+
 	public HMDInfo getHMDInfo();
 	public SensorInfo getSensorInfo();
     public EyeRenderParams getEyeRenderParams(int viewPortWidth, int viewPortHeight);

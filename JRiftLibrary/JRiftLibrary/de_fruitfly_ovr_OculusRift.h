@@ -230,6 +230,22 @@ JNIEXPORT jfloat JNICALL Java_de_fruitfly_ovr_OculusRift__1getRoll
 
 /*
  * Class:     de_fruitfly_ovr_OculusRift
+ * Method:    _getOrientationQuaternion
+ * Signature: ()[F
+ */
+JNIEXPORT jfloatArray JNICALL Java_de_fruitfly_ovr_OculusRift__1getOrientationQuaternion
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     de_fruitfly_ovr_OculusRift
+ * Method:    _getEulerAngles
+ * Signature: (FFFFII)[F
+ */
+JNIEXPORT jfloatArray JNICALL Java_de_fruitfly_ovr_OculusRift__1getEulerAngles
+  (JNIEnv *, jobject, jfloat, jfloat, jfloat, jfloat, jfloat, jint, jint);
+
+/*
+ * Class:     de_fruitfly_ovr_OculusRift
  * Method:    _getEyeRenderParams
  * Signature: (IIIIFFFFF)Lde/fruitfly/ovr/EyeRenderParams;
  */

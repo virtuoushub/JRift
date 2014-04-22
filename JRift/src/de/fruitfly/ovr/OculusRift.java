@@ -1,34 +1,23 @@
 package de.fruitfly.ovr;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.IOException;
+import de.fruitfly.ovr.enums.EyeType;
+import de.fruitfly.ovr.structs.*;
 
-public class OculusRift implements IOculusRift {
-	
+import java.io.File;
+
+public class OculusRift //implements IOculusRift    TODO: Re-implement IOculusRift
+{
 	private boolean initialized = false;
 
     public final String VERSION = "0.3.1.1";
 
-	private HMDInfo hmdInfo = new HMDInfo();
-
-    public float rawYaw;
-    public float rawPitch;
-    public float rawRoll;
-
-    public float yawAngleDegrees = 0.0f;
-    public float pitchAngleDegrees = 0.0f;
-    public float rollAngleDegrees = 0.0f;
+	private HmdDesc hmdDesc = new HmdDesc();
+    private SensorState sensorState = new SensorState();
 
     public static final int ROTATE_CCW = 1;
     public static final int ROTATE_CW  = -1;
     public static final int HANDED_R = 1;
     public static final int HANDED_L = -1;
-
-    public static final float[] IDENTITY_QUAT = {0.0f, 0.0f, 0.0f, 1.0f};   // x, y, z, w
-    public float[] orientationQuaternion_xyzw = IDENTITY_QUAT;
 
     public String _initSummary = "Not initialised";
 
@@ -41,31 +30,8 @@ public class OculusRift implements IOculusRift {
 
     private void resetHMDInfo()
     {
-        // Initialize "fake" default HMD values for testing without HMD plugged in.
-        // These default values match those returned by the HMD.
-        hmdInfo.HResolution            = 1280;
-        hmdInfo.VResolution            = 800;
-        hmdInfo.HScreenSize            = 0.14976f;
-        hmdInfo.VScreenSize            = hmdInfo.HScreenSize / (1280.0f / 800.0f);
-        hmdInfo.VScreenCenter          = hmdInfo.VScreenSize / 2f;
-        hmdInfo.InterpupillaryDistance = 0.0635f;
-        hmdInfo.LensSeparationDistance = 0.064f;
-        hmdInfo.EyeToScreenDistance    = 0.041f;
-        hmdInfo.DistortionK[0]         = 1.0f;
-        hmdInfo.DistortionK[1]         = 0.22f;
-        hmdInfo.DistortionK[2]         = 0.24f;
-        hmdInfo.DistortionK[3]         = 0.0f;
-        hmdInfo.ChromaticAb[0]         = 1.0f;
-        hmdInfo.ChromaticAb[1]         = 0.0f;
-        hmdInfo.ChromaticAb[2]         = 1.0f;
-        hmdInfo.ChromaticAb[3]         = 0.0f;
-        hmdInfo.isFakeData             = true;
-
-        yawAngleDegrees = 0.0f;
-        pitchAngleDegrees = 0.0f;
-        rollAngleDegrees = 0.0f;
-
-        orientationQuaternion_xyzw = IDENTITY_QUAT;
+        hmdDesc = new HmdDesc();
+        sensorState = new SensorState();
     }
 
 	public String getInitializationStatus()
@@ -80,7 +46,7 @@ public class OculusRift implements IOculusRift {
 
 	public boolean init( File nativeDir )
 	{
-		OculusRift.LoadLibrary( nativeDir );
+		OculusRift.LoadLibrary();
 		return init();
 	}
 
@@ -93,24 +59,7 @@ public class OculusRift implements IOculusRift {
 
         if (initialized)
         {
-            hmdInfo.HResolution = _getHResolution();
-            hmdInfo.VResolution = _getVResolution();
-            hmdInfo.HScreenSize = _getHScreenSize();
-            hmdInfo.VScreenSize = _getVScreenSize();
-            hmdInfo.VScreenCenter = _getVScreenCenter();
-            hmdInfo.EyeToScreenDistance =  _getEyeToScreenDistance();
-            hmdInfo.LensSeparationDistance = _getLensSeparationDistance();
-            hmdInfo.InterpupillaryDistance = _getInterpupillaryDistance();
-            hmdInfo.DistortionK[0] = _getDistortionK0();
-            hmdInfo.DistortionK[1] = _getDistortionK1();
-            hmdInfo.DistortionK[2] = _getDistortionK2();
-            hmdInfo.DistortionK[3] = _getDistortionK3();
-            hmdInfo.ChromaticAb[0] = _getChromaAbCorrection0();
-            hmdInfo.ChromaticAb[1] = _getChromaAbCorrection1();
-            hmdInfo.ChromaticAb[2] = _getChromaAbCorrection2();
-            hmdInfo.ChromaticAb[3] = _getChromaAbCorrection3();
-            hmdInfo.isFakeData     = false;
-
+            hmdDesc = _getHmdDesc();
             _initSummary = "OK";
         }
         else
@@ -121,96 +70,13 @@ public class OculusRift implements IOculusRift {
 		return initialized;
 	}
 	
-	public boolean isInitialized() {
+	public boolean isInitialized()
+    {
 		return initialized;
 	}
 
-    public void setIPD(float ipd)
+    public void destroy()
     {
-        _setInterpupillaryDistance(ipd);
-        hmdInfo.InterpupillaryDistance = ipd;
-    }
-
-    public float getIPD()
-    {
-        if (initialized)
-            return _getInterpupillaryDistance();
-
-        return hmdInfo.InterpupillaryDistance;
-    }
-
-	public void poll()
-    {
-		if (initialized)
-        {
-            _latencyTesterProcessInputs();
-            _pollSubsystem();
-
-            // Yaw
-            rawYaw = _getYaw();   // -PI to PI, RH
-            yawAngleDegrees = (float)Math.toDegrees(-rawYaw);
-
-            // Pitch
-            rawPitch = _getPitch();  // -PI/2 to PI/2, RH
-            pitchAngleDegrees = (float)Math.toDegrees(-rawPitch);
-            if (pitchAngleDegrees > MAXPITCH)
-                pitchAngleDegrees = MAXPITCH;
-            if (pitchAngleDegrees < -MAXPITCH)
-                pitchAngleDegrees = -MAXPITCH;
-
-            // Roll
-            rawRoll = _getRoll();  // -PI to PI, RH
-            rollAngleDegrees = (float)Math.toDegrees(-rawRoll);
-            if (rollAngleDegrees > MAXROLL)
-                rollAngleDegrees = MAXROLL;
-            if (rollAngleDegrees < -MAXROLL)
-                rollAngleDegrees = -MAXROLL;
-
-            // Orientation quaternion
-            orientationQuaternion_xyzw = _getOrientationQuaternion();
-        }
-
-        //System.out.println("Yaw: " + yawAngleDegrees + ", Pitch: " + pitchAngleDegrees + ", Roll: " + rollAngleDegrees);
-	}
-	
-	public HMDInfo getHMDInfo() {
-		return hmdInfo;
-	}
-	
-	public SensorInfo getSensorInfo() {
-		return null; // TODO: Support get sensor info
-	}
-	
-	public float getYawDegrees_LH()
-    {
-        return yawAngleDegrees;
-	}
-	
-	public float getPitchDegrees_LH()
-    {
-        return pitchAngleDegrees;
-    }
-
-	public float getRollDegrees_LH()
-    {
-        return rollAngleDegrees;
-	}
-
-    public float[] getOrientationQuaternion_xyzw()
-    {
-        return orientationQuaternion_xyzw;
-    }
-
-    public void setPrediction(float delta, boolean enable)
-    {
-        if (initialized)
-        {
-            _setPredictionEnabled(delta, enable);
-        }
-    }
-
-	public void destroy() {
-
         if (initialized)
         {
             _destroySubsystem();
@@ -218,262 +84,236 @@ public class OculusRift implements IOculusRift {
 
         _initSummary = "Not initialised";
         initialized = false;
-	}
-
-    public EyeRenderParams getEyeRenderParams(int viewPortWidth, int viewPortHeight)
-    {
-        return getEyeRenderParams(0, 0, viewPortWidth, viewPortHeight, 0.05f, 1000.0f);
     }
 
-    public EyeRenderParams getEyeRenderParams(int viewPortX, int viewPortY, int viewPortWidth, int viewPortHeight, float clipNear, float clipFar)
+    public boolean getNextHmd()
     {
-        return getEyeRenderParams(viewPortX, viewPortY, viewPortWidth, viewPortHeight, clipNear, clipFar, 1.0f, 1.0f);
+        return _getNextHmd();
     }
 
-    public EyeRenderParams getEyeRenderParams(int viewPortX,
-                                              int viewPortY,
-                                              int viewPortWidth,
-                                              int viewPortHeight,
-                                              float clipNear,
-                                              float clipFar,
-                                              float eyeToScreenDistanceScaleFactor,
-                                              float lensSeparationScaleFactor)
+    public HmdDesc getHmdDesc()
     {
-        return getEyeRenderParams(
-                viewPortX,
-                viewPortY,
-                viewPortWidth,
-                viewPortHeight,
-                clipNear,
-                clipFar,
-                eyeToScreenDistanceScaleFactor,
-                lensSeparationScaleFactor,
-                -1.0f,
-                0.0f,
-                AspectCorrectionType.CORRECTION_AUTO);
+        return hmdDesc;
     }
 
-    public EyeRenderParams getEyeRenderParams(int viewPortX,
-                                              int viewPortY,
-                                              int viewPortWidth,
-                                              int viewPortHeight,
-                                              float clipNear,
-                                              float clipFar,
-                                              float eyeToScreenDistanceScaleFactor,
-                                              float lensSeparationScaleFactor,
-                                              float distortionFitX,
-                                              float distortionFitY,
-                                              AspectCorrectionType aspectCorrectionType)
+    public void poll()
     {
-        return _getEyeRenderParams(
-                viewPortX,
-                viewPortY,
-                viewPortWidth,
-                viewPortHeight,
-                clipNear,
-                clipFar,
-                eyeToScreenDistanceScaleFactor,
-                lensSeparationScaleFactor,
-                distortionFitX,
-                distortionFitY,
-                aspectCorrectionType.getValue());
+        if (initialized)
+        {
+            sensorState = _getSensorState();
+        }
+
+        //System.out.println("Yaw: " + yawAngleDegrees + ", Pitch: " + pitchAngleDegrees + ", Roll: " + rollAngleDegrees);
     }
 
-    public UserProfileData getUserProfile()
+    public SensorState getLastSensorState()
     {
-        if (!isInitialized())
+        return sensorState;
+    }
+
+    public Sizei getFovTextureSize()
+    {
+        float renderScaleFactor = 1.0f;
+        return _getFovTextureSize(renderScaleFactor);
+    }
+
+    public EyeRenderParams configureRendering(Sizei InTextureSize,
+                                              int InTextureGLId,
+                                              long pWglContext,
+                                              long pWindow,
+                                              long pGdiDc,
+                                              boolean VSyncEnabled)
+    {
+        return _configureRendering(InTextureSize.w,
+                                   InTextureSize.h,
+                                   InTextureGLId,
+                                   pWglContext,
+                                   pWindow,
+                                   pGdiDc,
+                                   VSyncEnabled);
+    }
+
+    public FrameTiming beginFrame()
+    {
+        return _beginFrame(0);
+    }
+
+    public Posef beginEyeRender(EyeType eye)
+    {
+        return _beginEyeRender(eye.value());
+    }
+
+    public Matrix4f getMatrix4fProjection(FovPort fov,
+                                          float nearClip,
+                                          float farClip)
+    {
+        return _getMatrix4fProjection(fov.UpTan,
+                                      fov.DownTan,
+                                      fov.LeftTan,
+                                      fov.RightTan,
+                                      nearClip,
+                                      farClip);
+    }
+
+    public void endEyeRender(EyeType eye)
+    {
+        _endEyeRender(eye.value());
+    }
+
+    public void endFrame()
+    {
+        _endFrame();
+    }
+
+    public static Vector3f getEulerAngles(Quatf quat, float scale, int hand, int rotationDir)
+    {
+        return getEulerAngles(quat.z, quat.y, quat.z, quat.w, scale, hand, rotationDir);
+    }
+
+    public static Vector3f getEulerAngles(float x, float y, float z, float w, float scale, int hand, int rotationDir)
+    {
+        if( !libraryLoaded )
             return null;
 
-        return _getUserProfileData();
+        Vector3f eulerAngles = _convertQuatToEuler(x, y, z, w, scale, hand, rotationDir);
+        eulerAngles.x = (float)Math.toDegrees(eulerAngles.x);
+        eulerAngles.y = (float)Math.toDegrees(eulerAngles.y);
+        eulerAngles.z = (float)Math.toDegrees(eulerAngles.z);
+        return eulerAngles;
     }
 
-    public boolean loadUserProfile(String profileName)
+    // Native declarations
+
+	protected native boolean         _initSubsystem();
+    protected native void            _destroySubsystem();
+
+    protected native boolean         _getNextHmd();
+    protected native HmdDesc         _getHmdDesc();
+
+    protected native SensorState     _getSensorState();
+
+    protected native Sizei           _getFovTextureSize(float RenderScaleFactor);
+    protected native EyeRenderParams _configureRendering(int InTextureWidth,
+                                                         int InTextureHeight,
+                                                         int InTextureGLId,
+                                                         long pWglContext,
+                                                         long pWindow,
+                                                         long pGdiDc,
+                                                         boolean VSyncEnabled);
+
+    protected native FrameTiming     _beginFrame(int frameIndex);
+    protected native Posef           _beginEyeRender(int eye);
+    protected native Matrix4f        _getMatrix4fProjection(float EyeFovPortUpTan,
+                                                            float EyeFovPortDownTan,
+                                                            float EyeFovPortLeftTan,
+                                                            float EyeFovPortRightTan,
+                                                            float nearClip,
+                                                            float farClip);
+    protected native void            _endEyeRender(int eye);
+    protected native void            _endFrame();
+
+    protected native static Vector3f _convertQuatToEuler(float quatx,
+                                                         float quaty,
+                                                         float quatz,
+                                                         float quatw,
+                                                         float scale,
+                                                         int hand,
+                                                         int rotationDir);
+
+    public static void LoadLibrary()
     {
-        if (!isInitialized())
-            return false;
+        if( libraryLoaded ) return;
+        String os = System.getProperty("os.name");
+        boolean is64bit = System.getProperty("sun.arch.data.model").equalsIgnoreCase("64");
 
-        return _loadUserProfile(profileName);
-    }
-
-    public String[] getUserProfiles()
-    {
-        if (!isInitialized())
-            return null;
-
-        return _getUserProfiles();
-    }
-
-    public float[] latencyTesterDisplayScreenColor()
-    {
-        return _latencyTesterDisplayScreenColor();
-    }
-
-    public String latencyTesterGetResultsString()
-    {
-        return _latencyTesterGetResultsString();
-    }
-
-	protected native boolean _initSubsystem();
-    protected native void _pollSubsystem();
-    protected native void _destroySubsystem();
-    protected native void _reset(); // Resets sensor data, including Yaw
-
-    protected native boolean _isCalibrated();
-
-    protected native void _setPredictionEnabled(float delta, boolean enable);
-
-    protected native int _getHResolution();
-    protected native int _getVResolution();
-    protected native float _getHScreenSize();
-    protected native float _getVScreenSize();
-    protected native float _getVScreenCenter();
-    protected native float _getEyeToScreenDistance();
-    protected native float _getLensSeparationDistance();
-    protected native float _getInterpupillaryDistance();
-    protected native void  _setInterpupillaryDistance(float ipd);
-    protected native float _getDistortionK0();
-    protected native float _getDistortionK1();
-    protected native float _getDistortionK2();
-    protected native float _getDistortionK3();
-    protected native float _getChromaAbCorrection0();
-    protected native float _getChromaAbCorrection1();
-    protected native float _getChromaAbCorrection2();
-    protected native float _getChromaAbCorrection3();
-
-    protected native float _getYaw();
-    protected native float _getPitch();
-    protected native float _getRoll();
-    protected native float[] _getOrientationQuaternion();
-    protected native static float[] _getEulerAngles(float x, float y, float z, float w, float scale, int hand, int rotationDir);
-
-    protected native EyeRenderParams _getEyeRenderParams(int currentViewportX,
-                                                         int currentViewportY,
-                                                         int currentViewportWidth,
-                                                         int currentViewportHeight,
-                                                         float clipNear,
-                                                         float clipFar,
-                                                         float eyeToScreenDistanceScaleFactor,
-                                                         float lensSeparationScaleFactor,
-                                                         float distortionFitX,
-                                                         float distortionFitY,
-                                                         int aspectCorrectionMode);
-
-    protected native UserProfileData _getUserProfileData();
-    protected native boolean _loadUserProfile(String profileName);
-    protected native String[] _getUserProfiles();
-
-    protected native void    _latencyTesterProcessInputs();
-    protected native float[] _latencyTesterDisplayScreenColor();
-    protected native String  _latencyTesterGetResultsString();
-
-	public static void LoadLibrary( File nativeDir )
-	{
-		if( libraryLoaded ) return;
-		String os = System.getProperty("os.name");
-		boolean is64bit = System.getProperty("sun.arch.data.model").equalsIgnoreCase("64"); 
-		/*
-		String libName = "FILE_DOESN'T_EXIST";
-
-        if ( os.contains("Win") )
+        //Launcher takes care of extracting natives
+        if( is64bit )
         {
-			if( is64bit )
-				libName = "JRiftLibrary64.dll";
-			else
-				libName = "JRiftLibrary.dll";
-		}
-		else if (os.contains("Mac") )
-		{
-			if( is64bit )
-				libName = "libJRiftLibrary64.jnilib";
-			else
-				libName = "libJRiftLibrary.jnilib";
+            System.loadLibrary("JRiftLibraryd64");
+            System.out.println("Loaded JRift native library (64bit)");
         }
-        else if (os.contains("Linux") )
+        else
         {
-			if( is64bit )
-				libName = "libJRiftLibrary64.so";
-			else
-				libName = "libJRiftLibrary.so";
+            System.loadLibrary("JRiftLibrary");
+            System.out.println("Loaded JRift native library (32bit)");
         }
-		else
-		{
-            System.out.println("Operating System not supported: " + os );
-		}
-		try 
-		{
-			System.out.println("Loading jar:/"+libName+" ... ");
-			InputStream libStream = OculusRift.class.getResourceAsStream( "/" + libName );
 
-			byte[] buffer = new byte[1024];
-			int len = libStream.read(buffer); //Try to read before opening FileOutputStream
-
-			File outFile = new File( nativeDir, libName );
-			OutputStream out = new FileOutputStream( outFile );
-
-			while (len != -1) 
-			{
-				out.write(buffer, 0, len);
-				len = libStream.read(buffer);
-			}
-			out.close();
-			System.load( outFile.getAbsolutePath() );
-			libraryLoaded = true;
-
-			System.out.println( libName + " loaded");
-		} 
-		catch( Exception e ) 
-		{ 
-			System.out.println( e.toString() );
-			System.out.println( "Couldn't load "+libName+"... trying alternative way" );
-			if( is64bit )
-				System.loadLibrary( "JRiftLibrary64" );
-			else
-				System.loadLibrary( "JRiftLibrary" );
-			libraryLoaded = true;
-		}
-		*/
-
-		//Launcher takes care of extracting natives
-		if( is64bit )
-			System.loadLibrary( "JRiftLibrary64" );
-		else
-			System.loadLibrary( "JRiftLibrary" );
-		System.out.println("Loaded JRift native library");
-		libraryLoaded = true;
+        libraryLoaded = true;
     }
 
-    public static float[] getEulerAngles(float x, float y, float z, float w, float scale, int hand, int rotationDir)
+    public static void main(String[] args)
     {
-        if( !libraryLoaded ) return new float[3];
+        OculusRift.LoadLibrary();
+        OculusRift or = new OculusRift();
+        if (or.init())
+        {
+            System.out.println("Failed to initialise OR lib");
+            return;
+        }
 
-        float[] xyz_Radians = _getEulerAngles(x, y, z, w, scale, hand, rotationDir);
-        float[] xyz_Degrees = new float[3];
-        xyz_Degrees[0] = (float)Math.toDegrees(xyz_Radians[0]);
-        xyz_Degrees[1] = (float)Math.toDegrees(xyz_Radians[1]);
-        xyz_Degrees[2] = (float)Math.toDegrees(xyz_Radians[2]);
-        return xyz_Degrees;
+        HmdDesc hmdDesc = or.getHmdDesc();
+        System.out.println(hmdDesc.toString());
+
+        while (or.isInitialized()) {
+            or.poll();
+            SensorState state = or.getLastSensorState();
+            Vector3f euler = or.getEulerAngles(state.Predicted.Pose.Orientation,
+                                               1.0f,
+                                               OculusRift.HANDED_L,
+                                               OculusRift.ROTATE_CCW);
+            Vector3f pos = state.Predicted.Pose.Position;
+
+            System.out.println("Yaw: " + euler.y + " Pitch: " + euler.x + " Roll: " + euler.z + "PosX: " + pos.x+ "PosY: " + pos.y + "PosZ: " + pos.z);
+
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        or.destroy();
     }
-	
-	public static void main(String[] args) {
-		OculusRift.LoadLibrary(new File(System.getProperty("java.io.tmpdir")) );
-		OculusRift or = new OculusRift();
-		or.init();
-		
-		HMDInfo hmdInfo = or.getHMDInfo();
-		System.out.println(hmdInfo);
-		
-		while (or.isInitialized()) {
-			or.poll();
-			
-			System.out.println("Yaw: " + or.getYawDegrees_LH() + " Pitch: " + or.getPitchDegrees_LH() + " Roll: " + or.getRollDegrees_LH());
-			
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-		
-		or.destroy();
-	}
+
+//    public UserProfileData getUserProfile()
+//    {
+//        if (!isInitialized())
+//            return null;
+//
+//        return _getUserProfileData();
+//    }
+//
+//    public boolean loadUserProfile(String profileName)
+//    {
+//        if (!isInitialized())
+//            return false;
+//
+//        return _loadUserProfile(profileName);
+//    }
+//
+//    public String[] getUserProfiles()
+//    {
+//        if (!isInitialized())
+//            return null;
+//
+//        return _getUserProfiles();
+//    }
+//
+//    public float[] latencyTesterDisplayScreenColor()
+//    {
+//        return _latencyTesterDisplayScreenColor();
+//    }
+//
+//    public String latencyTesterGetResultsString()
+//    {
+//        return _latencyTesterGetResultsString();
+//    }
+
+//    protected native UserProfileData _getUserProfileData();
+//    protected native boolean _loadUserProfile(String profileName);
+//    protected native String[] _getUserProfiles();
+//
+//    protected native void    _latencyTesterProcessInputs();
+//    protected native float[] _latencyTesterDisplayScreenColor();
+//    protected native String  _latencyTesterGetResultsString();
 }

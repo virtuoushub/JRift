@@ -2,7 +2,12 @@ package de.fruitfly.ovr.structs;
 
 public class Vector3f
 {
-    Vector3f(float X, float Y, float Z)
+    public Vector3f()
+    {
+
+    }
+
+    public Vector3f(float X, float Y, float Z)
     {
         x = X;
         y = Y;

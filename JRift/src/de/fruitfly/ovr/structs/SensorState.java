@@ -2,6 +2,12 @@ package de.fruitfly.ovr.structs;
 
 public class SensorState
 {
+    public SensorState()
+    {
+        Predicted.Pose.Orientation.w = 1.0f;
+        Recorded.Pose.Orientation.w = 1.0f;
+    }
+
     public SensorState(float PredictedPoseStatefPosefOrientationx,
                        float PredictedPoseStatefPosefOrientationy,
                        float PredictedPoseStatefPosefOrientationz,
@@ -93,15 +99,15 @@ public class SensorState
     // Predicted pose configuration at requested absolute time.
     // One can determine the time difference between predicted and actual
     // readings by comparing ovrPoseState.TimeInSeconds.
-    public PoseStatef  Predicted;
+    public PoseStatef  Predicted = new PoseStatef();
 
     // Actual recorded pose configuration based on the sensor sample at a
     // moment closest to the requested time.
-    public PoseStatef  Recorded;
+    public PoseStatef  Recorded = new PoseStatef();
 
     // Sensor temperature reading, in degrees Celsius, as sample time.
     public float       Temperature;
 
     // Sensor status described by ovrStatusBits.
-    public int   StatusFlags;
+    public int         StatusFlags;
 }

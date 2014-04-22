@@ -2,6 +2,11 @@ package de.fruitfly.ovr.structs;
 
 public class Quatf
 {
+    public Quatf()
+    {
+        w = 1.0f;
+    }
+
     Quatf(float X, float Y, float Z, float W)
     {
         x = X;
@@ -14,4 +19,6 @@ public class Quatf
     public float y;
     public float z;
     public float w;
+
+    public static Quatf IDENTITY = new Quatf(0.0f, 0.0f, 0.0f, 1.0f);
 }

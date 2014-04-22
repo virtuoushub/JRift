@@ -2,10 +2,10 @@ package de.fruitfly.ovr.structs;
 
 public class PoseStatef
 {
-    public Posef     Pose;
-    public Vector3f  AngularVelocity;
-    public Vector3f  LinearVelocity;
-    public Vector3f  AngularAcceleration;
-    public Vector3f  LinearAcceleration;
+    public Posef     Pose = new Posef();
+    public Vector3f  AngularVelocity = new Vector3f();
+    public Vector3f  LinearVelocity = new Vector3f();
+    public Vector3f  AngularAcceleration = new Vector3f();
+    public Vector3f  LinearAcceleration = new Vector3f();
     public double    TimeInSeconds;
 }

@@ -2,6 +2,11 @@ package de.fruitfly.ovr.structs;
 
 public class Posef
 {
+    public Posef()
+    {
+
+    }
+
     public Posef(float quatx,
                  float quaty,
                  float quatz,
@@ -20,6 +25,6 @@ public class Posef
         Position.z = posz;
     }
 
-    public Quatf     Orientation;
-    public Vector3f  Position;
+    public Quatf     Orientation = Quatf.IDENTITY;
+    public Vector3f  Position = new Vector3f();
 }

@@ -10,8 +10,8 @@ import java.nio.IntBuffer;
 
 public class EyeRenderParams
 {
-    public EyeRenderDesc _Eye1;
-    public EyeRenderDesc _Eye2;
+    public EyeRenderDesc _Eye1 = new EyeRenderDesc();
+    public EyeRenderDesc _Eye2 = new EyeRenderDesc();
 
     public float _renderScale;
     public float _XCenterOffset;

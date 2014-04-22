@@ -2,7 +2,12 @@ package de.fruitfly.ovr.structs;
 
 public class Vector2i
 {
-    Vector2i(int X, int Y)
+    public Vector2i()
+    {
+
+    }
+
+    public Vector2i(int X, int Y)
     {
         x = X;
         y = Y;

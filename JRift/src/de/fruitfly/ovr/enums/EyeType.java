@@ -13,6 +13,11 @@ public enum EyeType
         this.eyeTypeEnum = value;
     }
 
+    public int value()
+    {
+        return this.eyeTypeEnum;
+    }
+
     public static EyeType fromInteger(int x) {
         switch(x) {
             case 0:

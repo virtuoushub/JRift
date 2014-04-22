@@ -5,6 +5,11 @@ import de.fruitfly.ovr.enums.HmdType;
 
 public class HmdDesc
 {
+    public HmdDesc()
+    {
+
+    }
+
     public HmdDesc(
             int hmdType,
             String productName,
@@ -68,20 +73,20 @@ public class HmdDesc
         DisplayId = displayId;
     }
     
-    public HmdType Type;
+    public HmdType Type = HmdType.ovrHmd_None;
 
     // Name string describing the product: "Oculus Rift DK1", etc.
-    public String ProductName;
-    public String Manufacturer;
+    public String ProductName = new String();
+    public String Manufacturer = new String();
 
     // Capability bits described by ovrHmdCapBits.
     public int Caps;
     public int DistortionCaps;
 
     // Resolution of the entire HMD screen (for both eyes) in pixels.
-    public Sizei    Resolution;
+    public Sizei    Resolution = new Sizei();
     // Where monitor window should be on screen or (0,0).
-    public Vector2i WindowsPos;
+    public Vector2i WindowsPos = new Vector2i();
 
     // These define the recommended and maximum optical FOVs for the HMD.
     public FovPort  DefaultEyeFov[] = new FovPort[2];
@@ -98,7 +103,7 @@ public class HmdDesc
     // work with our monitor driver.
 
     // Windows: "\\\\.\\DISPLAY3", etc. Can be used in EnumDisplaySettings/CreateDC.
-    public String DisplayDeviceName;
+    public String DisplayDeviceName = new String();
     // MacOS
     public long   DisplayId;
 

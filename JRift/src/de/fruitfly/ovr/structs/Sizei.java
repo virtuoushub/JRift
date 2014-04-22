@@ -2,7 +2,12 @@ package de.fruitfly.ovr.structs;
 
 public class Sizei
 {
-    Sizei(int W, int H)
+    public Sizei()
+    {
+
+    }
+
+    public Sizei(int W, int H)
     {
         w = W;
         h = H;

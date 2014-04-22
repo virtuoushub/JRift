@@ -1,19 +1,18 @@
 package de.fruitfly.ovr;
 
+import de.fruitfly.ovr.enums.EyeType;
+import de.fruitfly.ovr.structs.EyeRenderDesc;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
-/**
- * Created with IntelliJ IDEA.
- * User: Engineer
- * Date: 4/13/13
- * Time: 6:14 PM
- * To change this template use File | Settings | File Templates.
- */
 public class EyeRenderParams
 {
+    public EyeRenderDesc _Eye1;
+    public EyeRenderDesc _Eye2;
+
     public float _renderScale;
     public float _XCenterOffset;
     public int _leftViewPortX, _leftViewPortY, _leftViewPortW, _leftViewPortH;
@@ -23,6 +22,91 @@ public class EyeRenderParams
     public float[][] _rightProjectionM;
     public float[][] _rightViewAdjustM;
     public float _halfIPD;
+    
+    public EyeRenderParams(
+            int eye1Descfloat,
+            int eye1DescTextureSizew,
+            int eye1DescTextureSizeh,
+            int eye1DescRenderViewportPosx,
+            int eye1DescRenderViewportPosy,
+            int eye1DescRenderViewportSizew,
+            int eye1DescRenderViewportSizeh,
+            float eye1DescFovUpTan,
+            float eye1DescFovDownTan,
+            float eye1DescFovLeftTan,
+            float eye1DescFovRightTan,
+            int eye1DistortedViewportPosx,
+            int eye1DistortedViewportPosy,
+            int eye1DistortedViewportSizew,
+            int eye1DistortedViewportSizeh,
+            float eye1PixelsPerTanAngleAtCenterx,
+            float eye1PixelsPerTanAngleAtCentery,
+            float eye1ViewAdjustx,
+            float eye1ViewAdjusty,
+            float eye1ViewAdjustz,
+            int eye2Descfloat,
+            int eye2DescTextureSizew,
+            int eye2DescTextureSizeh,
+            int eye2DescRenderViewportPosx,
+            int eye2DescRenderViewportPosy,
+            int eye2DescRenderViewportSizew,
+            int eye2DescRenderViewportSizeh,
+            float eye2DescFovUpTan,
+            float eye2DescFovDownTan,
+            float eye2DescFovLeftTan,
+            float eye2DescFovRightTan,
+            int eye2DistortedViewportPosx,
+            int eye2DistortedViewportPosy,
+            int eye2DistortedViewportSizew,
+            int eye2DistortedViewportSizeh,
+            float eye2PixelsPerTanAngleAtCenterx,
+            float eye2PixelsPerTanAngleAtCentery,
+            float eye2ViewAdjustx,
+            float eye2ViewAdjusty,
+            float eye2ViewAdjustz
+        )
+    {
+        _Eye1.Desc.Eye = EyeType.fromInteger(eye1Descfloat);
+        _Eye1.Desc.TextureSize.w = eye1DescTextureSizew;
+        _Eye1.Desc.TextureSize.h = eye1DescTextureSizeh;
+        _Eye1.Desc.RenderViewport.Pos.x = eye1DescRenderViewportPosx;
+        _Eye1.Desc.RenderViewport.Pos.y = eye1DescRenderViewportPosy;
+        _Eye1.Desc.RenderViewport.Size.w = eye1DescRenderViewportSizew;
+        _Eye1.Desc.RenderViewport.Size.h = eye1DescRenderViewportSizeh;
+        _Eye1.Desc.Fov.UpTan = eye1DescFovUpTan;
+        _Eye1.Desc.Fov.DownTan = eye1DescFovDownTan;
+        _Eye1.Desc.Fov.LeftTan = eye1DescFovLeftTan;
+        _Eye1.Desc.Fov.RightTan = eye1DescFovRightTan;
+        _Eye1.DistortedViewport.Pos.x = eye1DistortedViewportPosx;
+        _Eye1.DistortedViewport.Pos.y = eye1DistortedViewportPosy;
+        _Eye1.DistortedViewport.Size.w = eye1DistortedViewportSizew;
+        _Eye1.DistortedViewport.Size.h = eye1DistortedViewportSizeh;
+        _Eye1.PixelsPerTanAngleAtCenter.x = eye1PixelsPerTanAngleAtCenterx;
+        _Eye1.PixelsPerTanAngleAtCenter.y = eye1PixelsPerTanAngleAtCentery;
+        _Eye1.ViewAdjust.x = eye1ViewAdjustx;
+        _Eye1.ViewAdjust.y = eye1ViewAdjusty;
+        _Eye1.ViewAdjust.z = eye1ViewAdjustz;
+        _Eye2.Desc.Eye = EyeType.fromInteger(eye2Descfloat);
+        _Eye2.Desc.TextureSize.w = eye2DescTextureSizew;
+        _Eye2.Desc.TextureSize.h = eye2DescTextureSizeh;
+        _Eye2.Desc.RenderViewport.Pos.x = eye2DescRenderViewportPosx;
+        _Eye2.Desc.RenderViewport.Pos.y = eye2DescRenderViewportPosy;
+        _Eye2.Desc.RenderViewport.Size.w = eye2DescRenderViewportSizew;
+        _Eye2.Desc.RenderViewport.Size.h = eye2DescRenderViewportSizeh;
+        _Eye2.Desc.Fov.UpTan = eye2DescFovUpTan;
+        _Eye2.Desc.Fov.DownTan = eye2DescFovDownTan;
+        _Eye2.Desc.Fov.LeftTan = eye2DescFovLeftTan;
+        _Eye2.Desc.Fov.RightTan = eye2DescFovRightTan;
+        _Eye2.DistortedViewport.Pos.x = eye2DistortedViewportPosx;
+        _Eye2.DistortedViewport.Pos.y = eye2DistortedViewportPosy;
+        _Eye2.DistortedViewport.Size.w = eye2DistortedViewportSizew;
+        _Eye2.DistortedViewport.Size.h = eye2DistortedViewportSizeh;
+        _Eye2.PixelsPerTanAngleAtCenter.x = eye2PixelsPerTanAngleAtCenterx;
+        _Eye2.PixelsPerTanAngleAtCenter.y = eye2PixelsPerTanAngleAtCentery;
+        _Eye2.ViewAdjust.x = eye2ViewAdjustx;
+        _Eye2.ViewAdjust.y = eye2ViewAdjusty;
+        _Eye2.ViewAdjust.z = eye2ViewAdjustz;       
+    }
 
     public EyeRenderParams(float renderScale, float xCentreOffset,
                            int leftViewPortX, int leftViewPortY, int leftViewPortW, int leftViewPortH,

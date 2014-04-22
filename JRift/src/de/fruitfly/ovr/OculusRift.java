@@ -10,7 +10,7 @@ public class OculusRift implements IOculusRift {
 	
 	private boolean initialized = false;
 
-    public final String VERSION = "1.14";
+    public final String VERSION = "0.3.1.1";
 
 	private HMDInfo hmdInfo = new HMDInfo();
 

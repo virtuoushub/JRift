@@ -47,10 +47,10 @@ JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift__1getNextHmd
 /*
  * Class:     de_fruitfly_ovr_OculusRift
  * Method:    getSensorState
- * Signature: (F)Lde/fruitfly/ovr/struct/SensorState;
+ * Signature: (D)Lde/fruitfly/ovr/struct/SensorState;
  */
 JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getSensorState
-    (JNIEnv *, jobject, jfloat);
+    (JNIEnv *, jobject, jdouble);
 
 /*
  * Class:     de_fruitfly_ovr_OculusRift

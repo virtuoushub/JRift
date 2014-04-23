@@ -100,7 +100,8 @@ public class OculusRift //implements IOculusRift    TODO: Re-implement IOculusRi
     {
         if (initialized)
         {
-            sensorState = _getSensorState();
+            // Get sensor state as of now
+            sensorState = _getSensorState(0.0d);
         }
 
         //System.out.println("Yaw: " + yawAngleDegrees + ", Pitch: " + pitchAngleDegrees + ", Roll: " + rollAngleDegrees);
@@ -190,7 +191,7 @@ public class OculusRift //implements IOculusRift    TODO: Re-implement IOculusRi
     protected native boolean         _getNextHmd();
     protected native HmdDesc         _getHmdDesc();
 
-    protected native SensorState     _getSensorState();
+    protected native SensorState     _getSensorState(double timeFromNow);
 
     protected native Sizei           _getFovTextureSize(float RenderScaleFactor);
     protected native EyeRenderParams _configureRendering(int InTextureWidth,

@@ -156,7 +156,7 @@ JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift__1getNextHmd(JNIEnv *
     return CreateHmdAndStartSensor(_hmdIndex);
 }
 
-JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getSensorState(JNIEnv *env, jobject, jfloat time) 
+JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getSensorState(JNIEnv *env, jobject, jdouble time) 
 {
 	if (!_initialised) 
         return 0;
@@ -228,12 +228,16 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getFovTextureSize(JN
     RenderTargetSize.w = recommendedTex0Size.w + recommendedTex1Size.w;
     RenderTargetSize.h = max ( recommendedTex0Size.h, recommendedTex1Size.h );
 
-    jobject sizei = env->NewObject(sizei_Class, sizei_constructor_MethodID,
-                                   RenderTargetSize.w,
-                                   RenderTargetSize.h
-                                   );
+    ClearException(env);
 
-    return sizei;
+    jobject jsizei = env->NewObject(sizei_Class, sizei_constructor_MethodID,
+                                    RenderTargetSize.w,
+                                    RenderTargetSize.h
+                                    );
+
+    if (jsizei == 0) PrintNewObjectException(env, "Sizei");
+
+    return jsizei;
 }
 
 JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1configureRendering(

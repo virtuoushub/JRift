@@ -137,8 +137,16 @@ void DEBUGLOG(std::string s);
 void LogHmdDesc(std::auto_ptr<ovrHmdDesc>& pHmdDesc);
 void Reset();
 void ResetRenderConfig();
-void CacheJNIGlobals(JNIEnv *env);
+bool CacheJNIGlobals(JNIEnv *env);
 bool CreateHmdAndStartSensor(int hmdIndex);
+bool LookupJNIGlobal(JNIEnv *env,
+                     jclass& clazz,
+                     std::string className,
+                     jmethodID& method,
+                     std::string constructorSignature);
+void ClearException(JNIEnv *env);
+void PrintNewObjectException(JNIEnv *env, std::string objectName);
+
 
 //
 ///*

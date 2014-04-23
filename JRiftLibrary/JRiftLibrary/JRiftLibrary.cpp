@@ -10,8 +10,8 @@
 
 using namespace OVR;
 
-std::auto_ptr<ovrHmdStruct> _pHmd;
-std::auto_ptr<ovrHmdDesc>   _pHmdDesc;
+std::auto_ptr<ovrHmdStruct> _pHmd(0);
+std::auto_ptr<ovrHmdDesc>   _pHmdDesc(0);
 
 int				    _hmdIndex    = -1;
 bool			    _initialised = false;
@@ -19,31 +19,36 @@ bool                _renderConfigured = false;
 ovrPosef            _eyeRenderPose[2];
 ovrGLTexture        _EyeTexture[2];
 
-const bool          LogDebug = false;
+const bool          LogDebug = true;
 
 // JNI class / method caching
-static jclass       eyeRenderParams_Class;
-static jmethodID    eyeRenderParams_constructor_MethodID;
-static jclass       frameTiming_Class;
-static jmethodID    frameTiming_constructor_MethodID;
-static jclass       posef_Class;
-static jmethodID    posef_constructor_MethodID;
-static jclass       sensorState_Class;
-static jmethodID    sensorState_constructor_MethodID;
-static jclass       sizei_Class;
-static jmethodID    sizei_constructor_MethodID;
-static jclass       hmdDesc_Class;
-static jmethodID    hmdDesc_constructor_MethodID;
-static jclass       vector3f_Class;
-static jmethodID    vector3f_constructor_MethodID;
-static jclass       matrix4f_Class;
-static jmethodID    matrix4f_constructor_MethodID;
+static jclass       eyeRenderParams_Class                = 0;
+static jmethodID    eyeRenderParams_constructor_MethodID = 0;
+static jclass       frameTiming_Class                    = 0;
+static jmethodID    frameTiming_constructor_MethodID     = 0;
+static jclass       posef_Class                          = 0;
+static jmethodID    posef_constructor_MethodID           = 0;
+static jclass       sensorState_Class                    = 0;
+static jmethodID    sensorState_constructor_MethodID     = 0;
+static jclass       sizei_Class                          = 0;
+static jmethodID    sizei_constructor_MethodID           = 0;
+static jclass       hmdDesc_Class                        = 0;
+static jmethodID    hmdDesc_constructor_MethodID         = 0;
+static jclass       vector3f_Class                       = 0;
+static jmethodID    vector3f_constructor_MethodID        = 0;
+static jclass       matrix4f_Class                       = 0;
+static jmethodID    matrix4f_constructor_MethodID        = 0;
 
 JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift__1initSubsystem(JNIEnv *env, jobject jobj) 
 {
+    DEBUGLOG("Initialising Oculus Rift subsystem...");
+
 	Reset();
 
-    CacheJNIGlobals(env);
+    if (!CacheJNIGlobals(env))
+    {
+        return false;
+    }
 
 	// Initialise LibOVR
 	ovr_Initialize();
@@ -77,9 +82,11 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getHmdDesc(JNIEnv *e
 	if (!_initialised) 
         return 0;
 
-    jstring productName = env->NewStringUTF( _pHmdDesc->ProductName );
-    jstring manufacturer = env->NewStringUTF( _pHmdDesc->Manufacturer );
-    jstring displayDeviceName = env->NewStringUTF( _pHmdDesc->DisplayDeviceName );
+    jstring productName = env->NewStringUTF( _pHmdDesc->ProductName == NULL ? "" : _pHmdDesc->ProductName );
+    jstring manufacturer = env->NewStringUTF( _pHmdDesc->Manufacturer == NULL ? "" : _pHmdDesc->Manufacturer );
+    jstring displayDeviceName = env->NewStringUTF( _pHmdDesc->DisplayDeviceName == NULL ? "" : _pHmdDesc->DisplayDeviceName );
+    
+    ClearException(env);
 
     jobject jHmdDesc = env->NewObject(hmdDesc_Class, hmdDesc_constructor_MethodID,
                                       (int)_pHmdDesc->Type,
@@ -107,8 +114,8 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getHmdDesc(JNIEnv *e
                                       _pHmdDesc->MaxEyeFov[1].DownTan,
                                       _pHmdDesc->MaxEyeFov[1].LeftTan,
                                       _pHmdDesc->MaxEyeFov[1].RightTan,
-                                      _pHmdDesc->EyeRenderOrder[0],
-                                      _pHmdDesc->EyeRenderOrder[1],
+                                      (int)_pHmdDesc->EyeRenderOrder[0],
+                                      (int)_pHmdDesc->EyeRenderOrder[1],
                                       displayDeviceName,
                                       _pHmdDesc->DisplayId
             );
@@ -116,6 +123,8 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getHmdDesc(JNIEnv *e
     env->DeleteLocalRef( productName );
     env->DeleteLocalRef( manufacturer );
     env->DeleteLocalRef( displayDeviceName );
+
+    if (jHmdDesc == 0) PrintNewObjectException(env, "HmdDesc");
 
     return jHmdDesc;
 }
@@ -155,7 +164,9 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getSensorState(JNIEn
 	// Get sensorstate at the specified time in the future from now (0.0 means 'now')
 	ovrSensorState ss = ovrHmd_GetSensorState(_pHmd.get(), time);
 
-    jobject jss = env->NewObject(eyeRenderParams_Class, eyeRenderParams_constructor_MethodID, 
+    ClearException(env);
+
+    jobject jss = env->NewObject(sensorState_Class, sensorState_constructor_MethodID, 
                                  ss.Predicted.Pose.Orientation.x,   
                                  ss.Predicted.Pose.Orientation.y,  
                                  ss.Predicted.Pose.Orientation.z,   
@@ -199,6 +210,8 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getSensorState(JNIEn
                                  ss.Temperature,
                                  ss.StatusFlags
                                  );
+
+    if (jss == 0) PrintNewObjectException(env, "SensorState");
 
     return jss;
 }
@@ -581,10 +594,22 @@ bool CreateHmdAndStartSensor(int hmdIndex)
     return result;
 }
 
-void LOGDEBUG(std::string s)
+void DEBUGLOG(std::string s)
 {
 	if (LogDebug)
 		printf("DEBUG: %s\n", s.c_str());
+}
+
+void ClearException(JNIEnv *env)
+{
+    env->ExceptionClear();
+}
+
+void PrintNewObjectException(JNIEnv *env, std::string objectName)
+{
+    printf("Failed to create object '%s'", objectName.c_str());
+    env->ExceptionDescribe();
+    env->ExceptionClear();
 }
 
 void LogHmdDesc(std::auto_ptr<ovrHmdDesc>& pHmdDesc)
@@ -610,459 +635,132 @@ void Reset()
 		if (_pHmd.get())
 			ovrHmd_Destroy(_pHmd.get());
 
-		_pHmd.reset();
-		_pHmdDesc.reset();
-		_hmdIndex = -1;
-
-        _eyeRenderPose[0].Orientation.x = 0.0;
-        _eyeRenderPose[0].Orientation.y = 0.0;
-        _eyeRenderPose[0].Orientation.z = 0.0;
-        _eyeRenderPose[0].Orientation.w = 0.0;
-        _eyeRenderPose[0].Position.x = 0.0;
-        _eyeRenderPose[0].Position.y = 0.0;
-        _eyeRenderPose[0].Position.z = 0.0;
-        _eyeRenderPose[1] = _eyeRenderPose[0];
-
 		// Shutdown LibOVR
 		ovr_Shutdown();
 	}
 
+	_pHmd.reset();
+	_pHmdDesc.reset();
+	_hmdIndex = -1;
+
+    _eyeRenderPose[0].Orientation.x = 0.0;
+    _eyeRenderPose[0].Orientation.y = 0.0;
+    _eyeRenderPose[0].Orientation.z = 0.0;
+    _eyeRenderPose[0].Orientation.w = 0.0;
+    _eyeRenderPose[0].Position.x = 0.0;
+    _eyeRenderPose[0].Position.y = 0.0;
+    _eyeRenderPose[0].Position.z = 0.0;
+    _eyeRenderPose[1] = _eyeRenderPose[0];
+
 	_initialised = false;
 }
 
-void CacheJNIGlobals(JNIEnv *env)
+bool CacheJNIGlobals(JNIEnv *env)
 {
-    if (sizei_Class == NULL)
-	{
-		jclass localClass = env->FindClass("de/fruitfly/ovr/struct/Sizei");
-		sizei_Class = (jclass)env->NewGlobalRef(localClass);
-		env->DeleteLocalRef(localClass);
-	}
+    if (!LookupJNIGlobal(env,
+                         sizei_Class,
+                         "de/fruitfly/ovr/structs/Sizei",
+                         sizei_constructor_MethodID,
+                         "(II)V"))
+    {
+        return false;
+    }
 
-	if (sizei_constructor_MethodID == NULL)
-	{
-		sizei_constructor_MethodID = env->GetMethodID(sizei_Class, 
-			"<init>", "("
-                      "II"
-                      ")V");
-	}
+    if (!LookupJNIGlobal(env,
+                         hmdDesc_Class,
+                         "de/fruitfly/ovr/structs/HmdDesc",
+                         hmdDesc_constructor_MethodID,
+                         "(ILjava/lang/String;Ljava/lang/String;IIIIIIFFFFFFFFFFFFFFFFIILjava/lang/String;J)V"))
+    {
+        return false;
+    }
 
-    if (hmdDesc_Class == NULL)
-	{
-		jclass localClass = env->FindClass("de/fruitfly/ovr/struct/HmdDesc");
-		hmdDesc_Class = (jclass)env->NewGlobalRef(localClass);
-		env->DeleteLocalRef(localClass);
-	}
+    if (!LookupJNIGlobal(env,
+                         sensorState_Class,
+                         "de/fruitfly/ovr/structs/SensorState",
+                         sensorState_constructor_MethodID,
+                         "(FFFFFFFFFFFFFFFFFFFDFFFFFFFFFFFFFFFFFFFDFI)V"))
+    {
+        return false;
+    }
 
-	if (hmdDesc_constructor_MethodID == NULL)
-	{
-		hmdDesc_constructor_MethodID = env->GetMethodID(hmdDesc_Class, 
-			"<init>", "("
-                      "ILjava/lang/String;Ljava/lang/String;IIIIII"
-                      "FFFFFFFFFFFFFFFFIILjava/lang/String;J"
-                      ")V");
-	}
+    if (!LookupJNIGlobal(env,
+                         vector3f_Class,
+                         "de/fruitfly/ovr/structs/Vector3f",
+                         vector3f_constructor_MethodID,
+                         "(FFF)V"))
+    {
+        return false;
+    }
 
-    if (sensorState_Class == NULL)
-	{
-		jclass localClass = env->FindClass("de/fruitfly/ovr/struct/SensorState");
-		sensorState_Class = (jclass)env->NewGlobalRef(localClass);
-		env->DeleteLocalRef(localClass);
-	}
+    if (!LookupJNIGlobal(env,
+                         eyeRenderParams_Class,
+                         "de/fruitfly/ovr/EyeRenderParams",
+                         eyeRenderParams_constructor_MethodID,
+                         "(IIIIIIIFFFFIIIIFFFFFIIIIIIIFFFFIIIIFFFFF)V"))
+    {
+        return false;
+    }
 
-	if (sensorState_constructor_MethodID == NULL)
-	{
-		sensorState_constructor_MethodID = env->GetMethodID(sensorState_Class, 
-			"<init>", "("
-                      "FFFFFFFFFFFFFFFFFFFD"
-					  "FFFFFFFFFFFFFFFFFFFD"
-                      "FI"
-                      ")V");
-	}
+    if (!LookupJNIGlobal(env,
+                         posef_Class,
+                         "de/fruitfly/ovr/structs/Posef",
+                         posef_constructor_MethodID,
+                         "(FFFFFFF)V"))
+    {
+        return false;
+    }
 
-	if (vector3f_Class == NULL)
-	{
-		jclass localClass = env->FindClass("de/fruitfly/ovr/structs/Vector3f");
-		vector3f_Class = (jclass)env->NewGlobalRef(localClass);
-		env->DeleteLocalRef(localClass);
-	}
+    if (!LookupJNIGlobal(env,
+                         frameTiming_Class,
+                         "de/fruitfly/ovr/structs/FrameTiming",
+                         frameTiming_constructor_MethodID,
+                         "(FDDDDDD)V"))
+    {
+        return false;
+    }
 
-	if (vector3f_constructor_MethodID == NULL)
-	{
-		vector3f_constructor_MethodID = env->GetMethodID(vector3f_Class, 
-			"<init>", "("
-                      "FFF"
-                      ")V");
-	}
+    if (!LookupJNIGlobal(env,
+                         matrix4f_Class,
+                         "de/fruitfly/ovr/structs/Matrix4f",
+                         matrix4f_constructor_MethodID,
+                         "(FFFFFFFFFFFFFFFF)V"))
+    {
+        return false;
+    }
 
-	if (eyeRenderParams_Class == NULL)
-	{
-		jclass localClass = env->FindClass("de/fruitfly/ovr/EyeRenderParams");
-		eyeRenderParams_Class = (jclass)env->NewGlobalRef(localClass);
-		env->DeleteLocalRef(localClass);
-	}
-
-	if (eyeRenderParams_constructor_MethodID == NULL)
-	{
-		eyeRenderParams_constructor_MethodID = env->GetMethodID(eyeRenderParams_Class, 
-			"<init>", "("
-                      "IIIIIIIFFFFIIIIFFFFF"
-					  "IIIIIIIFFFFIIIIFFFFF"
-                      ")V");
-	}
-
-	if (posef_Class == NULL)
-	{
-		jclass localClass = env->FindClass("de/fruitfly/ovr/structs/Posef");
-		posef_Class = (jclass)env->NewGlobalRef(localClass);
-		env->DeleteLocalRef(localClass);
-	}
-
-	if (posef_constructor_MethodID == NULL)
-	{
-		posef_constructor_MethodID = env->GetMethodID(posef_Class, 
-			"<init>", "("
-                      "FFFFFFF"
-                      ")V");
-	}
-
-	if (frameTiming_Class == NULL)
-	{
-		jclass localClass = env->FindClass("de/fruitfly/ovr/structs/FrameTiming");
-		frameTiming_Class = (jclass)env->NewGlobalRef(localClass);
-		env->DeleteLocalRef(localClass);
-	}
-
-	if (frameTiming_constructor_MethodID == NULL)
-	{
-		frameTiming_constructor_MethodID = env->GetMethodID(frameTiming_Class, 
-			"<init>", "("
-                      "FDDDDDD"
-                      ")V");
-	}
-
-	if (matrix4f_Class == NULL)
-	{
-		jclass localClass = env->FindClass("de/fruitfly/ovr/structs/Matrix4f");
-		matrix4f_Class = (jclass)env->NewGlobalRef(localClass);
-		env->DeleteLocalRef(localClass);
-	}
-
-	if (matrix4f_constructor_MethodID == NULL)
-	{
-		matrix4f_constructor_MethodID = env->GetMethodID(matrix4f_Class, 
-			"<init>", "("
-                      "FFFFFFFFFFFFFFFF"
-                      ")V");
-	}
+    return true;
 }
 
+bool LookupJNIGlobal(JNIEnv *env,
+                     jclass& clazz,
+                     std::string className,
+                     jmethodID& method,
+                     std::string constructorSignature)
+{
+    if (clazz == NULL)
+	{
+		jclass localClass = env->FindClass(className.c_str());
+        if (localClass == 0)
+        {
+            printf("Failed to find class '%s'", className.c_str());
+            return false;
+        }
 
+		clazz = (jclass)env->NewGlobalRef(localClass);
+		env->DeleteLocalRef(localClass);
+	}
 
+	if (method == NULL)
+	{
+		method = env->GetMethodID(clazz, "<init>", constructorSignature.c_str());
+        if (method == 0)
+        {
+            printf("Failed to find constuctor method for class '%s' with signature: %s", 
+                className.c_str(), constructorSignature.c_str());
+            return false;
+        }
+	}
 
-
-
-
-//
-//JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getEyeRenderParams(
-//   JNIEnv *env, 
-//   jobject thisObj,
-//   jint viewportX,
-//   jint viewportY,
-//   jint viewportWidth,
-//   jint viewportHeight,
-//   jfloat clipNear,
-//   jfloat clipFar,
-//   jfloat eyeToScreenDistanceScaleFactor,
-//   jfloat lensSeparationScaleFactor,
-//   jfloat distortionFitX,
-//   jfloat distortionFitY,
-//   jint aspectCorrectionMode
-//)
-//{
-//	if (eyeRenderParams_Class == NULL)
-//	{
-//		jclass localEyeRenderParamClass = env->FindClass("de/fruitfly/ovr/EyeRenderParams");
-//		eyeRenderParams_Class = (jclass)env->NewGlobalRef(localEyeRenderParamClass);
-//		env->DeleteLocalRef(localEyeRenderParamClass);
-//	}
-//
-//	if (eyeRenderParams_constructor_MethodID == NULL)
-//	{
-//		eyeRenderParams_constructor_MethodID = env->GetMethodID(eyeRenderParams_Class, 
-//			"<init>", "(FF"
-//			          "IIII"
-//					  "FFFFFFFFFFFFFFFF"
-//					  "FFFFFFFFFFFFFFFF"
-//					  "IIII"
-//					  "FFFFFFFFFFFFFFFF"
-//					  "FFFFFFFFFFFFFFFF)V");
-//	}
-//	
-//	Util::Render::Viewport viewPort;
-//	viewPort.x = viewportX;
-//	viewPort.y = viewportY;
-//	viewPort.w = viewportWidth;
-//	viewPort.h = viewportHeight;
-//
-//	Util::Render::StereoConfig stereo;
-//	HMDInfo hmd = Info;
-//
-//	// Set lens separation distance
-//	hmd.LensSeparationDistance *= lensSeparationScaleFactor;
-//
-//	// Use defaults (Oculus Rift DK1 parameters) if not initialised.
-//	if (Initialized)
-//	{
-//		stereo.SetHMDInfo(hmd);
-//	}
-//
-//	stereo.SetIPD(_ipd); // Set IPD manually
-//	stereo.SetEyeToScreenDistanceScaleFactor(eyeToScreenDistanceScaleFactor); // FOV adjustment
-//	stereo.SetStereoMode(Util::Render::Stereo_LeftRight_Multipass);
-//	stereo.SetFullViewport(viewPort);
-//	stereo.SetDistortionFitPointVP(distortionFitX, distortionFitY); // Defaults to -1.0f, 0.0f. 0.0f, 0.0f is 'No fit'.
-//
-//	// Calculate aspect ratio multiplier to correct for incorrect display aspect ratio
-//	switch(aspectCorrectionMode)
-//	{
-//		case CORRECTION_AUTO:
-//		{
-//			if (Initialized)
-//			{
-//				double HmdRequiredAspect = (double)Info.HResolution / (double)Info.VResolution;
-//				double SuppliedAspect = (double)viewPort.w / (double)viewPort.h;
-//				float AspectMultiplier = (float)(HmdRequiredAspect / SuppliedAspect);
-//				stereo.SetAspectMultiplier(AspectMultiplier);
-//			}
-//		}
-//		break;
-//		case CORRECTION_16_10_TO_16_9:
-//		{
-//			double aspect_16_10 = (double)16 / (double)10;
-//			double aspect_16_9  = (double)16 / (double)9;
-//			float AspectMultiplier = (float)(aspect_16_9 / aspect_16_10);
-//			stereo.SetAspectMultiplier(AspectMultiplier);
-//		}
-//		break;
-//		case CORRECTION_16_9_TO_16_10:
-//		{
-//			double aspect_16_10 = (double)16 / (double)10;
-//			double aspect_16_9  = (double)16 / (double)9;
-//			float AspectMultiplier = (float)(aspect_16_10 / aspect_16_9);
-//			stereo.SetAspectMultiplier(AspectMultiplier);
-//		}
-//		break;
-//	}
-//
-//	// Set custom clip plane
-//	stereo.SetClipNear(clipNear);
-//	stereo.SetClipFar(clipFar);
-//
-//	float renderScale = stereo.GetDistortionScale();
-//
-//	Util::Render::StereoEyeParams leftEye = stereo.GetEyeRenderParams(Util::Render::StereoEye_Left);
-//	Util::Render::StereoEyeParams rightEye = stereo.GetEyeRenderParams(Util::Render::StereoEye_Right);
-//
-//	Util::Render::Viewport leftViewPort   = leftEye.VP;
-//	Matrix4f               leftProjection = leftEye.Projection;
-//	Matrix4f               leftViewAdjust = leftEye.ViewAdjust;
-//	
-//	Util::Render::Viewport rightViewPort   = rightEye.VP;
-//	Matrix4f               rightProjection = rightEye.Projection;
-//	Matrix4f               rightViewAdjust = rightEye.ViewAdjust;
-//
-//	const Util::Render::DistortionConfig DistortionConfig = stereo.GetDistortionConfig();
-//	float yFovDegrees = stereo.GetYFOVDegrees();
-//	float aspect = stereo.GetAspect();
-//	float XCenterOffset = DistortionConfig.XCenterOffset; 
-//
-//	jobject eyeRenderParams = env->NewObject(eyeRenderParams_Class, eyeRenderParams_constructor_MethodID,
-//											 renderScale,
-//											 XCenterOffset,
-//											 leftViewPort.x, leftViewPort.y, leftViewPort.w, leftViewPort.h,
-//											 leftProjection.M[0][0], leftProjection.M[0][1], leftProjection.M[0][2], leftProjection.M[0][3],
-//											 leftProjection.M[1][0], leftProjection.M[1][1], leftProjection.M[1][2], leftProjection.M[1][3],
-//											 leftProjection.M[2][0], leftProjection.M[2][1], leftProjection.M[2][2], leftProjection.M[2][3],
-//											 leftProjection.M[3][0], leftProjection.M[3][1], leftProjection.M[3][2], leftProjection.M[3][3],
-//											 leftViewAdjust.M[0][0], leftViewAdjust.M[0][1], leftViewAdjust.M[0][2], leftViewAdjust.M[0][3],
-//											 leftViewAdjust.M[1][0], leftViewAdjust.M[1][1], leftViewAdjust.M[1][2], leftViewAdjust.M[1][3],
-//											 leftViewAdjust.M[2][0], leftViewAdjust.M[2][1], leftViewAdjust.M[2][2], leftViewAdjust.M[2][3],
-//											 leftViewAdjust.M[3][0], leftViewAdjust.M[3][1], leftViewAdjust.M[3][2], leftViewAdjust.M[3][3],
-//											 rightViewPort.x, rightViewPort.y, rightViewPort.w, rightViewPort.h,
-//											 rightProjection.M[0][0], rightProjection.M[0][1], rightProjection.M[0][2], rightProjection.M[0][3],
-//											 rightProjection.M[1][0], rightProjection.M[1][1], rightProjection.M[1][2], rightProjection.M[1][3],
-//											 rightProjection.M[2][0], rightProjection.M[2][1], rightProjection.M[2][2], rightProjection.M[2][3],
-//											 rightProjection.M[3][0], rightProjection.M[3][1], rightProjection.M[3][2], rightProjection.M[3][3],
-//											 rightViewAdjust.M[0][0], rightViewAdjust.M[0][1], rightViewAdjust.M[0][2], rightViewAdjust.M[0][3],
-//											 rightViewAdjust.M[1][0], rightViewAdjust.M[1][1], rightViewAdjust.M[1][2], rightViewAdjust.M[1][3],
-//											 rightViewAdjust.M[2][0], rightViewAdjust.M[2][1], rightViewAdjust.M[2][2], rightViewAdjust.M[2][3],
-//											 rightViewAdjust.M[3][0], rightViewAdjust.M[3][1], rightViewAdjust.M[3][2], rightViewAdjust.M[3][3]
-//											);
-//												
-//	return eyeRenderParams;
-//}
-//
-//JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift__1isCalibrated
-//  (JNIEnv *, jobject)
-//{
-//	if (!Initialized) return false;
-//
-//	return pFusionResult->HasMagCalibration() && pFusionResult->IsYawCorrectionEnabled();
-//}
-//
-//JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1reset
-//  (JNIEnv *, jobject)
-//{
-//	if (!Initialized) return;
-//
-//	// Reset the sensor data and calibration settings. Also resets Yaw position
-//	// which will be noticable if yaw drift has occurred.
-//
-//	pFusionResult->Reset();
-//}
-//
-//JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getUserProfileData(
-//   JNIEnv *env, jobject)
-//{
-//	if (!Initialized) return 0;
-//
-//	if (!pUserProfile) 
-//		pUserProfile = pm->GetDeviceDefaultProfile(CurrentProfileType);
-//
-//	if (!pUserProfile) return 0;
-//
-//	CurrentProfileType = pUserProfile->Type;
-//
-//	if (UserProfileData_Class == NULL)
-//	{
-//		jclass localUserProfileData_Class = env->FindClass("de/fruitfly/ovr/UserProfileData");
-//		UserProfileData_Class = (jclass)env->NewGlobalRef(localUserProfileData_Class);
-//		env->DeleteLocalRef(localUserProfileData_Class);
-//	}
-//
-//	if (UserProfileData_constructor_MethodID == NULL)
-//	{
-//		UserProfileData_constructor_MethodID = env->GetMethodID(UserProfileData_Class, 
-//			"<init>", "("
-//			          "F"
-//					  "F"
-//					  "F"
-//					  "I"
-//					  "Z"
-//					  "Ljava/lang/String;"
-//					  ")V");
-//	}
-//
-//	float playerHeight = pUserProfile->GetPlayerHeight();
-//	float eyeHeight = pUserProfile->GetEyeHeight();
-//	float ipd = pUserProfile->GetIPD();
-//	int gender = pUserProfile->GetGender();
-//	std::string name = pUserProfile->Name;
-//	jstring str = env->NewStringUTF(name.c_str());
-//
-//	jobject profileData = env->NewObject(UserProfileData_Class, UserProfileData_constructor_MethodID,
-//		playerHeight,
-//		eyeHeight,
-//		ipd,
-//		gender,
-//		IsDefaultProfile,
-//		str
-//	);
-//
-//    env->DeleteLocalRef(str);
-//
-//	return profileData;
-//}
-//
-//JNIEXPORT jobjectArray JNICALL Java_de_fruitfly_ovr_OculusRift__1getUserProfiles(
-//   JNIEnv *env, jobject)
-//{
-//	if (!Initialized) return 0;
-//
-//	if (!pUserProfile) return 0;
-//
-//	int ProfileCount = pm->GetProfileCount(CurrentProfileType);
-//	jobjectArray profileList = (jobjectArray)env->NewObjectArray(ProfileCount, 
-//		                                                         env->FindClass("java/lang/String"), 
-//																 env->NewStringUTF(""));
-//
-//	for (int i = 0; i < ProfileCount; i++)
-//		env->SetObjectArrayElement(profileList, i, env->NewStringUTF(pm->GetProfileName(CurrentProfileType, i)));
-//  
-//    return profileList; 
-//}
-//
-//JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift__1loadUserProfile(
-//   JNIEnv *env, jobject, jstring profileName)
-//{
-//	if (!Initialized) return false;
-//
-//	jboolean success = true;
-//	jboolean isCopy = false;
-//	const char* cname = env->GetStringUTFChars(profileName, &isCopy);
-//	std::string name = cname;
-//
-//	if (pm->HasProfile(CurrentProfileType, name.c_str()))
-//	{
-//		pUserProfile = pm->LoadProfile(CurrentProfileType, name.c_str());
-//		std::string defaultname = pm->GetDefaultProfileName(CurrentProfileType);
-//		if (name.compare(defaultname) == 0)
-//		{
-//			IsDefaultProfile = true;
-//		}
-//		else
-//		{
-//			IsDefaultProfile = false;	
-//		}
-//	}
-//	else
-//	{
-//		success = false;
-//	}
-//
-//	env->ReleaseStringUTFChars(profileName, cname);
-//  
-//    return success; 
-//}
-//
-//JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1latencyTesterProcessInputs
-//  (JNIEnv *, jobject)
-//{
-//	if (Initialized && pLatencyTester)
-//		LatencyUtil.ProcessInputs();
-//}
-//
-//JNIEXPORT jfloatArray JNICALL Java_de_fruitfly_ovr_OculusRift__1latencyTesterDisplayScreenColor
-//  (JNIEnv *env, jobject)
-//{
-//	Color colorToDisplay;
-//	bool displayColor = false;
-//	if (Initialized && pLatencyTester)
-//		displayColor = LatencyUtil.DisplayScreenColor(colorToDisplay);
-//
-//	if (!displayColor)
-//		return 0;
-//
-//	jfloatArray result = env->NewFloatArray(4);
-//	if (result == 0) 
-//		return 0;
-//
-//	jfloat rgba[4];
-//	colorToDisplay.GetRGBA(&rgba[0], &rgba[1], &rgba[2], &rgba[3]);
-//	env->SetFloatArrayRegion(result, 0, 4, rgba);
-//	return result;
-//}
-//
-//JNIEXPORT jstring JNICALL Java_de_fruitfly_ovr_OculusRift__1latencyTesterGetResultsString
-//  (JNIEnv *env, jobject)
-//{
-//	if (!Initialized || !pLatencyTester)
-//		return 0;
-//
-//	const char* results = LatencyUtil.GetResultsString();
-//	if (results == 0)
-//		return 0;
-//
-//	return env->NewStringUTF(results);
-//}
+    return true;
+}

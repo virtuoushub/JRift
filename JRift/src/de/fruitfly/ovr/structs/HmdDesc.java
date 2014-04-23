@@ -51,18 +51,22 @@ public class HmdDesc
         Resolution.h = resolutionH;
         WindowsPos.x = windowPosX;
         WindowsPos.y = windowPosY;
+        DefaultEyeFov[0] = new FovPort();
         DefaultEyeFov[0].UpTan = defaultEyeFov1UpTan;
         DefaultEyeFov[0].DownTan = defaultEyeFov1DownTan;
         DefaultEyeFov[0].LeftTan = defaultEyeFov1LeftTan;
         DefaultEyeFov[0].RightTan = defaultEyeFov1RightTan;
+        DefaultEyeFov[1] = new FovPort();
         DefaultEyeFov[1].UpTan = defaultEyeFov2UpTan;
         DefaultEyeFov[1].DownTan = defaultEyeFov2DownTan;
         DefaultEyeFov[1].LeftTan = defaultEyeFov2LeftTan;
         DefaultEyeFov[1].RightTan = defaultEyeFov2RightTan;
+        MaxEyeFov[0] = new FovPort();
         MaxEyeFov[0].UpTan = maxEyeFov1UpTan;
         MaxEyeFov[0].DownTan = maxEyeFov1DownTan;
         MaxEyeFov[0].LeftTan = maxEyeFov1LeftTan;
         MaxEyeFov[0].RightTan = maxEyeFov1RightTan;
+        MaxEyeFov[1] = new FovPort();
         MaxEyeFov[1].UpTan = maxEyeFov2UpTan;
         MaxEyeFov[1].DownTan = maxEyeFov2DownTan;
         MaxEyeFov[1].LeftTan = maxEyeFov2LeftTan;
@@ -116,8 +120,8 @@ public class HmdDesc
         sb.append("Manufacturer:      ").append(Manufacturer).append("\n");
         sb.append("Capability bits:\n").append(HmdDesc.CapsToString(Caps));
         sb.append("Distortion bits:\n").append(HmdDesc.DistortionCapsToString(DistortionCaps));
-        sb.append("Resolution:        ").append(Resolution.w).append("X").append(Resolution.h);
-        sb.append("EyeRenderOrder:    ").append(EyeType.toString(EyeRenderOrder[0])).append(", ").append(EyeType.toString(EyeRenderOrder[1]));
+        sb.append("Resolution:        ").append(Resolution.w).append("X").append(Resolution.h).append("\n");
+        sb.append("EyeRenderOrder:    ").append(EyeType.toString(EyeRenderOrder[0])).append(", ").append(EyeType.toString(EyeRenderOrder[1])).append("\n");
         sb.append("DisplayDeviceName: ").append(DisplayDeviceName).append("\n");
         sb.append("DisplayId:         ").append(DisplayId).append("\n");
 
@@ -143,31 +147,31 @@ public class HmdDesc
         StringBuilder sb = new StringBuilder();
 
         if ((caps & ovrHmdCap_Present) != 0)
-            sb.append("ovrHmdCap_Present\n");
+            sb.append(" ovrHmdCap_Present\n");
 
         if ((caps & ovrHmdCap_Available) != 0)
-            sb.append("ovrHmdCap_Available\n");
+            sb.append(" ovrHmdCap_Available\n");
 
         if ((caps & ovrHmdCap_Orientation) != 0)
-            sb.append("ovrHmdCap_Orientation\n");
+            sb.append(" ovrHmdCap_Orientation\n");
 
         if ((caps & ovrHmdCap_YawCorrection) != 0)
-            sb.append("ovrHmdCap_YawCorrection\n");
+            sb.append(" ovrHmdCap_YawCorrection\n");
 
         if ((caps & ovrHmdCap_Position) != 0)
-            sb.append("ovrHmdCap_Position\n");
+            sb.append(" ovrHmdCap_Position\n");
 
         if ((caps & ovrHmdCap_LowPersistence) != 0)
-            sb.append("ovrHmdCap_LowPersistence\n");
+            sb.append(" ovrHmdCap_LowPersistence\n");
 
         if ((caps & ovrHmdCap_LatencyTest) != 0)
-            sb.append("ovrHmdCap_LatencyTest\n");
+            sb.append(" ovrHmdCap_LatencyTest\n");
 
         if ((caps & ovrHmdCap_DynamicPrediction) != 0)
-            sb.append("ovrHmdCap_DynamicPrediction\n");
+            sb.append(" ovrHmdCap_DynamicPrediction\n");
 
         if ((caps & ovrHmdCap_NoVSync) != 0)
-            sb.append("ovrHmdCap_NoVSync\n");
+            sb.append(" ovrHmdCap_NoVSync\n");
 
         return sb.toString();
     }
@@ -181,13 +185,13 @@ public class HmdDesc
         StringBuilder sb = new StringBuilder();
 
         if ((caps & ovrDistortion_Chromatic) != 0)
-            sb.append("ovrDistortion_Chromatic\n");
+            sb.append(" ovrDistortion_Chromatic\n");
 
         if ((caps & ovrDistortion_TimeWarp) != 0)
-            sb.append("ovrDistortion_TimeWarp\n");
+            sb.append(" ovrDistortion_TimeWarp\n");
 
         if ((caps & ovrDistortion_Vignette) != 0)
-            sb.append("ovrDistortion_Vignette\n");
+            sb.append(" ovrDistortion_Vignette\n");
 
         return sb.toString();
     }

@@ -9,9 +9,9 @@ public enum HmdType
     ovrHmd_DK2(6),
     ovrHmd_Other(999);
 
-        private final int hmdTypeEnum;
+    private final int hmdTypeEnum;
 
-        private HmdType(int value)
+    private HmdType(int value)
         {
             this.hmdTypeEnum = value;
         }
@@ -34,6 +34,9 @@ public enum HmdType
 
     public static String toString(HmdType type)
     {
+        if (type == null)
+            return "null";
+
         switch(type)
         {
             case ovrHmd_None:

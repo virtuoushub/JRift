@@ -245,7 +245,8 @@ public class OculusRift //implements IOculusRift    TODO: Re-implement IOculusRi
     {
         OculusRift.LoadLibrary();
         OculusRift or = new OculusRift();
-        if (or.init())
+
+        if (!or.init())
         {
             System.out.println("Failed to initialise OR lib");
             return;
@@ -263,7 +264,7 @@ public class OculusRift //implements IOculusRift    TODO: Re-implement IOculusRi
                                                OculusRift.ROTATE_CCW);
             Vector3f pos = state.Predicted.Pose.Position;
 
-            System.out.println("Yaw: " + euler.y + " Pitch: " + euler.x + " Roll: " + euler.z + "PosX: " + pos.x+ "PosY: " + pos.y + "PosZ: " + pos.z);
+            System.out.println("Yaw: " + euler.y + " Pitch: " + euler.x + " Roll: " + euler.z + " PosX: " + pos.x+ " PosY: " + pos.y + " PosZ: " + pos.z);
 
             try {
                 Thread.sleep(100);

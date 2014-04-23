@@ -587,7 +587,8 @@ HMDInfo CreateDebugHMDInfo(HmdTypeEnum hmdType)
     HMDInfo info;    
 
     if ((hmdType != HmdType_DK1) &&
-        (hmdType != HmdType_CrystalCoveProto))
+        (hmdType != HmdType_CrystalCoveProto) &&
+        (hmdType != HmdType_DK2))
     {
         LogText("Debug HMDInfo - HmdType not supported. Defaulting to DK1.\n");
         hmdType = HmdType_DK1;

@@ -256,6 +256,9 @@ public class OculusRift //implements IOculusRift    TODO: Re-implement IOculusRi
         HmdDesc hmdDesc = or.getHmdDesc();
         System.out.println(hmdDesc.toString());
 
+        Sizei recommendedFovTextureSize = or.getFovTextureSize();
+        System.out.println("Render target size: " + recommendedFovTextureSize.w + "x" + recommendedFovTextureSize.h);
+
         while (or.isInitialized()) {
             or.poll();
             SensorState state = or.getLastSensorState();
@@ -268,7 +271,7 @@ public class OculusRift //implements IOculusRift    TODO: Re-implement IOculusRi
             System.out.println("Yaw: " + euler.y + " Pitch: " + euler.x + " Roll: " + euler.z + " PosX: " + pos.x+ " PosY: " + pos.y + " PosZ: " + pos.z);
 
             try {
-                Thread.sleep(100);
+                Thread.sleep(200);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

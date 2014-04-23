@@ -120,7 +120,7 @@ public class HmdDesc
         sb.append("Manufacturer:      ").append(Manufacturer).append("\n");
         sb.append("Capability bits:\n").append(HmdDesc.CapsToString(Caps));
         sb.append("Distortion bits:\n").append(HmdDesc.DistortionCapsToString(DistortionCaps));
-        sb.append("Resolution:        ").append(Resolution.w).append("X").append(Resolution.h).append("\n");
+        sb.append("Resolution:        ").append(Resolution.w).append("x").append(Resolution.h).append("\n");
         sb.append("EyeRenderOrder:    ").append(EyeType.toString(EyeRenderOrder[0])).append(", ").append(EyeType.toString(EyeRenderOrder[1])).append("\n");
         sb.append("DisplayDeviceName: ").append(DisplayDeviceName).append("\n");
         sb.append("DisplayId:         ").append(DisplayId).append("\n");

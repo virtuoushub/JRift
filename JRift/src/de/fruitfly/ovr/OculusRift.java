@@ -5,7 +5,7 @@ import de.fruitfly.ovr.structs.*;
 
 import java.io.File;
 
-public class OculusRift //implements IOculusRift    TODO: Re-implement IOculusRift
+public class OculusRift implements IOculusRift
 {
 	private boolean initialized = false;
 

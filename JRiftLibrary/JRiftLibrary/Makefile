@@ -1,17 +1,47 @@
+#############################################################################
+#
+# Filename    : Makefile
+# Content     : Makefile for building linux / OSX versions of: jriftlibrary
+# Instruction : You'll need both 64 bit and 32 libs available. Navigate in a 
+#               shell to the directory where this Makefile is located and enter:
+#
+#               make                builds the release versions for both i386 
+#                                   and amd64
+#               make 32             builds the i386 version only
+#               make 64             builds the amd64 version only
+#
+#               make clean          delete intermediate release object files 
+#                                   and the library files for both the i386 and
+#                                   amd64 versions
+#               make clean32        delete intermediate release object files 
+#                                   and the library files for the i386 version 
+#                                   only
+#               make clean64        delete intermediate release object files 
+#                                   and the library files for the amd64 version 
+#                                   only
+#
+#############################################################################
 UNAME := $(shell uname)
 
 OCULUS_SDK:=..
 
 ifeq ($(UNAME), Darwin)
 
+MAC_SDK:=Developer/SDKs/MacOSX10.6.sdk
+#MAC_SDK:=Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.6.sdk
+
 all: libJRiftLibrary64.jnilib libJRiftLibrary.jnilib
+
+32: libJRiftLibrary.jnilib
+
+64: libJRiftLibrary64.jnilib
 
 JRiftLibrary.o: JRiftLibrary.cpp
 	g++ \
 	-fno-rtti \
 	-m32 \
 	"-I/System/Library/Frameworks/JavaVM.framework/Versions/Current/Headers" \
-	"-I/Developer/SDKs/MacOSX10.6.sdk/System/Library/Frameworks/JavaVM.framework/Versions/A/Headers" \
+	"-I/${MAC_SDK}/System/Library/Frameworks/JavaVM.framework/Versions/A/Headers" \
 	"-I${OCULUS_SDK}/LibOVR/Include" \
 	-c JRiftLibrary.cpp \
 	-o $@
@@ -19,13 +49,14 @@ JRiftLibrary.o: JRiftLibrary.cpp
 JRiftLibrary64.o: JRiftLibrary.cpp
 	g++ \
 	-fno-rtti \
+	-m64 \
 	"-I/System/Library/Frameworks/JavaVM.framework/Versions/Current/Headers" \
-	"-I/Developer/SDKs/MacOSX10.6.sdk/System/Library/Frameworks/JavaVM.framework/Versions/A/Headers" \
+	"-I/${MAC_SDK}/System/Library/Frameworks/JavaVM.framework/Versions/A/Headers" \
 	"-I${OCULUS_SDK}/LibOVR/Include" \
 	-c JRiftLibrary.cpp \
 	-o $@
 
-libJRiftLibrary.jnilib: JRiftLibrary.o
+libJRiftLibrary.jnilib: JRiftLibrary.o ${OCULUS_SDK}/LibOVR/OSX/Release/i386/libOVR.a
 	g++ \
 		-dynamiclib \
 		-fno-rtti \
@@ -37,10 +68,11 @@ libJRiftLibrary.jnilib: JRiftLibrary.o
 		JRiftLibrary.o \
 		-lovr
 
-libJRiftLibrary64.jnilib: JRiftLibrary64.o
+libJRiftLibrary64.jnilib: JRiftLibrary64.o ${OCULUS_SDK}/LibOVR/Lib/OSX/Release/x86_64/libOVR.a 
 	g++ \
 		-dynamiclib \
 		-fno-rtti \
+		-m64 \
 		-framework ApplicationServices \
 		-framework IOKit \
 		-L ${OCULUS_SDK}/LibOVR/Lib/OSX/Release/x86_64/ \
@@ -48,28 +80,39 @@ libJRiftLibrary64.jnilib: JRiftLibrary64.o
 		JRiftLibrary64.o \
 		-lovr
 
+${OCULUS_SDK}/LibOVR/Lib/OSX/Release/x86_64/libOVR.a:
+	make ARCH=64 -C ${OCULUS_SDK}/LibOVR
+${OCULUS_SDK}/LibOVR/OSX/Release/i386/libOVR.a : 
+	make ARCH=32 -C ${OCULUS_SDK}/LibOVR
+.PHONY: ${OCULUS_SDK}/LibOVR/Lib/OSX/Release/x86_64/libOVR.a ${OCULUS_SDK}/LibOVR/OSX/Release/i386/libOVR.a		
 else
 ifeq ($(UNAME), Linux)
 
+LINUX_JDK_HOME:=/usr/lib/jvm/default-java
+#LINUX_JDK_HOME:=/usr/lib/jvm/java-6-openjdk-amd64
 
 all: libJRiftLibrary64.so libJRiftLibrary.so
 
+32: libJRiftLibrary.so
+
+64: libJRiftLibrary64.so
 
 JRiftLibrary.o: JRiftLibrary.cpp
 	g++ \
 	-m32 \
 	-fPIC \
 	-fno-rtti \
-	"-I/usr/lib/jvm/default-java/include/" \
+	"-I${LINUX_JDK_HOME}/include/" \
 	"-I${OCULUS_SDK}/LibOVR/Include" \
 	-c $< \
 	-o $@
 
 JRiftLibrary64.o: JRiftLibrary.cpp
 	g++ \
+	-m64 \
 	-fPIC \
 	-fno-rtti \
-	"-I/usr/lib/jvm/default-java/include/" \
+	"-I${LINUX_JDK_HOME}/include/" \
 	"-I${OCULUS_SDK}/LibOVR/Include" \
 	-c $< \
 	-o $@
@@ -80,32 +123,40 @@ libJRiftLibrary.so: JRiftLibrary.o ${OCULUS_SDK}/LibOVR/Linux/Release/i386/libOV
 		-fno-rtti \
 		-shared \
 		-o $@ \
-		"-I/usr/lib/jvm/default-java/include/" \
+		"-I${LINUX_JDK_HOME}/include/" \
 		-L ${OCULUS_SDK}/LibOVR/Lib/Linux/Release/i386/ \
 		$< \
 		-lovr -ludev -lXinerama
 
 libJRiftLibrary64.so: JRiftLibrary64.o ${OCULUS_SDK}/LibOVR/Lib/Linux/Release/x86_64/libOVR.a 
 	g++ \
+		-m64 \
 		-fno-rtti \
 		-shared \
 		-o $@ \
-		"-I/usr/lib/jvm/default-java/include/" \
+		"-I${LINUX_JDK_HOME}/include/" \
 		-L ${OCULUS_SDK}/LibOVR/Lib/Linux/Release/x86_64/ \
 		$< \
 		-lovr -ludev -lXinerama
 
 ${OCULUS_SDK}/LibOVR/Lib/Linux/Release/x86_64/libOVR.a:
-	make -C ${OCULUS_SDK}/LibOVR
+	make ARCH=64 -C ${OCULUS_SDK}/LibOVR
 ${OCULUS_SDK}/LibOVR/Linux/Release/i386/libOVR.a : 
-	linux32 make -C ${OCULUS_SDK}/LibOVR
+	make ARCH=32 -C ${OCULUS_SDK}/LibOVR
 .PHONY: ${OCULUS_SDK}/LibOVR/Lib/Linux/Release/x86_64/libOVR.a ${OCULUS_SDK}/LibOVR/Linux/Release/i386/libOVR.a
 endif
 endif
 
-clean:
+clean: cleanout clean32 clean64
+
+clean32: cleanout
+	make clean ARCH=32 -C ${OCULUS_SDK}/LibOVR
+
+clean64: cleanout
+	make clean ARCH=64 -C ${OCULUS_SDK}/LibOVR
+
+cleanout:
 	rm -f *.o
 	rm -f a.out
 	rm -f *.jnilib
 	rm -rf *.so
-

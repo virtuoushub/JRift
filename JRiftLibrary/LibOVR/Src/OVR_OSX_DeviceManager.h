@@ -32,8 +32,12 @@ limitations under the License.
 #include "Kernel/OVR_Timer.h"
 
 #include <IOKit/hid/IOHIDManager.h>
-#include <CoreGraphics/CGDirectDisplay.h>
-#include <CoreGraphics/CGDisplayConfiguration.h>
+#if __MAC_OS_X_VERSION_MAX_ALLOWED > 1060
+   #import <CoreGraphics/CGDirectDisplay.h>
+   #import <CoreGraphics/CGDisplayConfiguration.h>
+#else
+   #import <ApplicationServices/ApplicationServices.h>
+#endif
 
 
 namespace OVR { namespace OSX {

@@ -820,12 +820,12 @@ namespace ByteUtil {
     inline UInt64   SwapOrder(UInt64 v)
     { 
         return   (v>>56) |
-                 ((v&UInt64(0x00FF000000000000))>>40) |
-                 ((v&UInt64(0x0000FF0000000000))>>24) |
-                 ((v&UInt64(0x000000FF00000000))>>8)  |
-                 ((v&UInt64(0x00000000FF000000))<<8)  |
-                 ((v&UInt64(0x0000000000FF0000))<<24) |
-                 ((v&UInt64(0x000000000000FF00))<<40) |
+                 ((v&UInt64(0x00FF000000000000ULL))>>40) |
+                 ((v&UInt64(0x0000FF0000000000ULL))>>24) |
+                 ((v&UInt64(0x000000FF00000000ULL))>>8)  |
+                 ((v&UInt64(0x00000000FF000000ULL))<<8)  |
+                 ((v&UInt64(0x0000000000FF0000ULL))<<24) |
+                 ((v&UInt64(0x000000000000FF00ULL))<<40) |
                  (v<<56); 
     }
     inline SInt64   SwapOrder(SInt64 v)     { return (SInt64)SwapOrder(UInt64(v)); }

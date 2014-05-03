@@ -27,8 +27,9 @@ OCULUS_SDK:=..
 
 ifeq ($(UNAME), Darwin)
 
-MAC_SDK:=Developer/SDKs/MacOSX10.6.sdk
-#MAC_SDK:=Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.6.sdk
+#MAC_SDK:=/Developer/SDKs/MacOSX10.6.sdk
+MAC_SDK:=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.6.sdk
+MAC_MIN_VER:=10.6
 
 all: libJRiftLibrary64.jnilib libJRiftLibrary.jnilib
 
@@ -40,8 +41,11 @@ JRiftLibrary.o: JRiftLibrary.cpp
 	g++ \
 	-fno-rtti \
 	-m32 \
+	-isysroot ${MAC_SDK} \
+	-mmacosx-version-min=${MAC_MIN_VER} \
+	"-I${MAC_SDK}/usr/include" \
 	"-I/System/Library/Frameworks/JavaVM.framework/Versions/Current/Headers" \
-	"-I/${MAC_SDK}/System/Library/Frameworks/JavaVM.framework/Versions/A/Headers" \
+	"-I${MAC_SDK}/System/Library/Frameworks/JavaVM.framework/Versions/A/Headers" \
 	"-I${OCULUS_SDK}/LibOVR/Include" \
 	-c JRiftLibrary.cpp \
 	-o $@
@@ -50,8 +54,11 @@ JRiftLibrary64.o: JRiftLibrary.cpp
 	g++ \
 	-fno-rtti \
 	-m64 \
+	-isysroot ${MAC_SDK} \
+	-mmacosx-version-min=${MAC_MIN_VER} \
+	"-I${MAC_SDK}/usr/include" \
 	"-I/System/Library/Frameworks/JavaVM.framework/Versions/Current/Headers" \
-	"-I/${MAC_SDK}/System/Library/Frameworks/JavaVM.framework/Versions/A/Headers" \
+	"-I${MAC_SDK}/System/Library/Frameworks/JavaVM.framework/Versions/A/Headers" \
 	"-I${OCULUS_SDK}/LibOVR/Include" \
 	-c JRiftLibrary.cpp \
 	-o $@

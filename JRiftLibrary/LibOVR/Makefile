@@ -5,30 +5,30 @@
 # Created     : 2013
 # Authors     : Simon Hallam and Peter Giokaris
 # Copyright   : Copyright 2013 OculusVR, Inc. All Rights Reserved
-# Instruction : The g++ compiler and stdndard lib packages need to be 
+# Instruction : The g++ compiler and standard lib packages need to be 
 #               installed on the system.  Navigate in a shell to the 
 #               directory where this Makefile is located and enter:
 #
 #               make                builds the release version for the 
-#                                   current architechture
+#                                   current architecture
 #               make clean          delete intermediate release object files 
 #                                   and the library file
 #               make DEBUG=1        builds the debug version for the current
-#                                   architechture
+#                                   architecture
 #               make clean DEBUG=1  deletes intermediate debug object files 
 #                                   and the library file
 #               make ARCH=32        builds the release version for i386 
-#                                   architechture
+#                                   architecture
 #               make clean ARCH=32  delete intermediate release object files 
 #                                   and the library file for i386
 #               make ARCH=64        builds the release version for amd64
-#                                   architechture
+#                                   architecture
 #               make clean ARCH=64  delete intermediate release object files 
 #                                   and the library file for amd64
 #
 # Output      : Relative to the directory this Makefile lives in, libraries
 #               are built at the following locations depending upon the
-#               architechture of the system you are running:
+#               architecture of the system you are running:
 #
 #               ./Lib/Linux/Debug/i386/libovr.a
 #               ./Lib/Linux/Debug/x86_64/libovr.a
@@ -47,7 +47,13 @@ UNAME:= $(shell uname)
 ifeq ($(shell uname), Darwin)
 
 LIBDIR:=OSX
+#MAC_SDK:=/Developer/SDKs/MacOSX10.6.sdk
+MAC_SDK:=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.6.sdk
+MAC_MIN_VER:=10.6
 
+CXXFLAGS = -isysroot ${MAC_SDK} -mmacosx-version-min=${MAC_MIN_VER}
+INCPATH  = -I${MAC_SDK}/usr/include
+           
 ADDOBJS :=  \
 		$(OBJPATH)/OVR_OSX_HIDDevice.o \
 		$(OBJPATH)/OVR_OSX_SensorDevice.o \
@@ -73,10 +79,10 @@ DELETEFILE    = rm -f
 
 DEBUG         = 0
 ifeq ($(DEBUG), 1)
-	CXXFLAGS      = -pipe -DDEBUG -g -fPIC
+	CXXFLAGS      += -pipe -DDEBUG -g -fPIC
 	RELEASETYPE   = Debug
 else
-	CXXFLAGS      = -pipe -O2 -fPIC
+	CXXFLAGS      += -pipe -O2 -fPIC
 	RELEASETYPE   = Release
 endif
 
@@ -104,7 +110,7 @@ endif
 
 LIBOVRPATH    = .
 3RDPARTYPATH  = ../3rdParty
-INCPATH       = -I. -I.. -I$(LIBOVRPATH)/Include -I$(LIBOVRPATH)/Src
+INCPATH      += -I. -I.. -I$(LIBOVRPATH)/Include -I$(LIBOVRPATH)/Src
 OBJPATH       = ./Obj/$(LIBDIR)/$(RELEASETYPE)/$(SYSARCH)
 
 ####### Files

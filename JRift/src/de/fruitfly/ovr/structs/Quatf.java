@@ -21,4 +21,9 @@ public class Quatf
     public float w;
 
     public static Quatf IDENTITY = new Quatf(0.0f, 0.0f, 0.0f, 1.0f);
+
+    public Quatf inverted()
+    {
+        return new Quatf(-x, -y, -z, w);
+    }
 }

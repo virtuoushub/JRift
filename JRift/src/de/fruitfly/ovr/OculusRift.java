@@ -119,16 +119,15 @@ public class OculusRift //implements IOculusRift
     }
 
     public EyeRenderParams configureRendering(Sizei InTextureSize,
-                                              int InTextureGLId,
-                                              GLInfo glInfo,
+                                              GLConfig glConfig,
                                               boolean VSyncEnabled)
     {
         return _configureRendering(InTextureSize.w,
                                    InTextureSize.h,
-                                   InTextureGLId,
-                                   glInfo.WglContext,
-                                   glInfo.Window,
-                                   glInfo.GdiDc,
+                                   glConfig.TexId,
+                                   glConfig.WglContext,
+                                   glConfig.Window,
+                                   glConfig.GdiDc,
                                    VSyncEnabled);
     }
 
@@ -228,7 +227,7 @@ public class OculusRift //implements IOculusRift
         //Launcher takes care of extracting natives
         if( is64bit )
         {
-            System.loadLibrary("JRiftLibraryd64");
+            System.loadLibrary("JRiftLibrary64");
             System.out.println("Loaded JRift native library (64bit)");
         }
         else

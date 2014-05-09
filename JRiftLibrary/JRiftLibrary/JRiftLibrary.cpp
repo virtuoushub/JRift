@@ -437,7 +437,7 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getMatrix4fProjectio
     fov.LeftTan = EyeFovPortLeftTan;
     fov.RightTan = EyeFovPortRightTan;
 
-    Matrix4f proj = ovrMatrix4f_Projection(fov, nearClip, farClip, true); // TODO: true = RH - or need false (LH) for OGL?
+    Matrix4f proj = ovrMatrix4f_Projection(fov, nearClip, farClip, true); // true = RH for OGL
 
     jobject jproj = env->NewObject(matrix4f_Class, matrix4f_constructor_MethodID,
                                    proj.M[0][0], proj.M[0][1], proj.M[0][2], proj.M[0][3],

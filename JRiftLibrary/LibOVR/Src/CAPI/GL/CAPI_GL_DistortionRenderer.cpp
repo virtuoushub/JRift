@@ -755,12 +755,12 @@ void DistortionRenderer::renderDistortion(Texture* leftEyeTexture, Texture* righ
 			DistortionShader->SetUniform4x4f("EyeRotationEnd",   Matrix4f(timeWarpMatrices[1]).Transposed());
 
             renderPrimitives(&distortionShaderFill, DistortionMeshVBs[eyeNum], DistortionMeshIBs[eyeNum],
-                            NULL, 0, (int)DistortionMeshVBs[eyeNum]->GetSize(), Prim_Triangles, true);
+                            NULL, 0, (int)DistortionMeshIBs[eyeNum]->GetSize()/2, Prim_Triangles, true);
 		}
         else
         {
             renderPrimitives(&distortionShaderFill, DistortionMeshVBs[eyeNum], DistortionMeshIBs[eyeNum],
-                            NULL, 0, (int)DistortionMeshVBs[eyeNum]->GetSize(), Prim_Triangles, true);
+                            NULL, 0, (int)DistortionMeshVBs[eyeNum]->GetSize()/2, Prim_Triangles, true);
         }
     }
 }

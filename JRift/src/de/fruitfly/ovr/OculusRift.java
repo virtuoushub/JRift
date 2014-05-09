@@ -119,16 +119,20 @@ public class OculusRift //implements IOculusRift
     }
 
     public EyeRenderParams configureRendering(Sizei InTextureSize,
+                                              Sizei OutTextureSize,
                                               GLConfig glConfig,
                                               boolean VSyncEnabled)
     {
         return _configureRendering(InTextureSize.w,
                                    InTextureSize.h,
+                                   OutTextureSize.w,
+                                   OutTextureSize.h,
                                    glConfig.TexId,
                                    glConfig.WglContext,
                                    glConfig.Window,
                                    glConfig.GdiDc,
-                                   VSyncEnabled);
+                                   VSyncEnabled,
+                                   0); // TODO: Support multisample?
     }
 
     public FrameTiming beginFrame()
@@ -193,11 +197,14 @@ public class OculusRift //implements IOculusRift
     protected native Sizei           _getFovTextureSize(float RenderScaleFactor);
     protected native EyeRenderParams _configureRendering(int InTextureWidth,
                                                          int InTextureHeight,
+                                                         int OutTextureWidth,
+                                                         int OutTextureHeight,
                                                          int InTextureGLId,
                                                          long pWglContext,
                                                          long pWindow,
                                                          long pGdiDc,
-                                                         boolean VSyncEnabled);
+                                                         boolean VSyncEnabled,
+                                                         int MultiSample);
 
     protected native FrameTiming     _beginFrame(int frameIndex);
     protected native Posef           _beginEyeRender(int eye);

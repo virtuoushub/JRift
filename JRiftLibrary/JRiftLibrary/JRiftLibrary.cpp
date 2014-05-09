@@ -245,11 +245,14 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1configureRendering(
 	jobject, 
 	jint InTextureWidth,
 	jint InTextureHeight,
+	jint OutTextureWidth,
+	jint OutTextureHeight,
 	jint InTextureGLId,
 	jlong WglContext, 
 	jlong Window, 
 	jlong GdiDc,
-	jboolean VSyncEnabled)
+	jboolean VSyncEnabled,
+    jint MultiSample)
 {
 	if (!_initialised)
 		return 0;
@@ -286,8 +289,8 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1configureRendering(
 	// Configure OpenGL. 
 	ovrGLConfig cfg; 
 	cfg.OGL.Header.API         = ovrRenderAPI_OpenGL; 
-	cfg.OGL.Header.RTSize      = Sizei(_pHmdDesc->Resolution.w, _pHmdDesc->Resolution.h); 
-	cfg.OGL.Header.Multisample = 0;  // TODO: Use multisampling?
+	cfg.OGL.Header.RTSize      = Sizei(OutTextureWidth, OutTextureHeight); 
+	cfg.OGL.Header.Multisample = MultiSample;  
 
 //#ifdef _WIN
 	// Cast context pointers to 32 / 64 bit as appropriate

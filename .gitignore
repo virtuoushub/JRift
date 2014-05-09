@@ -163,7 +163,3 @@ JRift/JRift.iml
 
 # vim swp file
 .*.swp
-JRiftLibrary/LibOVR/Src/CAPI/Shaders/ShaderReflector.exe
-JRiftLibrary/LibOVR/Src/CAPI/Shaders/bin2header.exe
-JRiftLibrary/natives/windows/JRiftLibrary.dll
-JRiftLibrary/natives/windows/JRiftLibrary64.dll

@@ -10,7 +10,7 @@
 
 using namespace OVR;
 
-std::auto_ptr<ovrHmdStruct> _pHmd(0);
+ovrHmd                      _pHmd = 0;
 std::auto_ptr<ovrHmdDesc>   _pHmdDesc(0);
 
 int				    _hmdIndex    = -1;
@@ -138,14 +138,14 @@ JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift__1getNextHmd(JNIEnv *
     ResetRenderConfig();
 
 	// Stop sensor
-	if (_pHmd.get())
-		ovrHmd_StopSensor(_pHmd.get());
+	if (_pHmd)
+		ovrHmd_StopSensor(_pHmd);
 
 	// Cleanup HMD
-	if (_pHmd.get())
-		ovrHmd_Destroy(_pHmd.get());
+	if (_pHmd)
+		ovrHmd_Destroy(_pHmd);
 
-    _pHmd.reset();
+    _pHmd = 0;
     _pHmdDesc.reset();
 
     const int hmdCount = ovrHmd_Detect();
@@ -162,7 +162,7 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getSensorState(JNIEn
         return 0;
 
 	// Get sensorstate at the specified time in the future from now (0.0 means 'now')
-	ovrSensorState ss = ovrHmd_GetSensorState(_pHmd.get(), time);
+	ovrSensorState ss = ovrHmd_GetSensorState(_pHmd, time);
 
     ClearException(env);
 
@@ -222,8 +222,8 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getFovTextureSize(JN
 		return 0;
 
 	// A RenderScaleFactor of 1.0f signifies default (non-scaled) operation
-    Sizei recommendedTex0Size = ovrHmd_GetFovTextureSize(_pHmd.get(), ovrEye_Left,  _pHmdDesc->DefaultEyeFov[0], RenderScaleFactor);
-    Sizei recommendedTex1Size = ovrHmd_GetFovTextureSize(_pHmd.get(), ovrEye_Right, _pHmdDesc->DefaultEyeFov[1], RenderScaleFactor);
+    Sizei recommendedTex0Size = ovrHmd_GetFovTextureSize(_pHmd, ovrEye_Left,  _pHmdDesc->DefaultEyeFov[0], RenderScaleFactor);
+    Sizei recommendedTex1Size = ovrHmd_GetFovTextureSize(_pHmd, ovrEye_Right, _pHmdDesc->DefaultEyeFov[1], RenderScaleFactor);
     Sizei RenderTargetSize;
     RenderTargetSize.w = recommendedTex0Size.w + recommendedTex1Size.w;
     RenderTargetSize.h = max ( recommendedTex0Size.h, recommendedTex1Size.h );
@@ -299,7 +299,7 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1configureRendering(
 	const unsigned DistortionCaps = ovrDistortion_Chromatic | ovrDistortion_TimeWarp | ovrDistortion_Vignette;
 	ovrEyeRenderDesc EyeRenderDesc[2];
 
-	ovrBool result = ovrHmd_ConfigureRendering(_pHmd.get(), &cfg.Config, (VSyncEnabled ? 0 : ovrHmdCap_NoVSync), DistortionCaps, eyes, EyeRenderDesc);
+	ovrBool result = ovrHmd_ConfigureRendering(_pHmd, &cfg.Config, (VSyncEnabled ? 0 : ovrHmdCap_NoVSync), DistortionCaps, eyes, EyeRenderDesc);
 	if (!result)
 	{
 		printf("ovrHmd_ConfigureRendering() - ERROR: failure");
@@ -368,7 +368,7 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1beginFrame(JNIEnv *e
 
     // A FrameIndex of 0 should be used if GetFrameTiming was not used.
     // TODO: Support GetFrameTiming!
-    ovrFrameTiming frameTiming = ovrHmd_BeginFrame(_pHmd.get(), FrameIndex);
+    ovrFrameTiming frameTiming = ovrHmd_BeginFrame(_pHmd, FrameIndex);
 
 	jobject jframeTiming = env->NewObject(frameTiming_Class, frameTiming_constructor_MethodID,
                                           frameTiming.DeltaSeconds,
@@ -398,7 +398,7 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1beginEyeRender(JNIEn
     if (Eye > 0)
         eye = ovrEye_Right;
 
-    _eyeRenderPose[eye] = ovrHmd_BeginEyeRender(_pHmd.get(), eye);
+    _eyeRenderPose[eye] = ovrHmd_BeginEyeRender(_pHmd, eye);
 
 	jobject jposef = env->NewObject(posef_Class, posef_constructor_MethodID,
                                     _eyeRenderPose[eye].Orientation.x,
@@ -464,7 +464,7 @@ JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1endEyeRender(JNIEnv *en
     if (Eye > 0)
         eye = ovrEye_Right;
 
-    ovrHmd_EndEyeRender(_pHmd.get(), eye, _eyeRenderPose[eye], &_EyeTexture[eye].Texture);
+    ovrHmd_EndEyeRender(_pHmd, eye, _eyeRenderPose[eye], &_EyeTexture[eye].Texture);
 }
 
 JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1endFrame(JNIEnv *env, jobject)
@@ -479,7 +479,7 @@ JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1endFrame(JNIEnv *env, j
     }
 
     // Let OVR do distortion rendering, Present and flush/sync
-    ovrHmd_EndFrame(_pHmd.get());
+    ovrHmd_EndFrame(_pHmd);
 }
 
 JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1convertQuatToEuler
@@ -535,7 +535,7 @@ void ResetRenderConfig()
 {
     if (_initialised)
     {
-        ovrHmd_ConfigureRendering(_pHmd.get(), 0, 0, 0, 0, 0);
+        ovrHmd_ConfigureRendering(_pHmd, 0, 0, 0, 0, 0);
     }
 
     // Reset texture data
@@ -554,19 +554,19 @@ void ResetRenderConfig()
 
 bool CreateHmdAndStartSensor(int hmdIndex)
 {
-    _pHmd.reset();
+    _pHmd = 0;
     _pHmdDesc.reset();
 
     bool result = false;
 
 	// Get HMD
-	_pHmd.reset(ovrHmd_Create(_hmdIndex));
+	_pHmd = ovrHmd_Create(_hmdIndex);
 
-	if (_pHmd.get() == 0)
+	if (_pHmd == 0)
 	{
 		// Create debug DK2(!)
         _hmdIndex = -1;
-		_pHmd.reset(ovrHmd_CreateDebug(ovrHmd_DK2));
+		_pHmd = ovrHmd_CreateDebug(ovrHmd_DK2);
 		printf("No Oculus Rift devices found, creating dummy DK2 device...\n");
 	}
 	else
@@ -574,16 +574,16 @@ bool CreateHmdAndStartSensor(int hmdIndex)
 		printf("Oculus Rift device(s) found!\n");
 	}
 
-	if (_pHmd.get())
+	if (_pHmd)
 	{
 		_pHmdDesc.reset(new ovrHmdDesc);
-		ovrHmd_GetDesc(_pHmd.get(), _pHmdDesc.get());
+		ovrHmd_GetDesc(_pHmd, _pHmdDesc.get());
 
 		// Log description
 		LogHmdDesc(_pHmdDesc);
 
 		// Start sensor
-		ovrBool sensorResult = ovrHmd_StartSensor(_pHmd.get(),
+		ovrBool sensorResult = ovrHmd_StartSensor(_pHmd,
 			ovrHmdCap_Orientation | ovrHmdCap_YawCorrection | ovrHmdCap_Position | ovrHmdCap_LowPersistence | ovrHmdCap_LatencyTest,
 			0);
 
@@ -632,18 +632,18 @@ void Reset()
         ResetRenderConfig();
 
 		// Stop sensor
-		if (_pHmd.get())
-			ovrHmd_StopSensor(_pHmd.get());
+		if (_pHmd)
+			ovrHmd_StopSensor(_pHmd);
 
 		// Cleanup HMD
-		if (_pHmd.get())
-			ovrHmd_Destroy(_pHmd.get());
+		if (_pHmd)
+			ovrHmd_Destroy(_pHmd);
 
 		// Shutdown LibOVR
 		ovr_Shutdown();
 	}
 
-	_pHmd.reset();
+	_pHmd = 0;
 	_pHmdDesc.reset();
 	_hmdIndex = -1;
 

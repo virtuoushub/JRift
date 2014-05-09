@@ -5,7 +5,7 @@ import de.fruitfly.ovr.structs.*;
 
 import java.io.File;
 
-public class OculusRift implements IOculusRift
+public class OculusRift //implements IOculusRift
 {
 	private boolean initialized = false;
 
@@ -96,15 +96,15 @@ public class OculusRift implements IOculusRift
         return hmdDesc;
     }
 
-    public void poll()
+    public SensorState poll(double futureDelta)
     {
         if (initialized)
         {
             // Get sensor state as of now
-            sensorState = _getSensorState(0.0d);
+            sensorState = _getSensorState(futureDelta);
         }
 
-        //System.out.println("Yaw: " + yawAngleDegrees + ", Pitch: " + pitchAngleDegrees + ", Roll: " + rollAngleDegrees);
+        return sensorState;
     }
 
     public SensorState getLastSensorState()
@@ -120,17 +120,15 @@ public class OculusRift implements IOculusRift
 
     public EyeRenderParams configureRendering(Sizei InTextureSize,
                                               int InTextureGLId,
-                                              long pWglContext,
-                                              long pWindow,
-                                              long pGdiDc,
+                                              GLInfo glInfo,
                                               boolean VSyncEnabled)
     {
         return _configureRendering(InTextureSize.w,
                                    InTextureSize.h,
                                    InTextureGLId,
-                                   pWglContext,
-                                   pWindow,
-                                   pGdiDc,
+                                   glInfo.WglContext,
+                                   glInfo.Window,
+                                   glInfo.GdiDc,
                                    VSyncEnabled);
     }
 
@@ -260,7 +258,7 @@ public class OculusRift implements IOculusRift
         System.out.println("Render target size: " + recommendedFovTextureSize.w + "x" + recommendedFovTextureSize.h);
 
         while (or.isInitialized()) {
-            or.poll();
+            or.poll(0.0d);
             SensorState state = or.getLastSensorState();
             Vector3f euler = or.getEulerAngles(state.Predicted.Pose.Orientation,
                                                1.0f,

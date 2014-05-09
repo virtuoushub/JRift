@@ -68,23 +68,23 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>..\bin\Win32\</OutDir>
+    <OutDir>..\natives\windows\</OutDir>
     <TargetName>JRiftLibraryd</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>false</LinkIncremental>
     <TargetName>JRiftLibraryd64</TargetName>
-    <OutDir>..\bin\x64\</OutDir>
+    <OutDir>..\natives\windows\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>..\bin\Win32\</OutDir>
+    <OutDir>..\natives\windows\</OutDir>
     <TargetName>JRiftLibrary</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <TargetName>JRiftLibrary64</TargetName>
-    <OutDir>..\bin\x64\</OutDir>
+    <OutDir>..\natives\windows\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

@@ -163,3 +163,7 @@ JRift/JRift.iml
 
 # vim swp file
 .*.swp
+JRiftLibrary/natives/windows/JRiftLibrary.exp
+JRiftLibrary/natives/windows/JRiftLibrary.lib
+JRiftLibrary/natives/windows/JRiftLibrary64.exp
+JRiftLibrary/natives/windows/JRiftLibrary64.lib

@@ -55,9 +55,9 @@ public class OculusRift implements IOculusRift {
         hmdInfo.DistortionK[1]         = 0.22f;
         hmdInfo.DistortionK[2]         = 0.24f;
         hmdInfo.DistortionK[3]         = 0.0f;
-        hmdInfo.ChromaticAb[0]         = 1.0f;
-        hmdInfo.ChromaticAb[1]         = 0.0f;
-        hmdInfo.ChromaticAb[2]         = 1.0f;
+        hmdInfo.ChromaticAb[0]         = 0.996f;      // Use actual DK1 values
+        hmdInfo.ChromaticAb[1]         = -0.004f;
+        hmdInfo.ChromaticAb[2]         = 1.014f;
         hmdInfo.ChromaticAb[3]         = 0.0f;
         hmdInfo.isFakeData             = true;
 

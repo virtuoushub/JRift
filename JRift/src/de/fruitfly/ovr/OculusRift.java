@@ -112,9 +112,8 @@ public class OculusRift //implements IOculusRift
         return sensorState;
     }
 
-    public Sizei getFovTextureSize()
+    public Sizei getFovTextureSize(float renderScaleFactor)
     {
-        float renderScaleFactor = 1.0f;
         return _getFovTextureSize(renderScaleFactor);
     }
 

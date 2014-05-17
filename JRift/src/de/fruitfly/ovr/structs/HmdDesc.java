@@ -39,7 +39,8 @@ public class HmdDesc
             int eyeType1,
             int eyeType2,
             String displayDeviceName,
-            long displayId
+            long displayId,
+            boolean isReal
         )
     {
         Type = HmdType.fromInteger(hmdType);
@@ -75,6 +76,7 @@ public class HmdDesc
         EyeRenderOrder[1] = EyeType.fromInteger(eyeType2);
         DisplayDeviceName = displayDeviceName;
         DisplayId = displayId;
+        IsReal = isReal;
     }
     
     public HmdType Type = HmdType.ovrHmd_None;
@@ -111,6 +113,9 @@ public class HmdDesc
     // MacOS
     public long   DisplayId;
 
+    // Is this a real, or debug (fake) device?
+    public boolean IsReal = false;
+
     public String toString()
     {
         StringBuilder sb = new StringBuilder();
@@ -124,6 +129,7 @@ public class HmdDesc
         sb.append("EyeRenderOrder:    ").append(EyeType.toString(EyeRenderOrder[0])).append(", ").append(EyeType.toString(EyeRenderOrder[1])).append("\n");
         sb.append("DisplayDeviceName: ").append(DisplayDeviceName).append("\n");
         sb.append("DisplayId:         ").append(DisplayId).append("\n");
+        sb.append("Real?              ").append((IsReal ? "YES" : "NO")).append("\n");
 
         return sb.toString();
     }

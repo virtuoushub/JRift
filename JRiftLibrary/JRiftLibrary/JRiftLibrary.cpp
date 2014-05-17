@@ -16,6 +16,7 @@ std::auto_ptr<ovrHmdDesc>   _pHmdDesc(0);
 int				    _hmdIndex    = -1;
 bool			    _initialised = false;
 bool                _renderConfigured = false;
+bool                _realDevice = false;
 ovrPosef            _eyeRenderPose[2];
 ovrGLTexture        _EyeTexture[2];
 
@@ -117,7 +118,8 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getHmdDesc(JNIEnv *e
                                       (int)_pHmdDesc->EyeRenderOrder[0],
                                       (int)_pHmdDesc->EyeRenderOrder[1],
                                       displayDeviceName,
-                                      _pHmdDesc->DisplayId
+                                      _pHmdDesc->DisplayId,
+                                      _realDevice
             );
 
     env->DeleteLocalRef( productName );
@@ -561,6 +563,7 @@ bool CreateHmdAndStartSensor(int hmdIndex)
     _pHmdDesc.reset();
 
     bool result = false;
+    _realDevice = false;
 
 	// Get HMD
 	_pHmd = ovrHmd_Create(_hmdIndex);
@@ -575,6 +578,7 @@ bool CreateHmdAndStartSensor(int hmdIndex)
 	else
 	{
 		printf("Oculus Rift device(s) found!\n");
+        _realDevice = true;
 	}
 
 	if (_pHmd)
@@ -660,6 +664,7 @@ void Reset()
     _eyeRenderPose[1] = _eyeRenderPose[0];
 
 	_initialised = false;
+    _realDevice = false;
 }
 
 bool CacheJNIGlobals(JNIEnv *env)
@@ -677,7 +682,7 @@ bool CacheJNIGlobals(JNIEnv *env)
                          hmdDesc_Class,
                          "de/fruitfly/ovr/structs/HmdDesc",
                          hmdDesc_constructor_MethodID,
-                         "(ILjava/lang/String;Ljava/lang/String;IIIIIIFFFFFFFFFFFFFFFFIILjava/lang/String;J)V"))
+                         "(ILjava/lang/String;Ljava/lang/String;IIIIIIFFFFFFFFFFFFFFFFIILjava/lang/String;JZ)V"))
     {
         return false;
     }

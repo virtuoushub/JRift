@@ -259,7 +259,7 @@ public class OculusRift //implements IOculusRift
         HmdDesc hmdDesc = or.getHmdDesc();
         System.out.println(hmdDesc.toString());
 
-        Sizei recommendedFovTextureSize = or.getFovTextureSize();
+        Sizei recommendedFovTextureSize = or.getFovTextureSize(1.0f);
         System.out.println("Render target size: " + recommendedFovTextureSize.w + "x" + recommendedFovTextureSize.h);
 
         while (or.isInitialized()) {

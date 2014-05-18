@@ -168,7 +168,7 @@ public class OculusRift //implements IOculusRift
 
     public static Vector3f getEulerAngles(Quatf quat, float scale, int hand, int rotationDir)
     {
-        return getEulerAngles(quat.z, quat.y, quat.z, quat.w, scale, hand, rotationDir);
+        return getEulerAngles(quat.x, quat.y, quat.z, quat.w, scale, hand, rotationDir);
     }
 
     public static Vector3f getEulerAngles(float x, float y, float z, float w, float scale, int hand, int rotationDir)

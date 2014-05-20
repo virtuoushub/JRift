@@ -120,18 +120,24 @@ public class OculusRift //implements IOculusRift
     public EyeRenderParams configureRendering(Sizei InTextureSize,
                                               Sizei OutTextureSize,
                                               GLConfig glConfig,
-                                              boolean VSyncEnabled)
+                                              boolean VSyncEnabled,
+                                              boolean useChromaticAbCorrection,
+                                              boolean useTimewarp,
+                                              boolean useVignette)
     {
         return _configureRendering(InTextureSize.w,
-                                   InTextureSize.h,
-                                   OutTextureSize.w,
-                                   OutTextureSize.h,
-                                   glConfig.TexId,
-                                   glConfig.WglContext,
-                                   glConfig.Window,
-                                   glConfig.GdiDc,
-                                   VSyncEnabled,
-                                   0); // TODO: Support multisample?
+                InTextureSize.h,
+                OutTextureSize.w,
+                OutTextureSize.h,
+                glConfig.TexId,
+                glConfig.WglContext,
+                glConfig.Window,
+                glConfig.GdiDc,
+                VSyncEnabled,
+                0,            // TODO: Support multisample?
+                true,//useChromaticAbCorrection,
+                true,//useTimewarp,
+                true);//useVignette);   // TODO: Reenable when these settings aren't broken in the Oculus preview SDK
     }
 
     public FrameTiming beginFrameGetTiming()
@@ -203,7 +209,10 @@ public class OculusRift //implements IOculusRift
                                                          long pWindow,
                                                          long pGdiDc,
                                                          boolean VSyncEnabled,
-                                                         int MultiSample);
+                                                         int MultiSample,
+                                                         boolean useChromaticAbCorrection,
+                                                         boolean useTimewarp,
+                                                         boolean useVignette);
 
     protected native FrameTiming     _beginFrame(int frameIndex);
     protected native Posef           _beginEyeRender(int eye);

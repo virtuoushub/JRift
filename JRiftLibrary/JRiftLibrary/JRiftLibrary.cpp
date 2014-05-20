@@ -261,7 +261,10 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1configureRendering(
 	jlong Window, 
 	jlong GdiDc,
 	jboolean VSyncEnabled,
-    jint MultiSample)
+    jint MultiSample,
+    jboolean UseChromAbCorrection,
+    jboolean UseTimewarp,
+    jboolean UseVignette)
 {
 	if (!_initialised)
 		return 0;
@@ -308,7 +311,14 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1configureRendering(
 	cfg.OGL.GdiDc      = (HDC)(intptr_t)GdiDc;
 //#else etc...
 
-	const unsigned DistortionCaps = ovrDistortion_Chromatic | ovrDistortion_TimeWarp | ovrDistortion_Vignette;
+	unsigned int DistortionCaps = 0;
+    if (UseChromAbCorrection)
+        DistortionCaps |= ovrDistortion_Chromatic;
+    if (UseTimewarp)
+        DistortionCaps |= ovrDistortion_TimeWarp;
+    if (UseVignette)
+        DistortionCaps |= ovrDistortion_Vignette;    
+    
 	ovrEyeRenderDesc EyeRenderDesc[2];
 
 	ovrBool result = ovrHmd_ConfigureRendering(_pHmd, &cfg.Config, (VSyncEnabled ? 0 : ovrHmdCap_NoVSync), DistortionCaps, eyes, EyeRenderDesc);

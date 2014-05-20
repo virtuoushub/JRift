@@ -112,7 +112,7 @@ public class OculusRift //implements IOculusRift
         return sensorState;
     }
 
-    public Sizei getFovTextureSize(float renderScaleFactor)
+    public FovTextureInfo getFovTextureSize(float renderScaleFactor)
     {
         return _getFovTextureSize(renderScaleFactor);
     }
@@ -193,7 +193,7 @@ public class OculusRift //implements IOculusRift
 
     protected native SensorState     _getSensorState(double timeFromNow);
 
-    protected native Sizei           _getFovTextureSize(float RenderScaleFactor);
+    protected native FovTextureInfo  _getFovTextureSize(float RenderScaleFactor);
     protected native EyeRenderParams _configureRendering(int InTextureWidth,
                                                          int InTextureHeight,
                                                          int OutTextureWidth,
@@ -259,8 +259,8 @@ public class OculusRift //implements IOculusRift
         HmdDesc hmdDesc = or.getHmdDesc();
         System.out.println(hmdDesc.toString());
 
-        Sizei recommendedFovTextureSize = or.getFovTextureSize(1.0f);
-        System.out.println("Render target size: " + recommendedFovTextureSize.w + "x" + recommendedFovTextureSize.h);
+        FovTextureInfo recommendedFovTextureSize = or.getFovTextureSize(1.0f);
+        System.out.println("Render target size: " + recommendedFovTextureSize.Res.w + "x" + recommendedFovTextureSize.Res.h);
 
         while (or.isInitialized()) {
             or.poll(0.0d);

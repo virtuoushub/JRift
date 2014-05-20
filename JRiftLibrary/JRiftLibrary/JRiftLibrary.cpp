@@ -33,6 +33,8 @@ static jclass       sensorState_Class                    = 0;
 static jmethodID    sensorState_constructor_MethodID     = 0;
 static jclass       sizei_Class                          = 0;
 static jmethodID    sizei_constructor_MethodID           = 0;
+static jclass       fovTextureInfo_Class                 = 0;
+static jmethodID    fovTextureInfo_constructor_MethodID  = 0;
 static jclass       hmdDesc_Class                        = 0;
 static jmethodID    hmdDesc_constructor_MethodID         = 0;
 static jclass       vector3f_Class                       = 0;
@@ -230,16 +232,21 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getFovTextureSize(JN
     RenderTargetSize.w = recommendedTex0Size.w + recommendedTex1Size.w;
     RenderTargetSize.h = max ( recommendedTex0Size.h, recommendedTex1Size.h );
 
+    float scalew = (float)RenderTargetSize.w / (float)_pHmdDesc->Resolution.w;
+    float scaleh = (float)RenderTargetSize.h / (float)_pHmdDesc->Resolution.h;
+
     ClearException(env);
 
-    jobject jsizei = env->NewObject(sizei_Class, sizei_constructor_MethodID,
+    jobject jfovTextureInfo = env->NewObject(fovTextureInfo_Class, fovTextureInfo_constructor_MethodID,
                                     RenderTargetSize.w,
-                                    RenderTargetSize.h
+                                    RenderTargetSize.h,
+                                    scalew,
+                                    scaleh
                                     );
 
-    if (jsizei == 0) PrintNewObjectException(env, "Sizei");
+    if (jfovTextureInfo == 0) PrintNewObjectException(env, "FovTextureInfo");
 
-    return jsizei;
+    return jfovTextureInfo;
 }
 
 JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1configureRendering(
@@ -674,6 +681,15 @@ bool CacheJNIGlobals(JNIEnv *env)
                          "de/fruitfly/ovr/structs/Sizei",
                          sizei_constructor_MethodID,
                          "(II)V"))
+    {
+        return false;
+    }
+
+    if (!LookupJNIGlobal(env,
+                         fovTextureInfo_Class,
+                         "de/fruitfly/ovr/structs/FovTextureInfo",
+                         fovTextureInfo_constructor_MethodID,
+                         "(IIFF)V"))
     {
         return false;
     }

@@ -2,6 +2,8 @@ package de.fruitfly.ovr.structs;
 
 public class FrameTiming
 {
+    public FrameTiming() {}
+
     public FrameTiming(
             float deltaSeconds,
             double thisFrameSeconds,

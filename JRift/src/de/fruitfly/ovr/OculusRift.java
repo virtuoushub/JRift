@@ -134,7 +134,7 @@ public class OculusRift //implements IOculusRift
                                    0); // TODO: Support multisample?
     }
 
-    public FrameTiming beginFrame()
+    public FrameTiming beginFrameGetTiming()
     {
         return _beginFrame(0);
     }

@@ -74,7 +74,6 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1configureRendering(
 	jint,
 	jint,
 	jlong, 
-	jlong, 
 	jlong,
 	jboolean,
     jint,

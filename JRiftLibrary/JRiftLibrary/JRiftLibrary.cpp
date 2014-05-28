@@ -96,6 +96,7 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getHmdDesc(JNIEnv *e
                                       productName,
                                       manufacturer,
                                       (int)_pHmdDesc->HmdCaps,
+                                      (int)_pHmdDesc->SensorCaps,
                                       (int)_pHmdDesc->DistortionCaps,
                                       _pHmdDesc->Resolution.w,
                                       _pHmdDesc->Resolution.h,
@@ -700,7 +701,7 @@ bool CacheJNIGlobals(JNIEnv *env)
                          hmdDesc_Class,
                          "de/fruitfly/ovr/structs/HmdDesc",
                          hmdDesc_constructor_MethodID,
-                         "(ILjava/lang/String;Ljava/lang/String;IIIIIIFFFFFFFFFFFFFFFFIILjava/lang/String;JZ)V"))
+                         "(ILjava/lang/String;Ljava/lang/String;IIIIIIIFFFFFFFFFFFFFFFFIILjava/lang/String;JZ)V"))
     {
         return false;
     }

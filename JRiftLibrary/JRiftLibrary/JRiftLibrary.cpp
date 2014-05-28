@@ -95,7 +95,7 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getHmdDesc(JNIEnv *e
                                       (int)_pHmdDesc->Type,
                                       productName,
                                       manufacturer,
-                                      (int)_pHmdDesc->Caps,
+                                      (int)_pHmdDesc->HmdCaps,
                                       (int)_pHmdDesc->DistortionCaps,
                                       _pHmdDesc->Resolution.w,
                                       _pHmdDesc->Resolution.h,
@@ -257,9 +257,8 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1configureRendering(
 	jint OutTextureWidth,
 	jint OutTextureHeight,
 	jint InTextureGLId,
-	jlong WglContext, 
 	jlong Window, 
-	jlong GdiDc,
+	jlong Display,
 	jboolean VSyncEnabled,
     jint MultiSample,
     jboolean UseChromAbCorrection,
@@ -273,55 +272,57 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1configureRendering(
 
     // Initialize eye rendering information for ovrHmd_Configure.
     // The viewport sizes are re-computed in case RenderTargetSize changed due to HW limitations.
-    ovrEyeDesc eyes[2];
-    eyes[0].Eye                 = ovrEye_Left;
-    eyes[1].Eye                 = ovrEye_Right;
-    eyes[0].Fov                 = _pHmdDesc->DefaultEyeFov[0];
-    eyes[1].Fov                 = _pHmdDesc->DefaultEyeFov[1];
-	eyes[0].TextureSize.w       = InTextureWidth;
-	eyes[0].TextureSize.h       = InTextureHeight;
-	eyes[1].TextureSize.w       = InTextureWidth;
-	eyes[1].TextureSize.h       = InTextureHeight;
-    eyes[0].RenderViewport.Pos  = Vector2i(0,0);
-    eyes[0].RenderViewport.Size = Sizei(InTextureWidth / 2, InTextureHeight);
-    eyes[1].RenderViewport.Pos  = Vector2i((InTextureWidth + 1) / 2, 0);
-    eyes[1].RenderViewport.Size = eyes[0].RenderViewport.Size;
+
+    ovrRecti EyeRenderViewport[2];
+    ovrFovPort eyeFov[2] = { _pHmdDesc->DefaultEyeFov[0], _pHmdDesc->DefaultEyeFov[1] } ;
+
+    EyeRenderViewport[0].Pos  = Vector2i(0,0);
+    EyeRenderViewport[0].Size = Sizei(InTextureWidth / 2, InTextureHeight);
+    EyeRenderViewport[1].Pos  = Vector2i((InTextureWidth + 1) / 2, 0);
+    EyeRenderViewport[1].Size = EyeRenderViewport[0].Size;
 
 	// Setup GL texture data.
 	_EyeTexture[0].OGL.Header.API            = ovrRenderAPI_OpenGL;
     _EyeTexture[0].OGL.Header.TextureSize.w  = InTextureWidth;
 	_EyeTexture[0].OGL.Header.TextureSize.h  = InTextureHeight;
-    _EyeTexture[0].OGL.Header.RenderViewport = eyes[0].RenderViewport;
+    _EyeTexture[0].OGL.Header.RenderViewport = EyeRenderViewport[0];
 	_EyeTexture[0].OGL.TexId                 = (GLuint)InTextureGLId;
     
     // Right eye uses the same texture, but different rendering viewport.
     _EyeTexture[1] = _EyeTexture[0];
-    _EyeTexture[1].OGL.Header.RenderViewport = eyes[1].RenderViewport;
+    _EyeTexture[1].OGL.Header.RenderViewport = EyeRenderViewport[1];
 
 	// Configure OpenGL. 
 	ovrGLConfig cfg; 
 	cfg.OGL.Header.API         = ovrRenderAPI_OpenGL; 
 	cfg.OGL.Header.RTSize      = Sizei(OutTextureWidth, OutTextureHeight); 
-	cfg.OGL.Header.Multisample = MultiSample;  
+	cfg.OGL.Header.Multisample = MultiSample; 
 
-//#ifdef _WIN
 	// Cast context pointers to 32 / 64 bit as appropriate
-	cfg.OGL.WglContext = (HGLRC)(intptr_t)WglContext; 
-	cfg.OGL.Window     = (HWND)(intptr_t)Window; 
-	cfg.OGL.GdiDc      = (HDC)(intptr_t)GdiDc;
-//#else etc...
-
+#if defined(OVR_OS_WIN32)
+    cfg.OGL.Window = (HWND)(intptr_t)Window;
+#elif defined(OVR_OS_LINUX)
+    cfg.OGL.Disp   = (Display*)(intptr_t)Display;
+    cfg.OGL.Win    = (Window)(intptr_t)Window;
+#endif
+	 
 	unsigned int DistortionCaps = 0;
     if (UseChromAbCorrection)
-        DistortionCaps |= ovrDistortion_Chromatic;
+        DistortionCaps |= ovrDistortionCap_Chromatic;
     if (UseTimewarp)
-        DistortionCaps |= ovrDistortion_TimeWarp;
+        DistortionCaps |= ovrDistortionCap_TimeWarp;
     if (UseVignette)
-        DistortionCaps |= ovrDistortion_Vignette;    
+        DistortionCaps |= ovrDistortionCap_Vignette;    
     
 	ovrEyeRenderDesc EyeRenderDesc[2];
 
-	ovrBool result = ovrHmd_ConfigureRendering(_pHmd, &cfg.Config, (VSyncEnabled ? 0 : ovrHmdCap_NoVSync), DistortionCaps, eyes, EyeRenderDesc);
+    // Set VSync
+    unsigned int HmdCaps = ovrHmd_GetEnabledCaps(_pHmd);
+    SetBit(HmdCaps, ovrHmdCap_NoVSync, !VSyncEnabled);
+    ovrHmd_SetEnabledCaps(_pHmd, HmdCaps); 
+
+    // Configure render setup
+    ovrBool result = ovrHmd_ConfigureRendering(_pHmd, &cfg.Config, DistortionCaps, eyeFov, EyeRenderDesc);
 	if (!result)
 	{
 		printf("ovrHmd_ConfigureRendering() - ERROR: failure");
@@ -332,17 +333,11 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1configureRendering(
     _renderConfigured = true;
 
 	jobject eyeRenderDesc = env->NewObject(eyeRenderParams_Class, eyeRenderParams_constructor_MethodID,
-                                           EyeRenderDesc[0].Desc.Eye,
-                                           EyeRenderDesc[0].Desc.TextureSize.w, 
-                                           EyeRenderDesc[0].Desc.TextureSize.h,
-                                           EyeRenderDesc[0].Desc.RenderViewport.Pos.x, 
-                                           EyeRenderDesc[0].Desc.RenderViewport.Pos.y,
-                                           EyeRenderDesc[0].Desc.RenderViewport.Size.w,
-                                           EyeRenderDesc[0].Desc.RenderViewport.Size.h,
-                                           EyeRenderDesc[0].Desc.Fov.UpTan,
-                                           EyeRenderDesc[0].Desc.Fov.DownTan,
-                                           EyeRenderDesc[0].Desc.Fov.LeftTan,
-                                           EyeRenderDesc[0].Desc.Fov.RightTan,
+                                           EyeRenderDesc[0].Eye,
+                                           EyeRenderDesc[0].Fov.UpTan,
+                                           EyeRenderDesc[0].Fov.DownTan,
+                                           EyeRenderDesc[0].Fov.LeftTan,
+                                           EyeRenderDesc[0].Fov.RightTan,
                                            EyeRenderDesc[0].DistortedViewport.Pos.x, 
                                            EyeRenderDesc[0].DistortedViewport.Pos.y,
                                            EyeRenderDesc[0].DistortedViewport.Size.w,
@@ -352,17 +347,11 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1configureRendering(
                                            EyeRenderDesc[0].ViewAdjust.x,
                                            EyeRenderDesc[0].ViewAdjust.y,
                                            EyeRenderDesc[0].ViewAdjust.z,
-                                           EyeRenderDesc[1].Desc.Eye,
-                                           EyeRenderDesc[1].Desc.TextureSize.w, 
-                                           EyeRenderDesc[1].Desc.TextureSize.h,
-                                           EyeRenderDesc[1].Desc.RenderViewport.Pos.x, 
-                                           EyeRenderDesc[1].Desc.RenderViewport.Pos.y,
-                                           EyeRenderDesc[1].Desc.RenderViewport.Size.w,
-                                           EyeRenderDesc[1].Desc.RenderViewport.Size.h,
-                                           EyeRenderDesc[1].Desc.Fov.UpTan,
-                                           EyeRenderDesc[1].Desc.Fov.DownTan,
-                                           EyeRenderDesc[1].Desc.Fov.LeftTan,
-                                           EyeRenderDesc[1].Desc.Fov.RightTan,
+                                           EyeRenderDesc[1].Eye,
+                                           EyeRenderDesc[1].Fov.UpTan,
+                                           EyeRenderDesc[1].Fov.DownTan,
+                                           EyeRenderDesc[1].Fov.LeftTan,
+                                           EyeRenderDesc[1].Fov.RightTan,
                                            EyeRenderDesc[1].DistortedViewport.Pos.x, 
                                            EyeRenderDesc[1].DistortedViewport.Pos.y,
                                            EyeRenderDesc[1].DistortedViewport.Size.w,
@@ -557,7 +546,7 @@ void ResetRenderConfig()
 {
     if (_initialised)
     {
-        ovrHmd_ConfigureRendering(_pHmd, 0, 0, 0, 0, 0);
+        ovrHmd_ConfigureRendering(_pHmd, 0, 0, 0, 0);
     }
 
     // Reset texture data
@@ -606,9 +595,12 @@ bool CreateHmdAndStartSensor(int hmdIndex)
 		// Log description
 		LogHmdDesc(_pHmdDesc);
 
+        // Set hmd caps
+        ovrHmd_SetEnabledCaps(_pHmd, ovrHmdCap_LowPersistence | ovrHmdCap_LatencyTest);
+
 		// Start sensor
 		ovrBool sensorResult = ovrHmd_StartSensor(_pHmd,
-			ovrHmdCap_Orientation | ovrHmdCap_YawCorrection | ovrHmdCap_Position | ovrHmdCap_LowPersistence | ovrHmdCap_LatencyTest,
+			ovrSensorCap_Orientation | ovrSensorCap_YawCorrection | ovrSensorCap_Position,
 			0);
 
 		if (sensorResult)
@@ -735,7 +727,7 @@ bool CacheJNIGlobals(JNIEnv *env)
                          eyeRenderParams_Class,
                          "de/fruitfly/ovr/EyeRenderParams",
                          eyeRenderParams_constructor_MethodID,
-                         "(IIIIIIIFFFFIIIIFFFFFIIIIIIIFFFFIIIIFFFFF)V"))
+                         "(IFFFFIIIIFFFFFIFFFFIIIIFFFFF)V"))
     {
         return false;
     }
@@ -801,4 +793,16 @@ bool LookupJNIGlobal(JNIEnv *env,
 	}
 
     return true;
+}
+
+void SetBit(unsigned int& BitField, unsigned int BitIndex, boolean Value)
+{
+    if (Value)
+    {
+        BitField |= 1 << BitIndex;
+    }
+    else
+    {
+        BitField &= ~(1 << BitIndex);
+    }
 }

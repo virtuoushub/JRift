@@ -173,3 +173,6 @@ JRiftLibrary/natives/windows/JRiftLibraryd.lib
 JRiftLibrary/natives/windows/JRiftLibraryd64.dll
 JRiftLibrary/natives/windows/JRiftLibraryd64.exp
 JRiftLibrary/natives/windows/JRiftLibraryd64.lib
+JRiftLibrary/natives/windows/JRiftLibrary64d.dll
+JRiftLibrary/natives/windows/JRiftLibrary64d.exp
+JRiftLibrary/natives/windows/JRiftLibrary64d.lib

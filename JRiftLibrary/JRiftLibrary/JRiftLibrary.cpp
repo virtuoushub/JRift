@@ -576,10 +576,10 @@ bool CreateHmdAndStartSensor(int hmdIndex)
 
 	if (_pHmd == 0)
 	{
-		// Create debug DK2(!)
+		// Create debug DK1
         _hmdIndex = -1;
 		_pHmd = ovrHmd_CreateDebug(ovrHmd_DK1);
-		printf("No Oculus Rift devices found, creating dummy DK2 device...\n");
+		printf("No Oculus Rift devices found, creating dummy DK1 device...\n");
 	}
 	else
 	{

@@ -318,9 +318,9 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1configureRendering(
 	ovrEyeRenderDesc EyeRenderDesc[2];
 
     // Set VSync
-    //unsigned int HmdCaps = ovrHmd_GetEnabledCaps(_pHmd);
-    //SetBit(HmdCaps, ovrHmdCap_NoVSync, !VSyncEnabled);
-    //ovrHmd_SetEnabledCaps(_pHmd, HmdCaps); 
+    unsigned int HmdCaps = ovrHmd_GetEnabledCaps(_pHmd);
+    SetBit(HmdCaps, ovrHmdCap_NoVSync, !VSyncEnabled);
+    ovrHmd_SetEnabledCaps(_pHmd, HmdCaps); 
 
     // Configure render setup
     ovrBool result = ovrHmd_ConfigureRendering(_pHmd, &cfg.Config, DistortionCaps, eyeFov, EyeRenderDesc);

@@ -9,7 +9,7 @@ public class OculusRift //implements IOculusRift
 {
 	private boolean initialized = false;
 
-    public final String VERSION = "0.3.1.1";
+    public final String VERSION = "0.3.2.1";
 
 	private HmdDesc hmdDesc = new HmdDesc();
     private SensorState sensorState = new SensorState();
@@ -132,11 +132,11 @@ public class OculusRift //implements IOculusRift
                 glConfig.TexId,
                 glConfig.Window,
                 glConfig.Display,
-                true,//TODO: VSyncEnabled
+                VSyncEnabled,
                 0,            // TODO: Support multisample?
-                true,//useChromaticAbCorrection,
-                true,//useTimewarp,
-                true);//useVignette);   // TODO: Reenable when these settings aren't broken in the Oculus preview SDK
+                useChromaticAbCorrection,
+                useTimewarp,
+                useVignette);
     }
 
     public FrameTiming beginFrameGetTiming()

@@ -318,9 +318,9 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1configureRendering(
 	ovrEyeRenderDesc EyeRenderDesc[2];
 
     // Set VSync
-    unsigned int HmdCaps = ovrHmd_GetEnabledCaps(_pHmd);
-    SetBit(HmdCaps, ovrHmdCap_NoVSync, !VSyncEnabled);
-    ovrHmd_SetEnabledCaps(_pHmd, HmdCaps); 
+    //unsigned int HmdCaps = ovrHmd_GetEnabledCaps(_pHmd);
+    //SetBit(HmdCaps, ovrHmdCap_NoVSync, !VSyncEnabled);
+    //ovrHmd_SetEnabledCaps(_pHmd, HmdCaps); 
 
     // Configure render setup
     ovrBool result = ovrHmd_ConfigureRendering(_pHmd, &cfg.Config, DistortionCaps, eyeFov, EyeRenderDesc);
@@ -335,6 +335,10 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1configureRendering(
 
 	jobject eyeRenderDesc = env->NewObject(eyeRenderParams_Class, eyeRenderParams_constructor_MethodID,
                                            EyeRenderDesc[0].Eye,
+                                           EyeRenderViewport[0].Pos.x,
+                                           EyeRenderViewport[0].Pos.y,
+                                           EyeRenderViewport[0].Size.w,
+                                           EyeRenderViewport[0].Size.h,
                                            EyeRenderDesc[0].Fov.UpTan,
                                            EyeRenderDesc[0].Fov.DownTan,
                                            EyeRenderDesc[0].Fov.LeftTan,
@@ -349,6 +353,10 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1configureRendering(
                                            EyeRenderDesc[0].ViewAdjust.y,
                                            EyeRenderDesc[0].ViewAdjust.z,
                                            EyeRenderDesc[1].Eye,
+                                           EyeRenderViewport[1].Pos.x,
+                                           EyeRenderViewport[1].Pos.y,
+                                           EyeRenderViewport[1].Size.w,
+                                           EyeRenderViewport[1].Size.h,
                                            EyeRenderDesc[1].Fov.UpTan,
                                            EyeRenderDesc[1].Fov.DownTan,
                                            EyeRenderDesc[1].Fov.LeftTan,
@@ -599,10 +607,10 @@ bool CreateHmdAndStartSensor(int hmdIndex)
         // Set hmd caps
         ovrHmd_SetEnabledCaps(_pHmd, ovrHmdCap_LowPersistence | ovrHmdCap_LatencyTest);
 
-		// Start sensor
+		    // Start sensor
 		ovrBool sensorResult = ovrHmd_StartSensor(_pHmd,
-			ovrSensorCap_Orientation | ovrSensorCap_YawCorrection | ovrSensorCap_Position,
-			0);
+			    ovrSensorCap_Orientation | ovrSensorCap_YawCorrection | ovrSensorCap_Position,
+			    0);
 
 		if (sensorResult)
 		{
@@ -728,7 +736,7 @@ bool CacheJNIGlobals(JNIEnv *env)
                          eyeRenderParams_Class,
                          "de/fruitfly/ovr/EyeRenderParams",
                          eyeRenderParams_constructor_MethodID,
-                         "(IFFFFIIIIFFFFFIFFFFIIIIFFFFF)V"))
+                         "(IIIIIFFFFIIIIFFFFFIIIIIFFFFIIIIFFFFF)V"))
     {
         return false;
     }

@@ -63,7 +63,7 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getFovTextureSize
 /*
  * Class:     de_fruitfly_ovr_OculusRift
  * Method:    configureRendering
- * Signature: (IIIIIJJJZIZZZ)Lde/fruitfly/ovr/EyeRenderParams;
+ * Signature: (IIIIIJJZIZZZ)Lde/fruitfly/ovr/EyeRenderParams;
  */
 JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1configureRendering(
 	JNIEnv *, 

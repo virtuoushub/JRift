@@ -14,6 +14,10 @@ public class EyeRenderParams
     
     public EyeRenderParams(
             int eye1DescInt,
+            int eye1EyeRenderViewportPosX,
+            int eye1EyeRenderViewportPosY,
+            int eye1EyeRenderViewportSizeW,
+            int eye1EyeRenderViewportSizeH,
             float eye1DescFovUpTan,
             float eye1DescFovDownTan,
             float eye1DescFovLeftTan,
@@ -28,6 +32,10 @@ public class EyeRenderParams
             float eye1ViewAdjusty,
             float eye1ViewAdjustz,
             int eye2DescInt,
+            int eye2EyeRenderViewportPosX,
+            int eye2EyeRenderViewportPosY,
+            int eye2EyeRenderViewportSizeW,
+            int eye2EyeRenderViewportSizeH,
             float eye2DescFovUpTan,
             float eye2DescFovDownTan,
             float eye2DescFovLeftTan,
@@ -45,6 +53,10 @@ public class EyeRenderParams
     {
         Eyes[0] = new EyeRenderDesc();
         Eyes[0].Eye = EyeType.fromInteger(eye1DescInt);
+        Eyes[0].EyeRenderViewport.Pos.x = eye1EyeRenderViewportPosX;
+        Eyes[0].EyeRenderViewport.Pos.y = eye1EyeRenderViewportPosY;
+        Eyes[0].EyeRenderViewport.Size.w = eye1EyeRenderViewportSizeW;
+        Eyes[0].EyeRenderViewport.Size.h = eye1EyeRenderViewportSizeH;
         Eyes[0].Fov.UpTan = eye1DescFovUpTan;
         Eyes[0].Fov.DownTan = eye1DescFovDownTan;
         Eyes[0].Fov.LeftTan = eye1DescFovLeftTan;
@@ -60,6 +72,10 @@ public class EyeRenderParams
         Eyes[0].ViewAdjust.z = eye1ViewAdjustz;
         Eyes[1] = new EyeRenderDesc();
         Eyes[1].Eye = EyeType.fromInteger(eye2DescInt);
+        Eyes[1].EyeRenderViewport.Pos.x = eye2EyeRenderViewportPosX;
+        Eyes[1].EyeRenderViewport.Pos.y = eye2EyeRenderViewportPosY;
+        Eyes[1].EyeRenderViewport.Size.w = eye2EyeRenderViewportSizeW;
+        Eyes[1].EyeRenderViewport.Size.h = eye2EyeRenderViewportSizeH;
         Eyes[1].Fov.UpTan = eye2DescFovUpTan;
         Eyes[1].Fov.DownTan = eye2DescFovDownTan;
         Eyes[1].Fov.LeftTan = eye2DescFovLeftTan;

@@ -132,7 +132,7 @@ public class OculusRift //implements IOculusRift
                 glConfig.TexId,
                 glConfig.Window,
                 glConfig.Display,
-                VSyncEnabled,
+                true,//TODO: VSyncEnabled
                 0,            // TODO: Support multisample?
                 true,//useChromaticAbCorrection,
                 true,//useTimewarp,

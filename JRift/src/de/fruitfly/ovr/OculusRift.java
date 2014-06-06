@@ -1,6 +1,9 @@
 package de.fruitfly.ovr;
 
+import de.fruitfly.ovr.enums.Axis;
 import de.fruitfly.ovr.enums.EyeType;
+import de.fruitfly.ovr.enums.HandedSystem;
+import de.fruitfly.ovr.enums.RotateDirection;
 import de.fruitfly.ovr.structs.*;
 
 import java.io.File;
@@ -13,11 +16,6 @@ public class OculusRift //implements IOculusRift
 
 	private HmdDesc hmdDesc = new HmdDesc();
     private SensorState sensorState = new SensorState();
-
-    public static final int ROTATE_CCW = 1;
-    public static final int ROTATE_CW  = -1;
-    public static final int HANDED_R = 1;
-    public static final int HANDED_L = -1;
 
     public String _initSummary = "Not initialised";
 
@@ -171,17 +169,32 @@ public class OculusRift //implements IOculusRift
         _endFrame();
     }
 
-    public static Vector3f getEulerAngles(Quatf quat, float scale, int hand, int rotationDir)
+    public static Vector3f getEulerAngles(Quatf quat,
+                                          float scale,
+                                          Axis rotationAxis1,
+                                          Axis rotationAxis2,
+                                          Axis rotationAxis3,
+                                          HandedSystem hand,
+                                          RotateDirection rotationDir)
     {
-        return getEulerAngles(quat.x, quat.y, quat.z, quat.w, scale, hand, rotationDir);
+        return getEulerAngles(quat.x, quat.y, quat.z, quat.w, scale, rotationAxis1, rotationAxis2, rotationAxis3, hand, rotationDir);
     }
 
-    public static Vector3f getEulerAngles(float x, float y, float z, float w, float scale, int hand, int rotationDir)
+    public static Vector3f getEulerAngles(float x,
+                                          float y,
+                                          float z,
+                                          float w,
+                                          float scale,
+                                          Axis rotationAxis1,
+                                          Axis rotationAxis2,
+                                          Axis rotationAxis3,
+                                          HandedSystem hand,
+                                          RotateDirection rotationDir)
     {
         if( !libraryLoaded )
             return null;
 
-        Vector3f eulerAngles = _convertQuatToEuler(x, y, z, w, scale, hand, rotationDir);
+        Vector3f eulerAngles = _convertQuatToEuler(x, y, z, w, scale, rotationAxis1.value(), rotationAxis2.value(), rotationAxis3.value(), hand.value(), rotationDir.value());
         eulerAngles.x = (float)Math.toDegrees(eulerAngles.x);
         eulerAngles.y = (float)Math.toDegrees(eulerAngles.y);
         eulerAngles.z = (float)Math.toDegrees(eulerAngles.z);
@@ -228,6 +241,9 @@ public class OculusRift //implements IOculusRift
                                                          float quatz,
                                                          float quatw,
                                                          float scale,
+                                                         int rot1,
+                                                         int rot2,
+                                                         int rot3,
                                                          int hand,
                                                          int rotationDir);
 
@@ -269,13 +285,18 @@ public class OculusRift //implements IOculusRift
         FovTextureInfo recommendedFovTextureSize = or.getFovTextureSize(1.0f);
         System.out.println("Render target size: " + recommendedFovTextureSize.Res.w + "x" + recommendedFovTextureSize.Res.h);
 
-        while (or.isInitialized()) {
+        while (or.isInitialized())
+        {
             or.poll(0.0d);
             SensorState state = or.getLastSensorState();
             Vector3f euler = or.getEulerAngles(state.Predicted.Pose.Orientation,
                                                1.0f,
-                                               OculusRift.HANDED_L,
-                                               OculusRift.ROTATE_CCW);
+                                               Axis.Axis_Y,
+                                               Axis.Axis_X,
+                                               Axis.Axis_Z,
+                                               HandedSystem.Handed_L,
+                                               RotateDirection.Rotate_CCW);
+
             Vector3f pos = state.Predicted.Pose.Position;
 
             System.out.println("Yaw: " + euler.y + " Pitch: " + euler.x + " Roll: " + euler.z + " PosX: " + pos.x+ " PosY: " + pos.y + " PosZ: " + pos.z);

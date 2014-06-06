@@ -54,3 +54,27 @@ public enum HmdType
         return "Unknown";
     }
 }
+//// Definitions of axes for coordinate and rotation conversions.
+//enum Axis
+//{
+//    Axis_X = 0, Axis_Y = 1, Axis_Z = 2
+//};
+//
+//// RotateDirection describes the rotation direction around an axis, interpreted as follows:
+////  CW  - Clockwise while looking "down" from positive axis towards the origin.
+////  CCW - Counter-clockwise while looking from the positive axis towards the origin,
+////        which is in the negative axis direction.
+////  CCW is the default for the RHS coordinate system. Oculus standard RHS coordinate
+////  system defines Y up, X right, and Z back (pointing out from the screen). In this
+////  system Rotate_CCW around Z will specifies counter-clockwise rotation in XY plane.
+//enum RotateDirection
+//{
+//    Rotate_CCW = 1,
+//    Rotate_CW  = -1
+//};
+//
+//// Constants for right handed and left handed coordinate systems
+//enum HandedSystem
+//{
+//    Handed_R = 1, Handed_L = -1
+//};

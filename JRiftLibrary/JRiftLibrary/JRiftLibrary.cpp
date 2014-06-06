@@ -503,27 +503,182 @@ JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1endFrame(JNIEnv *env, j
 }
 
 JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1convertQuatToEuler
-  (JNIEnv *env, jobject, jfloat quaternion_x, jfloat quaternion_y, jfloat quaternion_z, jfloat quaternion_w, jfloat scale, jint hand, jint rotationDir)
+  (JNIEnv *env, jobject, jfloat quaternion_x, jfloat quaternion_y, jfloat quaternion_z, jfloat quaternion_w, jfloat scale, jint firstRotationAxis, jint secondRotationAxis, jint thirdRotationAxis, jint hand, jint rotationDir)
 {
 	Quatf quat(quaternion_x, quaternion_y, quaternion_z, quaternion_w);
     ovrVector3f euler;
+	Axis A1, A2, A3;
+	RotateDirection D;
+	HandedSystem S;
+
+	SetEulerEnumValues(firstRotationAxis,
+					   secondRotationAxis,
+					   thirdRotationAxis,
+					   rotationDir,
+					   hand,
+					   A1,
+					   A2,
+					   A3,
+					   D,
+					   S);
 	
 	if (scale != 1.0f)
 		quat = quat.PowNormalized(scale);
 
-	if (hand == 1)
+	// Yes this next bit is ridiculous. Why did they use templates?
+	if (S == Handed_R)
 	{
-		if (rotationDir == 1)
-            quat.GetEulerAngles<Axis_Y, Axis_X, Axis_Z, Rotate_CCW, Handed_R>(&euler.y, &euler.x, &euler.z);
+		if (D == Rotate_CCW)
+		{
+			// Handed_R, Rotate_CCW
+			if (A1 == Axis_X)
+			{
+				if (A2 == Axis_Y)
+				{
+					quat.GetEulerAngles<Axis_X, Axis_Y, Axis_Z, Rotate_CCW, Handed_R>(&euler.y, &euler.x, &euler.z);
+				}
+				else if (A2 == Axis_Z)
+				{
+					quat.GetEulerAngles<Axis_X, Axis_Z, Axis_Y, Rotate_CCW, Handed_R>(&euler.y, &euler.x, &euler.z);
+				}
+			}
+			else if (A1 == Axis_Y)
+			{
+				if (A2 == Axis_X)
+				{
+					quat.GetEulerAngles<Axis_Y, Axis_X, Axis_Z, Rotate_CCW, Handed_R>(&euler.y, &euler.x, &euler.z);
+				}
+				else if (A2 == Axis_Z)
+				{
+					quat.GetEulerAngles<Axis_Y, Axis_Z, Axis_X, Rotate_CCW, Handed_R>(&euler.y, &euler.x, &euler.z);
+				}
+			}
+			else if (A1 == Axis_Z)
+			{
+				if (A2 == Axis_X)
+				{
+					quat.GetEulerAngles<Axis_Z, Axis_X, Axis_Y, Rotate_CCW, Handed_R>(&euler.y, &euler.x, &euler.z);
+				}
+				else if (A2 == Axis_Y)
+				{
+					quat.GetEulerAngles<Axis_Z, Axis_Y, Axis_X, Rotate_CCW, Handed_R>(&euler.y, &euler.x, &euler.z);
+				}
+			}
+		}
 		else
-			quat.GetEulerAngles<Axis_Y, Axis_X, Axis_Z, Rotate_CW, Handed_R>(&euler.y, &euler.x, &euler.z);
+		{
+			// Handed_R, Rotate_CW
+			if (A1 == Axis_X)
+			{
+				if (A2 == Axis_Y)
+				{
+					quat.GetEulerAngles<Axis_X, Axis_Y, Axis_Z, Rotate_CW, Handed_R>(&euler.y, &euler.x, &euler.z);
+				}
+				else if (A2 == Axis_Z)
+				{
+					quat.GetEulerAngles<Axis_X, Axis_Z, Axis_Y, Rotate_CW, Handed_R>(&euler.y, &euler.x, &euler.z);
+				}
+			}
+			else if (A1 == Axis_Y)
+			{
+				if (A2 == Axis_X)
+				{
+					quat.GetEulerAngles<Axis_Y, Axis_X, Axis_Z, Rotate_CW, Handed_R>(&euler.y, &euler.x, &euler.z);
+				}
+				else if (A2 == Axis_Z)
+				{
+					quat.GetEulerAngles<Axis_Y, Axis_Z, Axis_X, Rotate_CW, Handed_R>(&euler.y, &euler.x, &euler.z);
+				}
+			}
+			else if (A1 == Axis_Z)
+			{
+				if (A2 == Axis_X)
+				{
+					quat.GetEulerAngles<Axis_Z, Axis_X, Axis_Y, Rotate_CW, Handed_R>(&euler.y, &euler.x, &euler.z);
+				}
+				else if (A2 == Axis_Y)
+				{
+					quat.GetEulerAngles<Axis_Z, Axis_Y, Axis_X, Rotate_CW, Handed_R>(&euler.y, &euler.x, &euler.z);
+				}
+			}
+		}
 	}
-	else
+	else if (S == Handed_L)
 	{
-		if (rotationDir == 1)
-			quat.GetEulerAngles<Axis_Y, Axis_X, Axis_Z, Rotate_CCW, Handed_L>(&euler.y, &euler.x, &euler.z);
+		if (D == Rotate_CCW)
+		{
+			// Handed_L, Rotate_CCW
+			if (A1 == Axis_X)
+			{
+				if (A2 == Axis_Y)
+				{
+					quat.GetEulerAngles<Axis_X, Axis_Y, Axis_Z, Rotate_CCW, Handed_L>(&euler.y, &euler.x, &euler.z);
+				}
+				else if (A2 == Axis_Z)
+				{
+					quat.GetEulerAngles<Axis_X, Axis_Z, Axis_Y, Rotate_CCW, Handed_L>(&euler.y, &euler.x, &euler.z);
+				}
+			}
+			else if (A1 == Axis_Y)
+			{
+				if (A2 == Axis_X)
+				{
+					quat.GetEulerAngles<Axis_Y, Axis_X, Axis_Z, Rotate_CCW, Handed_L>(&euler.y, &euler.x, &euler.z);
+				}
+				else if (A2 == Axis_Z)
+				{
+					quat.GetEulerAngles<Axis_Y, Axis_Z, Axis_X, Rotate_CCW, Handed_L>(&euler.y, &euler.x, &euler.z);
+				}
+			}
+			else if (A1 == Axis_Z)
+			{
+				if (A2 == Axis_X)
+				{
+					quat.GetEulerAngles<Axis_Z, Axis_X, Axis_Y, Rotate_CCW, Handed_L>(&euler.y, &euler.x, &euler.z);
+				}
+				else if (A2 == Axis_Y)
+				{
+					quat.GetEulerAngles<Axis_Z, Axis_Y, Axis_X, Rotate_CCW, Handed_L>(&euler.y, &euler.x, &euler.z);
+				}
+			}
+		}
 		else
-			quat.GetEulerAngles<Axis_Y, Axis_X, Axis_Z, Rotate_CW, Handed_L>(&euler.y, &euler.x, &euler.z);
+		{
+			// Handed_L, Rotate_CW
+			if (A1 == Axis_X)
+			{
+				if (A2 == Axis_Y)
+				{
+					quat.GetEulerAngles<Axis_X, Axis_Y, Axis_Z, Rotate_CW, Handed_L>(&euler.y, &euler.x, &euler.z);
+				}
+				else if (A2 == Axis_Z)
+				{
+					quat.GetEulerAngles<Axis_X, Axis_Z, Axis_Y, Rotate_CW, Handed_L>(&euler.y, &euler.x, &euler.z);
+				}
+			}
+			else if (A1 == Axis_Y)
+			{
+				if (A2 == Axis_X)
+				{
+					quat.GetEulerAngles<Axis_Y, Axis_X, Axis_Z, Rotate_CW, Handed_L>(&euler.y, &euler.x, &euler.z);
+				}
+				else if (A2 == Axis_Z)
+				{
+					quat.GetEulerAngles<Axis_Y, Axis_Z, Axis_X, Rotate_CW, Handed_L>(&euler.y, &euler.x, &euler.z);
+				}
+			}
+			else if (A1 == Axis_Z)
+			{
+				if (A2 == Axis_X)
+				{
+					quat.GetEulerAngles<Axis_Z, Axis_X, Axis_Y, Rotate_CW, Handed_L>(&euler.y, &euler.x, &euler.z);
+				}
+				else if (A2 == Axis_Y)
+				{
+					quat.GetEulerAngles<Axis_Z, Axis_Y, Axis_X, Rotate_CW, Handed_L>(&euler.y, &euler.x, &euler.z);
+				}
+			}
+		}
 	}
 
     // Cache JNI objects here to prevent the need for initialisation
@@ -814,4 +969,53 @@ void SetBit(unsigned int& BitField, unsigned int BitIndex, boolean Value)
     {
         BitField &= ~(1 << BitIndex);
     }
+}
+
+void SetEulerEnumValues(int firstRotationAxis,
+					    int secondRotationAxis,
+					    int thirdRotationAxis,
+					    int rotationDir,
+					    int hand,
+					    Axis& A1,
+						Axis& A2,
+					    Axis& A3,
+					    RotateDirection& D,
+					    HandedSystem& S)
+{
+	SetAxisEnum(firstRotationAxis, A1);
+	SetAxisEnum(secondRotationAxis, A2);
+	SetAxisEnum(thirdRotationAxis, A3);
+
+	switch (rotationDir)
+	{
+	case 1:
+		D = Rotate_CCW;
+		break;
+	default:
+		D = Rotate_CW;
+	}
+
+	switch (hand)
+	{
+	case 1:
+		S = Handed_R;
+		break;
+	default:
+		S = Handed_L;
+	}
+}
+
+void SetAxisEnum(int value, Axis& A)
+{
+	switch (value)
+	{
+	case 0:
+		A = Axis_X;
+		break;
+	case 1:
+		A = Axis_Y;
+		break;
+	default:
+		A = Axis_Z;
+	}
 }

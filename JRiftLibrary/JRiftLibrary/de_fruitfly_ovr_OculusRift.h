@@ -3,6 +3,7 @@
 #include <memory>
 #include "OVR.h"
 #include "OVR_CAPI.h"
+//#include "Kernel/OVR_Math.h"
 
 /* Header for class de_fruitfly_ovr_OculusRift */
 
@@ -131,10 +132,10 @@ JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1endFrame
 /*
  * Class:     de_fruitfly_ovr_OculusRift
  * Method:    _convertQuatToEuler
- * Signature: (FFFFII)[Lde/fruitfly/ovr/structs/Vector3f;
+ * Signature: (FFFFIIIII)[Lde/fruitfly/ovr/structs/Vector3f;
  */
 JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1convertQuatToEuler
-  (JNIEnv *, jobject, jfloat, jfloat, jfloat, jfloat, jfloat, jint, jint);
+  (JNIEnv *, jobject, jfloat, jfloat, jfloat, jfloat, jfloat, jint, jint, jint, jint, jint);
 
 
 /* Helpers */
@@ -152,6 +153,17 @@ bool LookupJNIGlobal(JNIEnv *env,
 void ClearException(JNIEnv *env);
 void PrintNewObjectException(JNIEnv *env, std::string objectName);
 void SetBit(unsigned int& BitField, unsigned int BitIndex, boolean Value);
+void SetEulerEnumValues(int firstRotationAxis,
+					    int secondRotationAxis,
+					    int thirdRotationAxis,
+					    int rotationDir,
+					    int hand,
+					    OVR::Axis& A1,
+						OVR::Axis& A2,
+					    OVR::Axis& A3,
+					    OVR::RotateDirection& D,
+					    OVR::HandedSystem& S);
+void SetAxisEnum(int value, OVR::Axis& A);
 
 //
 ///*

@@ -507,7 +507,18 @@ JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1endFrame(JNIEnv *env, j
 }
 
 JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1convertQuatToEuler
-  (JNIEnv *env, jobject, jfloat quaternion_x, jfloat quaternion_y, jfloat quaternion_z, jfloat quaternion_w, jfloat scale, jint firstRotationAxis, jint secondRotationAxis, jint thirdRotationAxis, jint hand, jint rotationDir)
+  (JNIEnv *env, 
+  jobject, 
+  jfloat quaternion_x, 
+  jfloat quaternion_y, 
+  jfloat quaternion_z, 
+  jfloat quaternion_w, 
+  jfloat scale, 
+  jint firstRotationAxis, 
+  jint secondRotationAxis, 
+  jint thirdRotationAxis, 
+  jint hand, 
+  jint rotationDir)
 {
 	Quatf quat(quaternion_x, quaternion_y, quaternion_z, quaternion_w);
     ovrVector3f euler;
@@ -687,20 +698,14 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1convertQuatToEuler
 	}
 
     // Cache JNI objects here to prevent the need for initialisation
-    if (eulerOrient_Class == NULL)
-	{
-		jclass localClass = env->FindClass("de/fruitfly/ovr/struct/EulerOrient");
-		eulerOrient_Class = (jclass)env->NewGlobalRef(localClass);
-		env->DeleteLocalRef(localClass);
-	}
-
-	if (eulerOrient_constructor_MethodID == NULL)
-	{
-		eulerOrient_constructor_MethodID = env->GetMethodID(eulerOrient_Class, 
-			"<init>", "("
-                      "FFF"
-                      ")V");
-	}
+    if (!LookupJNIGlobal(env,
+                         eulerOrient_Class,
+                         "de/fruitfly/ovr/structs/EulerOrient",
+                         eulerOrient_constructor_MethodID,
+                         "(FFF)V"))
+    {
+        return 0;
+    }
 
     jobject jeulerOrient = env->NewObject(eulerOrient_Class, eulerOrient_constructor_MethodID,
                                        euler.x,

@@ -132,10 +132,21 @@ JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1endFrame
 /*
  * Class:     de_fruitfly_ovr_OculusRift
  * Method:    _convertQuatToEuler
- * Signature: (FFFFIIIII)[Lde/fruitfly/ovr/structs/EulerOrient;
+ * Signature: (FFFFFIIIII)[Lde/fruitfly/ovr/structs/EulerOrient;
  */
 JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1convertQuatToEuler
-  (JNIEnv *, jobject, jfloat, jfloat, jfloat, jfloat, jfloat, jint, jint, jint, jint, jint);
+  (JNIEnv *, 
+  jobject, 
+  jfloat, 
+  jfloat, 
+  jfloat, 
+  jfloat, 
+  jfloat, 
+  jint, 
+  jint, 
+  jint, 
+  jint, 
+  jint);
 
 
 /* Helpers */

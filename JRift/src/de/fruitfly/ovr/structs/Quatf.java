@@ -7,7 +7,7 @@ public class Quatf
         w = 1.0f;
     }
 
-    Quatf(float X, float Y, float Z, float W)
+    public Quatf(float X, float Y, float Z, float W)
     {
         x = X;
         y = Y;

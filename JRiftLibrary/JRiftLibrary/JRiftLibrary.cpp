@@ -42,6 +42,10 @@ static jmethodID    vector3f_constructor_MethodID        = 0;
 static jclass       matrix4f_Class                       = 0;
 static jmethodID    matrix4f_constructor_MethodID        = 0;
 
+// These may be used by static functions, so are not initialised within CacheJNIGlobals()
+static jclass       eulerOrient_Class                    = 0;
+static jmethodID    eulerOrient_constructor_MethodID     = 0; 
+
 JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift__1initSubsystem(JNIEnv *env, jobject jobj) 
 {
     DEBUGLOG("Initialising Oculus Rift subsystem...");
@@ -525,7 +529,8 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1convertQuatToEuler
 	if (scale != 1.0f)
 		quat = quat.PowNormalized(scale);
 
-	// Yes this next bit is ridiculous. Why did they use templates?
+	// Yes - this next bit is ridiculous. Why did they use templates? Or am
+    // I missing the easy way to do this?!
 	if (S == Handed_R)
 	{
 		if (D == Rotate_CCW)
@@ -535,33 +540,33 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1convertQuatToEuler
 			{
 				if (A2 == Axis_Y)
 				{
-					quat.GetEulerAngles<Axis_X, Axis_Y, Axis_Z, Rotate_CCW, Handed_R>(&euler.y, &euler.x, &euler.z);
+					quat.GetEulerAngles<Axis_X, Axis_Y, Axis_Z, Rotate_CCW, Handed_R>(&euler.x, &euler.y, &euler.z);
 				}
 				else if (A2 == Axis_Z)
 				{
-					quat.GetEulerAngles<Axis_X, Axis_Z, Axis_Y, Rotate_CCW, Handed_R>(&euler.y, &euler.x, &euler.z);
+					quat.GetEulerAngles<Axis_X, Axis_Z, Axis_Y, Rotate_CCW, Handed_R>(&euler.x, &euler.y, &euler.z);
 				}
 			}
 			else if (A1 == Axis_Y)
 			{
 				if (A2 == Axis_X)
 				{
-					quat.GetEulerAngles<Axis_Y, Axis_X, Axis_Z, Rotate_CCW, Handed_R>(&euler.y, &euler.x, &euler.z);
+					quat.GetEulerAngles<Axis_Y, Axis_X, Axis_Z, Rotate_CCW, Handed_R>(&euler.x, &euler.y, &euler.z);
 				}
 				else if (A2 == Axis_Z)
 				{
-					quat.GetEulerAngles<Axis_Y, Axis_Z, Axis_X, Rotate_CCW, Handed_R>(&euler.y, &euler.x, &euler.z);
+					quat.GetEulerAngles<Axis_Y, Axis_Z, Axis_X, Rotate_CCW, Handed_R>(&euler.x, &euler.y, &euler.z);
 				}
 			}
 			else if (A1 == Axis_Z)
 			{
 				if (A2 == Axis_X)
 				{
-					quat.GetEulerAngles<Axis_Z, Axis_X, Axis_Y, Rotate_CCW, Handed_R>(&euler.y, &euler.x, &euler.z);
+					quat.GetEulerAngles<Axis_Z, Axis_X, Axis_Y, Rotate_CCW, Handed_R>(&euler.x, &euler.y, &euler.z);
 				}
 				else if (A2 == Axis_Y)
 				{
-					quat.GetEulerAngles<Axis_Z, Axis_Y, Axis_X, Rotate_CCW, Handed_R>(&euler.y, &euler.x, &euler.z);
+					quat.GetEulerAngles<Axis_Z, Axis_Y, Axis_X, Rotate_CCW, Handed_R>(&euler.x, &euler.y, &euler.z);
 				}
 			}
 		}
@@ -572,33 +577,33 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1convertQuatToEuler
 			{
 				if (A2 == Axis_Y)
 				{
-					quat.GetEulerAngles<Axis_X, Axis_Y, Axis_Z, Rotate_CW, Handed_R>(&euler.y, &euler.x, &euler.z);
+					quat.GetEulerAngles<Axis_X, Axis_Y, Axis_Z, Rotate_CW, Handed_R>(&euler.x, &euler.y, &euler.z);
 				}
 				else if (A2 == Axis_Z)
 				{
-					quat.GetEulerAngles<Axis_X, Axis_Z, Axis_Y, Rotate_CW, Handed_R>(&euler.y, &euler.x, &euler.z);
+					quat.GetEulerAngles<Axis_X, Axis_Z, Axis_Y, Rotate_CW, Handed_R>(&euler.x, &euler.y, &euler.z);
 				}
 			}
 			else if (A1 == Axis_Y)
 			{
 				if (A2 == Axis_X)
 				{
-					quat.GetEulerAngles<Axis_Y, Axis_X, Axis_Z, Rotate_CW, Handed_R>(&euler.y, &euler.x, &euler.z);
+					quat.GetEulerAngles<Axis_Y, Axis_X, Axis_Z, Rotate_CW, Handed_R>(&euler.x, &euler.y, &euler.z);
 				}
 				else if (A2 == Axis_Z)
 				{
-					quat.GetEulerAngles<Axis_Y, Axis_Z, Axis_X, Rotate_CW, Handed_R>(&euler.y, &euler.x, &euler.z);
+					quat.GetEulerAngles<Axis_Y, Axis_Z, Axis_X, Rotate_CW, Handed_R>(&euler.x, &euler.y, &euler.z);
 				}
 			}
 			else if (A1 == Axis_Z)
 			{
 				if (A2 == Axis_X)
 				{
-					quat.GetEulerAngles<Axis_Z, Axis_X, Axis_Y, Rotate_CW, Handed_R>(&euler.y, &euler.x, &euler.z);
+					quat.GetEulerAngles<Axis_Z, Axis_X, Axis_Y, Rotate_CW, Handed_R>(&euler.x, &euler.y, &euler.z);
 				}
 				else if (A2 == Axis_Y)
 				{
-					quat.GetEulerAngles<Axis_Z, Axis_Y, Axis_X, Rotate_CW, Handed_R>(&euler.y, &euler.x, &euler.z);
+					quat.GetEulerAngles<Axis_Z, Axis_Y, Axis_X, Rotate_CW, Handed_R>(&euler.x, &euler.y, &euler.z);
 				}
 			}
 		}
@@ -612,33 +617,33 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1convertQuatToEuler
 			{
 				if (A2 == Axis_Y)
 				{
-					quat.GetEulerAngles<Axis_X, Axis_Y, Axis_Z, Rotate_CCW, Handed_L>(&euler.y, &euler.x, &euler.z);
+					quat.GetEulerAngles<Axis_X, Axis_Y, Axis_Z, Rotate_CCW, Handed_L>(&euler.x, &euler.y, &euler.z);
 				}
 				else if (A2 == Axis_Z)
 				{
-					quat.GetEulerAngles<Axis_X, Axis_Z, Axis_Y, Rotate_CCW, Handed_L>(&euler.y, &euler.x, &euler.z);
+					quat.GetEulerAngles<Axis_X, Axis_Z, Axis_Y, Rotate_CCW, Handed_L>(&euler.x, &euler.y, &euler.z);
 				}
 			}
 			else if (A1 == Axis_Y)
 			{
 				if (A2 == Axis_X)
 				{
-					quat.GetEulerAngles<Axis_Y, Axis_X, Axis_Z, Rotate_CCW, Handed_L>(&euler.y, &euler.x, &euler.z);
+					quat.GetEulerAngles<Axis_Y, Axis_X, Axis_Z, Rotate_CCW, Handed_L>(&euler.x, &euler.y, &euler.z);
 				}
 				else if (A2 == Axis_Z)
 				{
-					quat.GetEulerAngles<Axis_Y, Axis_Z, Axis_X, Rotate_CCW, Handed_L>(&euler.y, &euler.x, &euler.z);
+					quat.GetEulerAngles<Axis_Y, Axis_Z, Axis_X, Rotate_CCW, Handed_L>(&euler.x, &euler.y, &euler.z);
 				}
 			}
 			else if (A1 == Axis_Z)
 			{
 				if (A2 == Axis_X)
 				{
-					quat.GetEulerAngles<Axis_Z, Axis_X, Axis_Y, Rotate_CCW, Handed_L>(&euler.y, &euler.x, &euler.z);
+					quat.GetEulerAngles<Axis_Z, Axis_X, Axis_Y, Rotate_CCW, Handed_L>(&euler.x, &euler.y, &euler.z);
 				}
 				else if (A2 == Axis_Y)
 				{
-					quat.GetEulerAngles<Axis_Z, Axis_Y, Axis_X, Rotate_CCW, Handed_L>(&euler.y, &euler.x, &euler.z);
+					quat.GetEulerAngles<Axis_Z, Axis_Y, Axis_X, Rotate_CCW, Handed_L>(&euler.x, &euler.y, &euler.z);
 				}
 			}
 		}
@@ -649,61 +654,61 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1convertQuatToEuler
 			{
 				if (A2 == Axis_Y)
 				{
-					quat.GetEulerAngles<Axis_X, Axis_Y, Axis_Z, Rotate_CW, Handed_L>(&euler.y, &euler.x, &euler.z);
+					quat.GetEulerAngles<Axis_X, Axis_Y, Axis_Z, Rotate_CW, Handed_L>(&euler.x, &euler.y, &euler.z);
 				}
 				else if (A2 == Axis_Z)
 				{
-					quat.GetEulerAngles<Axis_X, Axis_Z, Axis_Y, Rotate_CW, Handed_L>(&euler.y, &euler.x, &euler.z);
+					quat.GetEulerAngles<Axis_X, Axis_Z, Axis_Y, Rotate_CW, Handed_L>(&euler.x, &euler.y, &euler.z);
 				}
 			}
 			else if (A1 == Axis_Y)
 			{
 				if (A2 == Axis_X)
 				{
-					quat.GetEulerAngles<Axis_Y, Axis_X, Axis_Z, Rotate_CW, Handed_L>(&euler.y, &euler.x, &euler.z);
+					quat.GetEulerAngles<Axis_Y, Axis_X, Axis_Z, Rotate_CW, Handed_L>(&euler.x, &euler.y, &euler.z);
 				}
 				else if (A2 == Axis_Z)
 				{
-					quat.GetEulerAngles<Axis_Y, Axis_Z, Axis_X, Rotate_CW, Handed_L>(&euler.y, &euler.x, &euler.z);
+					quat.GetEulerAngles<Axis_Y, Axis_Z, Axis_X, Rotate_CW, Handed_L>(&euler.x, &euler.y, &euler.z);
 				}
 			}
 			else if (A1 == Axis_Z)
 			{
 				if (A2 == Axis_X)
 				{
-					quat.GetEulerAngles<Axis_Z, Axis_X, Axis_Y, Rotate_CW, Handed_L>(&euler.y, &euler.x, &euler.z);
+					quat.GetEulerAngles<Axis_Z, Axis_X, Axis_Y, Rotate_CW, Handed_L>(&euler.x, &euler.y, &euler.z);
 				}
 				else if (A2 == Axis_Y)
 				{
-					quat.GetEulerAngles<Axis_Z, Axis_Y, Axis_X, Rotate_CW, Handed_L>(&euler.y, &euler.x, &euler.z);
+					quat.GetEulerAngles<Axis_Z, Axis_Y, Axis_X, Rotate_CW, Handed_L>(&euler.x, &euler.y, &euler.z);
 				}
 			}
 		}
 	}
 
     // Cache JNI objects here to prevent the need for initialisation
-    if (sizei_Class == NULL)
+    if (eulerOrient_Class == NULL)
 	{
-		jclass localClass = env->FindClass("de/fruitfly/ovr/struct/Sizei");
-		sizei_Class = (jclass)env->NewGlobalRef(localClass);
+		jclass localClass = env->FindClass("de/fruitfly/ovr/struct/EulerOrient");
+		eulerOrient_Class = (jclass)env->NewGlobalRef(localClass);
 		env->DeleteLocalRef(localClass);
 	}
 
-	if (sizei_constructor_MethodID == NULL)
+	if (eulerOrient_constructor_MethodID == NULL)
 	{
-		sizei_constructor_MethodID = env->GetMethodID(sizei_Class, 
+		eulerOrient_constructor_MethodID = env->GetMethodID(eulerOrient_Class, 
 			"<init>", "("
-                      "II"
+                      "FFF"
                       ")V");
 	}
 
-    jobject jvector3f = env->NewObject(vector3f_Class, vector3f_constructor_MethodID,
+    jobject jeulerOrient = env->NewObject(eulerOrient_Class, eulerOrient_constructor_MethodID,
                                        euler.x,
                                        euler.y,
                                        euler.z
                                        );
 
-	return jvector3f;
+	return jeulerOrient;
 }
 
 void ResetRenderConfig()

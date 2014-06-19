@@ -2,8 +2,6 @@
 #include <string>
 #include <memory>
 #include "OVR.h"
-#include "OVR_CAPI.h"
-//#include "Kernel/OVR_Math.h"
 
 /* Header for class de_fruitfly_ovr_OculusRift */
 
@@ -179,7 +177,7 @@ bool LookupJNIGlobal(JNIEnv *env,
                      std::string constructorSignature);
 void ClearException(JNIEnv *env);
 void PrintNewObjectException(JNIEnv *env, std::string objectName);
-void SetBit(unsigned int& BitField, unsigned int BitIndex, boolean Value);
+void SetBit(unsigned int& BitField, unsigned int BitIndex, bool Value);
 void SetEulerEnumValues(int firstRotationAxis,
 					    int secondRotationAxis,
 					    int thirdRotationAxis,

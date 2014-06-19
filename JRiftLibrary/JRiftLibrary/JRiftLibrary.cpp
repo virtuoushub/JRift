@@ -6,15 +6,14 @@
 #include <vector>
 
 #include "OVR_CAPI_GL.h"
-#include "CAPI/CAPI_HMDState.h"
 
 using namespace OVR;
 
 ovrHmd                      _pHmd = 0;
 std::auto_ptr<ovrHmdDesc>   _pHmdDesc(0);
 
-int				    _hmdIndex    = -1;
-bool			    _initialised = false;
+int                 _hmdIndex    = -1;
+bool                _initialised = false;
 bool                _renderConfigured = false;
 bool                _realDevice = false;
 ovrPosef            _eyeRenderPose[2];
@@ -245,7 +244,7 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getFovTextureSize(JN
     Sizei recommendedTex1Size = ovrHmd_GetFovTextureSize(_pHmd, ovrEye_Right, _pHmdDesc->DefaultEyeFov[1], RenderScaleFactor);
     Sizei RenderTargetSize;
     RenderTargetSize.w = recommendedTex0Size.w + recommendedTex1Size.w;
-    RenderTargetSize.h = max ( recommendedTex0Size.h, recommendedTex1Size.h );
+    RenderTargetSize.h = std::max ( recommendedTex0Size.h, recommendedTex1Size.h );
 
     float scalew = (float)RenderTargetSize.w / (float)_pHmdDesc->Resolution.w;
     float scaleh = (float)RenderTargetSize.h / (float)_pHmdDesc->Resolution.h;
@@ -272,8 +271,8 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1configureRendering(
 	jint OutTextureWidth,
 	jint OutTextureHeight,
 	jint InTextureGLId,
-	jlong Window, 
-	jlong Display,
+	jlong Win, 
+	jlong Displ,
 	jboolean VSyncEnabled,
     jint MultiSample,
     jboolean UseChromAbCorrection,
@@ -315,10 +314,10 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1configureRendering(
 
 	// Cast context pointers to 32 / 64 bit as appropriate
 #if defined(OVR_OS_WIN32)
-    cfg.OGL.Window = (HWND)(intptr_t)Window;
+    cfg.OGL.Window = (HWND)(intptr_t)Win;
 #elif defined(OVR_OS_LINUX)
-    cfg.OGL.Disp   = (Display*)(intptr_t)Display;
-    cfg.OGL.Win    = (Window)(intptr_t)Window;
+    cfg.OGL.Disp   = (Display*)(intptr_t)Displ;
+    cfg.OGL.Win    = (Window)(intptr_t)Win;
 #endif
 	 
 	unsigned int DistortionCaps = 0;
@@ -1041,7 +1040,7 @@ bool LookupJNIGlobal(JNIEnv *env,
     return true;
 }
 
-void SetBit(unsigned int& BitField, unsigned int BitIndex, boolean Value)
+void SetBit(unsigned int& BitField, unsigned int BitIndex, bool Value)
 {
     if (Value)
     {

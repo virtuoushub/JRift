@@ -47,6 +47,7 @@ JRiftLibrary.o: JRiftLibrary.cpp
 	"-I/System/Library/Frameworks/JavaVM.framework/Versions/Current/Headers" \
 	"-I${MAC_SDK}/System/Library/Frameworks/JavaVM.framework/Versions/A/Headers" \
 	"-I${OCULUS_SDK}/LibOVR/Include" \
+	"-I${OCULUS_SDK}/LibOVR/Src" \
 	-c JRiftLibrary.cpp \
 	-o $@
 
@@ -60,6 +61,7 @@ JRiftLibrary64.o: JRiftLibrary.cpp
 	"-I/System/Library/Frameworks/JavaVM.framework/Versions/Current/Headers" \
 	"-I${MAC_SDK}/System/Library/Frameworks/JavaVM.framework/Versions/A/Headers" \
 	"-I${OCULUS_SDK}/LibOVR/Include" \
+	"-I${OCULUS_SDK}/LibOVR/Src" \
 	-c JRiftLibrary.cpp \
 	-o $@
 
@@ -111,6 +113,7 @@ JRiftLibrary.o: JRiftLibrary.cpp
 	-fno-rtti \
 	"-I${LINUX_JDK_HOME}/include/" \
 	"-I${OCULUS_SDK}/LibOVR/Include" \
+	"-I${OCULUS_SDK}/LibOVR/Src" \
 	-c $< \
 	-o $@
 
@@ -121,6 +124,7 @@ JRiftLibrary64.o: JRiftLibrary.cpp
 	-fno-rtti \
 	"-I${LINUX_JDK_HOME}/include/" \
 	"-I${OCULUS_SDK}/LibOVR/Include" \
+	"-I${OCULUS_SDK}/LibOVR/Src" \
 	-c $< \
 	-o $@
 

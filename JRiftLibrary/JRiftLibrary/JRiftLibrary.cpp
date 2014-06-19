@@ -244,7 +244,7 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getFovTextureSize(JN
     Sizei recommendedTex1Size = ovrHmd_GetFovTextureSize(_pHmd, ovrEye_Right, _pHmdDesc->DefaultEyeFov[1], RenderScaleFactor);
     Sizei RenderTargetSize;
     RenderTargetSize.w = recommendedTex0Size.w + recommendedTex1Size.w;
-    RenderTargetSize.h = std::max ( recommendedTex0Size.h, recommendedTex1Size.h );
+    RenderTargetSize.h = (std::max) ( recommendedTex0Size.h, recommendedTex1Size.h );
 
     float scalew = (float)RenderTargetSize.w / (float)_pHmdDesc->Resolution.w;
     float scaleh = (float)RenderTargetSize.h / (float)_pHmdDesc->Resolution.h;

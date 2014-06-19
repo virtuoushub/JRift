@@ -967,6 +967,7 @@ void UpdateDK2Timestamps(SensorTimeFilter& tf,
     {        
         UInt32 lowMks = (UInt32)timestamps[i]->TimestampMks;  // Low 32-bits are raw old timestamp.
 
+		// Add ULL to fix OSX build errors...
         if (rawValues[i] != lowMks)
         {
             if (i == 0)

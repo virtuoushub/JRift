@@ -27,9 +27,9 @@ OCULUS_SDK:=..
 
 ifeq ($(UNAME), Darwin)
 
-#MAC_SDK:=/Developer/SDKs/MacOSX10.6.sdk
-MAC_SDK:=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.6.sdk
-MAC_MIN_VER:=10.6
+#MAC_SDK:=/Developer/SDKs/MacOSX10.7.sdk
+MAC_SDK:=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk
+MAC_MIN_VER:=10.7
 
 all: libJRiftLibrary64.jnilib libJRiftLibrary.jnilib
 
@@ -72,6 +72,7 @@ libJRiftLibrary.jnilib: JRiftLibrary.o ${OCULUS_SDK}/LibOVR/OSX/Release/i386/lib
 		-m32 \
 		-framework ApplicationServices \
 		-framework IOKit \
+		-framework OpenGL \
 		-L ${OCULUS_SDK}/LibOVR/Lib/OSX/Release/i386/ \
 		-o $@ \
 		JRiftLibrary.o \
@@ -84,6 +85,7 @@ libJRiftLibrary64.jnilib: JRiftLibrary64.o ${OCULUS_SDK}/LibOVR/Lib/OSX/Release/
 		-m64 \
 		-framework ApplicationServices \
 		-framework IOKit \
+		-framework OpenGL \
 		-L ${OCULUS_SDK}/LibOVR/Lib/OSX/Release/x86_64/ \
 		-o $@ \
 		JRiftLibrary64.o \

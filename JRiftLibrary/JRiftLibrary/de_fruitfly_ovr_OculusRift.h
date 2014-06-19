@@ -156,6 +156,14 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1convertQuatToEuler
   jint, 
   jint);
 
+/*
+ * Class:     de_fruitfly_ovr_OculusRift
+ * Method:    _getUserProfileData
+ * Signature: L de/fruitfly/ovr/UserProfileData
+ */
+JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getUserProfileData(
+   JNIEnv *env, jobject);
+
 
 /* Helpers */
 void DEBUGLOG(std::string s);

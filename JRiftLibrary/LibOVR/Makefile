@@ -47,12 +47,14 @@ UNAME:= $(shell uname)
 ifeq ($(shell uname), Darwin)
 
 LIBDIR:=OSX
+
+## 10.7 Required for SDK >= 0.3.2 ? Seems so...
 #MAC_SDK:=/Developer/SDKs/MacOSX10.7.sdk
 MAC_SDK:=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk
 MAC_MIN_VER:=10.7
 
 CXXFLAGS = -isysroot ${MAC_SDK} -mmacosx-version-min=${MAC_MIN_VER}
-INCPATH  = -I${MAC_SDK}/usr/include -I${MAC_SDK}/usr/include
+INCPATH  = -I${MAC_SDK}/usr/include
 
 else
 
@@ -156,7 +158,6 @@ OBJECTS       = $(OBJPATH)/OVR_CAPI.o \
 ifeq ($(shell uname), Darwin)
 
 LIBDIR:=OSX
-
 OBJECTS+=  \
 		$(OBJPATH)/OVR_OSX_HIDDevice.o \
 		$(OBJPATH)/OVR_OSX_SensorDevice.o \

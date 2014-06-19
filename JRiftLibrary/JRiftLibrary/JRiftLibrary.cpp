@@ -225,6 +225,14 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getSensorState(JNIEn
     return jss;
 }
 
+JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1resetSensor(JNIEnv *env, jobject) 
+{
+	if (!_initialised)
+		return;
+
+    ovrHmd_ResetSensor(_pHmd);
+}
+
 JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getFovTextureSize(JNIEnv *env, jobject, jfloat RenderScaleFactor)
 {
 	if (!_initialised)

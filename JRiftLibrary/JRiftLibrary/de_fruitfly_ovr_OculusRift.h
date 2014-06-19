@@ -55,6 +55,14 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getSensorState
 
 /*
  * Class:     de_fruitfly_ovr_OculusRift
+ * Method:    resetSensor
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1resetSensor
+    (JNIEnv *, jobject);
+
+/*
+ * Class:     de_fruitfly_ovr_OculusRift
  * Method:    getFovTextureSize
  * Signature: (F)Lde/fruitfly/ovr/struct/FovTextureInfo;
  */

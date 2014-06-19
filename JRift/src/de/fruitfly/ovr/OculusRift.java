@@ -110,6 +110,11 @@ public class OculusRift //implements IOculusRift
         return sensorState;
     }
 
+    public void resetSensor()
+    {
+        _resetSensor();
+    }
+
     public FovTextureInfo getFovTextureSize(float renderScaleFactor)
     {
         return _getFovTextureSize(renderScaleFactor);
@@ -203,6 +208,7 @@ public class OculusRift //implements IOculusRift
     protected native HmdDesc         _getHmdDesc();
 
     protected native SensorState     _getSensorState(double timeFromNow);
+    protected native void            _resetSensor();
 
     protected native FovTextureInfo  _getFovTextureSize(float RenderScaleFactor);
     protected native EyeRenderParams _configureRendering(int InTextureWidth,

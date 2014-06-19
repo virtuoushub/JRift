@@ -6,15 +6,14 @@
 #include <vector>
 
 #include "OVR_CAPI_GL.h"
-#include "CAPI/CAPI_HMDState.h"
 
 using namespace OVR;
 
 ovrHmd                      _pHmd = 0;
 std::auto_ptr<ovrHmdDesc>   _pHmdDesc(0);
 
-int				    _hmdIndex    = -1;
-bool			    _initialised = false;
+int                 _hmdIndex    = -1;
+bool                _initialised = false;
 bool                _renderConfigured = false;
 bool                _realDevice = false;
 ovrPosef            _eyeRenderPose[2];
@@ -41,6 +40,8 @@ static jclass       vector3f_Class                       = 0;
 static jmethodID    vector3f_constructor_MethodID        = 0;
 static jclass       matrix4f_Class                       = 0;
 static jmethodID    matrix4f_constructor_MethodID        = 0;
+static jclass       userProfileData_Class                = 0;
+static jmethodID    userProfileData_constructor_MethodID = 0;
 
 // These may be used by static functions, so are not initialised within CacheJNIGlobals()
 static jclass       eulerOrient_Class                    = 0;
@@ -225,6 +226,14 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getSensorState(JNIEn
     return jss;
 }
 
+JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1resetSensor(JNIEnv *env, jobject) 
+{
+	if (!_initialised)
+		return;
+
+    ovrHmd_ResetSensor(_pHmd);
+}
+
 JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getFovTextureSize(JNIEnv *env, jobject, jfloat RenderScaleFactor)
 {
 	if (!_initialised)
@@ -235,7 +244,7 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getFovTextureSize(JN
     Sizei recommendedTex1Size = ovrHmd_GetFovTextureSize(_pHmd, ovrEye_Right, _pHmdDesc->DefaultEyeFov[1], RenderScaleFactor);
     Sizei RenderTargetSize;
     RenderTargetSize.w = recommendedTex0Size.w + recommendedTex1Size.w;
-    RenderTargetSize.h = max ( recommendedTex0Size.h, recommendedTex1Size.h );
+    RenderTargetSize.h = (std::max) ( recommendedTex0Size.h, recommendedTex1Size.h );
 
     float scalew = (float)RenderTargetSize.w / (float)_pHmdDesc->Resolution.w;
     float scaleh = (float)RenderTargetSize.h / (float)_pHmdDesc->Resolution.h;
@@ -262,8 +271,8 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1configureRendering(
 	jint OutTextureWidth,
 	jint OutTextureHeight,
 	jint InTextureGLId,
-	jlong Window, 
-	jlong Display,
+	jlong Win, 
+	jlong Displ,
 	jboolean VSyncEnabled,
     jint MultiSample,
     jboolean UseChromAbCorrection,
@@ -305,10 +314,10 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1configureRendering(
 
 	// Cast context pointers to 32 / 64 bit as appropriate
 #if defined(OVR_OS_WIN32)
-    cfg.OGL.Window = (HWND)(intptr_t)Window;
+    cfg.OGL.Window = (HWND)(intptr_t)Win;
 #elif defined(OVR_OS_LINUX)
-    cfg.OGL.Disp   = (Display*)(intptr_t)Display;
-    cfg.OGL.Win    = (Window)(intptr_t)Window;
+    cfg.OGL.Disp   = (Display*)(intptr_t)Displ;
+    cfg.OGL.Win    = (Window)(intptr_t)Win;
 #endif
 	 
 	unsigned int DistortionCaps = 0;
@@ -716,6 +725,59 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1convertQuatToEuler
 	return jeulerOrient;
 }
 
+JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getUserProfileData(
+   JNIEnv *env, jobject)
+{
+	if (!_initialised) 
+        return 0;
+
+/*
+#define OVR_KEY_USER                        "User"
+#define OVR_KEY_NAME                        "Name"
+#define OVR_KEY_GENDER                      "Gender"
+#define OVR_KEY_PLAYER_HEIGHT               "PlayerHeight"
+#define OVR_KEY_EYE_HEIGHT                  "EyeHeight"
+#define OVR_KEY_IPD                         "IPD"
+#define OVR_KEY_NECK_TO_EYE_DISTANCE        "NeckEyeDistance"
+#define OVR_KEY_EYE_RELIEF_DIAL             "EyeReliefDial"
+#define OVR_KEY_EYE_TO_NOSE_DISTANCE        "EyeToNoseDist"
+#define OVR_KEY_MAX_EYE_TO_PLATE_DISTANCE   "MaxEyeToPlateDist"
+#define OVR_KEY_EYE_CUP                     "EyeCup"
+#define OVR_KEY_CUSTOM_EYE_RENDER           "CustomEyeRender"
+
+#define OVR_DEFAULT_GENDER                  "Male"
+#define OVR_DEFAULT_PLAYER_HEIGHT           1.778f
+#define OVR_DEFAULT_EYE_HEIGHT              1.675f
+#define OVR_DEFAULT_IPD                     0.064f
+#define OVR_DEFAULT_NECK_TO_EYE_HORIZONTAL  0.09f
+#define OVR_DEFAULT_NECK_TO_EYE_VERTICAL    0.15f
+#define OVR_DEFAULT_EYE_RELIEF_DIAL         3
+*/
+
+	float playerHeight = ovrHmd_GetFloat( _pHmd, OVR_KEY_PLAYER_HEIGHT, OVR_DEFAULT_PLAYER_HEIGHT);
+	float eyeHeight    = ovrHmd_GetFloat( _pHmd, OVR_KEY_EYE_HEIGHT,    OVR_DEFAULT_EYE_HEIGHT); 
+	float ipd          = ovrHmd_GetFloat( _pHmd, OVR_KEY_IPD,           OVR_DEFAULT_IPD); 
+	std::string gender = ovrHmd_GetString(_pHmd, OVR_KEY_GENDER,        OVR_DEFAULT_GENDER);
+    std::string name   = ovrHmd_GetString(_pHmd, OVR_KEY_NAME,          "No Profile");
+
+	jstring jname   = env->NewStringUTF(name.c_str());
+    jstring jgender = env->NewStringUTF(gender.c_str());
+
+	jobject profileData = env->NewObject(userProfileData_Class, userProfileData_constructor_MethodID,
+		playerHeight,
+		eyeHeight,
+		ipd,
+		jgender,
+		true, // Always the default profile?
+		jname
+	);
+
+    env->DeleteLocalRef(jname);
+    env->DeleteLocalRef(jgender);
+
+	return profileData;
+}
+
 void ResetRenderConfig()
 {
     if (_initialised)
@@ -933,6 +995,15 @@ bool CacheJNIGlobals(JNIEnv *env)
         return false;
     }
 
+    if (!LookupJNIGlobal(env,
+                         userProfileData_Class,
+                         "de/fruitfly/ovr/UserProfileData",
+                         userProfileData_constructor_MethodID,
+                         "(FFFLjava/lang/String;ZLjava/lang/String;)V"))
+    {
+        return false;
+    }
+
     return true;
 }
 
@@ -969,7 +1040,7 @@ bool LookupJNIGlobal(JNIEnv *env,
     return true;
 }
 
-void SetBit(unsigned int& BitField, unsigned int BitIndex, boolean Value)
+void SetBit(unsigned int& BitField, unsigned int BitIndex, bool Value)
 {
     if (Value)
     {

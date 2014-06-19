@@ -24,7 +24,7 @@ public class UserProfileData
     public boolean _isDefault;
 
     UserProfileData(float playerHeight, float eyeHeight, float ipd,
-                    int gender, boolean isDefault, String name)
+                    String gender, boolean isDefault, String name)
     {
          _name = name;
         _playerHeight = playerHeight;
@@ -32,17 +32,15 @@ public class UserProfileData
         _ipd = ipd;
         _isDefault = isDefault;
 
-        switch (gender)
+        if (gender.equalsIgnoreCase("male")) {
+            _gender = GenderType.Gender_Male;
+        }
+        else if (gender.equalsIgnoreCase("female")) {
+            _gender = GenderType.Gender_Female;
+        }
+        else
         {
-            case 1:
-                _gender = GenderType.Gender_Male;
-                break;
-            case 2:
-                _gender = GenderType.Gender_Female;
-                break;
-            default:
-                _gender = GenderType.Gender_Unspecified;
-                break;
+           _gender = GenderType.Gender_Unspecified;
         }
     }
 

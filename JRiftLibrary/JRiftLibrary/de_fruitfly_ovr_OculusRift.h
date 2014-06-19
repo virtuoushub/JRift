@@ -2,8 +2,6 @@
 #include <string>
 #include <memory>
 #include "OVR.h"
-#include "OVR_CAPI.h"
-//#include "Kernel/OVR_Math.h"
 
 /* Header for class de_fruitfly_ovr_OculusRift */
 
@@ -52,6 +50,14 @@ JNIEXPORT jboolean JNICALL Java_de_fruitfly_ovr_OculusRift__1getNextHmd
  */
 JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getSensorState
     (JNIEnv *, jobject, jdouble);
+
+/*
+ * Class:     de_fruitfly_ovr_OculusRift
+ * Method:    resetSensor
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1resetSensor
+    (JNIEnv *, jobject);
 
 /*
  * Class:     de_fruitfly_ovr_OculusRift
@@ -148,6 +154,14 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1convertQuatToEuler
   jint, 
   jint);
 
+/*
+ * Class:     de_fruitfly_ovr_OculusRift
+ * Method:    _getUserProfileData
+ * Signature: L de/fruitfly/ovr/UserProfileData
+ */
+JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getUserProfileData(
+   JNIEnv *env, jobject);
+
 
 /* Helpers */
 void DEBUGLOG(std::string s);
@@ -163,7 +177,7 @@ bool LookupJNIGlobal(JNIEnv *env,
                      std::string constructorSignature);
 void ClearException(JNIEnv *env);
 void PrintNewObjectException(JNIEnv *env, std::string objectName);
-void SetBit(unsigned int& BitField, unsigned int BitIndex, boolean Value);
+void SetBit(unsigned int& BitField, unsigned int BitIndex, bool Value);
 void SetEulerEnumValues(int firstRotationAxis,
 					    int secondRotationAxis,
 					    int thirdRotationAxis,

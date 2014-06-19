@@ -110,6 +110,11 @@ public class OculusRift //implements IOculusRift
         return sensorState;
     }
 
+    public void resetSensor()
+    {
+        _resetSensor();
+    }
+
     public FovTextureInfo getFovTextureSize(float renderScaleFactor)
     {
         return _getFovTextureSize(renderScaleFactor);
@@ -194,6 +199,14 @@ public class OculusRift //implements IOculusRift
         return eulerAngles;
     }
 
+    public UserProfileData getUserProfile()
+    {
+        if (!isInitialized())
+            return null;
+
+        return _getUserProfileData();
+    }
+
     // Native declarations
 
 	protected native boolean         _initSubsystem();
@@ -203,6 +216,7 @@ public class OculusRift //implements IOculusRift
     protected native HmdDesc         _getHmdDesc();
 
     protected native SensorState     _getSensorState(double timeFromNow);
+    protected native void            _resetSensor();
 
     protected native FovTextureInfo  _getFovTextureSize(float RenderScaleFactor);
     protected native EyeRenderParams _configureRendering(int InTextureWidth,
@@ -239,6 +253,8 @@ public class OculusRift //implements IOculusRift
                                                             int rot3,
                                                             int hand,
                                                             int rotationDir);
+
+    protected native UserProfileData _getUserProfileData();
 
     public static void LoadLibrary()
     {
@@ -304,30 +320,6 @@ public class OculusRift //implements IOculusRift
         or.destroy();
     }
 
-//    public UserProfileData getUserProfile()
-//    {
-//        if (!isInitialized())
-//            return null;
-//
-//        return _getUserProfileData();
-//    }
-//
-//    public boolean loadUserProfile(String profileName)
-//    {
-//        if (!isInitialized())
-//            return false;
-//
-//        return _loadUserProfile(profileName);
-//    }
-//
-//    public String[] getUserProfiles()
-//    {
-//        if (!isInitialized())
-//            return null;
-//
-//        return _getUserProfiles();
-//    }
-//
 //    public float[] latencyTesterDisplayScreenColor()
 //    {
 //        return _latencyTesterDisplayScreenColor();
@@ -337,10 +329,6 @@ public class OculusRift //implements IOculusRift
 //    {
 //        return _latencyTesterGetResultsString();
 //    }
-
-//    protected native UserProfileData _getUserProfileData();
-//    protected native boolean _loadUserProfile(String profileName);
-//    protected native String[] _getUserProfiles();
 //
 //    protected native void    _latencyTesterProcessInputs();
 //    protected native float[] _latencyTesterDisplayScreenColor();

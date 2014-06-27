@@ -3,11 +3,6 @@ package de.fruitfly.ovr;
 import de.fruitfly.ovr.enums.EyeType;
 import de.fruitfly.ovr.structs.EyeRenderDesc;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
-
 public class EyeRenderParams
 {
     public EyeRenderDesc[] Eyes = new EyeRenderDesc[2];

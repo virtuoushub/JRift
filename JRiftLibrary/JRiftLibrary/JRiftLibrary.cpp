@@ -266,11 +266,15 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getFovTextureSize(JN
 JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1configureRendering(
 	JNIEnv *env, 
 	jobject, 
-	jint InTextureWidth,
-	jint InTextureHeight,
-	jint OutTextureWidth,
-	jint OutTextureHeight,
-	jint InTextureGLId,
+	jboolean UsesInputTexture1Only,
+	jint InTexture1Width,
+	jint InTexture1Height,
+	jint InTexture1GLId,
+	jint InTexture2Width,
+	jint InTexture2Height,
+	jint InTexture2GLId,
+	jint OutDisplayWidth,
+	jint OutDisplayHeight,
 	jlong Win, 
 	jlong Displ,
 	jboolean VSyncEnabled,
@@ -290,26 +294,49 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1configureRendering(
     ovrRecti EyeRenderViewport[2];
     ovrFovPort eyeFov[2] = { _pHmdDesc->DefaultEyeFov[0], _pHmdDesc->DefaultEyeFov[1] } ;
 
-    EyeRenderViewport[0].Pos  = Vector2i(0,0);
-    EyeRenderViewport[0].Size = Sizei(InTextureWidth / 2, InTextureHeight);
-    EyeRenderViewport[1].Pos  = Vector2i((InTextureWidth + 1) / 2, 0);
-    EyeRenderViewport[1].Size = EyeRenderViewport[0].Size;
+	if (UsesInputTexture1Only) // Same texture used over both views
+	{
+		EyeRenderViewport[0].Pos  = Vector2i(0,0);
+		EyeRenderViewport[0].Size = Sizei(InTexture1Width / 2, InTexture1Height);
+		EyeRenderViewport[1].Pos  = Vector2i((InTexture1Width + 1) / 2, 0);
+		EyeRenderViewport[1].Size = EyeRenderViewport[0].Size;
 
-	// Setup GL texture data.
-	_EyeTexture[0].OGL.Header.API            = ovrRenderAPI_OpenGL;
-    _EyeTexture[0].OGL.Header.TextureSize.w  = InTextureWidth;
-	_EyeTexture[0].OGL.Header.TextureSize.h  = InTextureHeight;
-    _EyeTexture[0].OGL.Header.RenderViewport = EyeRenderViewport[0];
-	_EyeTexture[0].OGL.TexId                 = (GLuint)InTextureGLId;
+		// Setup GL texture data.
+		_EyeTexture[0].OGL.Header.API            = ovrRenderAPI_OpenGL;
+		_EyeTexture[0].OGL.Header.TextureSize.w  = InTexture1Width;
+		_EyeTexture[0].OGL.Header.TextureSize.h  = InTexture1Height;
+		_EyeTexture[0].OGL.Header.RenderViewport = EyeRenderViewport[0];
+		_EyeTexture[0].OGL.TexId                 = (GLuint)InTexture1GLId;
     
-    // Right eye uses the same texture, but different rendering viewport.
-    _EyeTexture[1] = _EyeTexture[0];
-    _EyeTexture[1].OGL.Header.RenderViewport = EyeRenderViewport[1];
+		// Right eye uses the same texture, but different rendering viewport.
+		_EyeTexture[1] = _EyeTexture[0];
+		_EyeTexture[1].OGL.Header.RenderViewport = EyeRenderViewport[1];
+	}
+	else // Uses individual input textures for each view
+	{
+		EyeRenderViewport[0].Pos  = Vector2i(0,0);
+		EyeRenderViewport[0].Size = Sizei(InTexture1Width, InTexture1Height);
+		EyeRenderViewport[1].Pos  = Vector2i(0, 0);
+		EyeRenderViewport[1].Size = Sizei(InTexture2Width, InTexture2Height);
+
+		// Setup GL texture data.
+		_EyeTexture[0].OGL.Header.API            = ovrRenderAPI_OpenGL;
+		_EyeTexture[0].OGL.Header.TextureSize.w  = InTexture1Width;
+		_EyeTexture[0].OGL.Header.TextureSize.h  = InTexture1Height;
+		_EyeTexture[0].OGL.Header.RenderViewport = EyeRenderViewport[0];
+		_EyeTexture[0].OGL.TexId                 = (GLuint)InTexture1GLId;
+
+		_EyeTexture[1].OGL.Header.API            = ovrRenderAPI_OpenGL;
+		_EyeTexture[1].OGL.Header.TextureSize.w  = InTexture2Width;
+		_EyeTexture[1].OGL.Header.TextureSize.h  = InTexture2Height;
+		_EyeTexture[1].OGL.Header.RenderViewport = EyeRenderViewport[1];
+		_EyeTexture[1].OGL.TexId                 = (GLuint)InTexture2GLId;
+	}
 
 	// Configure OpenGL. 
 	ovrGLConfig cfg; 
 	cfg.OGL.Header.API         = ovrRenderAPI_OpenGL; 
-	cfg.OGL.Header.RTSize      = Sizei(OutTextureWidth, OutTextureHeight); 
+	cfg.OGL.Header.RTSize      = Sizei(OutDisplayWidth, OutDisplayHeight); 
 	cfg.OGL.Header.Multisample = MultiSample; 
 
 	// Cast context pointers to 32 / 64 bit as appropriate

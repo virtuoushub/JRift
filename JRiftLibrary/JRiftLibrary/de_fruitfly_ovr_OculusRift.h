@@ -75,8 +75,12 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getFovTextureSize
 JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1configureRendering(
 	JNIEnv *, 
 	jobject,
+	jboolean,
     jint,
     jint,
+	jint,
+	jint,
+	jint,
 	jint,
 	jint,
 	jint,

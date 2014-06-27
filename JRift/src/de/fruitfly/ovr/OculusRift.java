@@ -120,26 +120,57 @@ public class OculusRift //implements IOculusRift
         return _getFovTextureSize(renderScaleFactor);
     }
 
-    public EyeRenderParams configureRendering(Sizei InTextureSize,
-                                              Sizei OutTextureSize,
+    public EyeRenderParams configureRendering(Sizei InTexture1Size,
+                                              Sizei OutDisplaySize,
                                               GLConfig glConfig,
                                               boolean VSyncEnabled,
                                               boolean useChromaticAbCorrection,
                                               boolean useTimewarp,
                                               boolean useVignette)
     {
-        return _configureRendering(InTextureSize.w,
-                InTextureSize.h,
-                OutTextureSize.w,
-                OutTextureSize.h,
-                glConfig.TexId,
-                glConfig.Window,
-                glConfig.Display,
-                VSyncEnabled,
-                0,            // TODO: Support multisample?
-                useChromaticAbCorrection,
-                useTimewarp,
-                useVignette);
+        return _configureRendering(true,
+                                   InTexture1Size.w,
+                                   InTexture1Size.h,
+                                   glConfig.TexId1,
+                                   0,
+                                   0,
+                                   0,
+                                   OutDisplaySize.w,
+                                   OutDisplaySize.h,
+                                   glConfig.Window,
+                                   glConfig.Display,
+                                   VSyncEnabled,
+                                   0,            // TODO: Support multisample?
+                                   useChromaticAbCorrection,
+                                   useTimewarp,
+                                   useVignette);
+    }
+
+    public EyeRenderParams configureRenderingDualTexture(Sizei InTexture1Size,
+                                                         Sizei InTexture2Size,
+                                                         Sizei OutDisplaySize,
+                                                         GLConfig glConfig,
+                                                         boolean VSyncEnabled,
+                                                         boolean useChromaticAbCorrection,
+                                                         boolean useTimewarp,
+                                                         boolean useVignette)
+    {
+        return _configureRendering(false,
+                                   InTexture1Size.w,
+                                   InTexture1Size.h,
+                                   glConfig.TexId1,
+                                   InTexture2Size.w,
+                                   InTexture2Size.h,
+                                   glConfig.TexId2,
+                                   OutDisplaySize.w,
+                                   OutDisplaySize.h,
+                                   glConfig.Window,
+                                   glConfig.Display,
+                                   VSyncEnabled,
+                                   0,            // TODO: Support multisample?
+                                   useChromaticAbCorrection,
+                                   useTimewarp,
+                                   useVignette);
     }
 
     public FrameTiming beginFrameGetTiming()
@@ -219,11 +250,15 @@ public class OculusRift //implements IOculusRift
     protected native void            _resetSensor();
 
     protected native FovTextureInfo  _getFovTextureSize(float RenderScaleFactor);
-    protected native EyeRenderParams _configureRendering(int InTextureWidth,
-                                                         int InTextureHeight,
-                                                         int OutTextureWidth,
-                                                         int OutTextureHeight,
-                                                         int InTextureGLId,
+    protected native EyeRenderParams _configureRendering(boolean UsesInputTexture1Only,
+                                                         int InTexture1Width,
+                                                         int InTexture1Height,
+                                                         int InTexture1GLId,
+                                                         int InTexture2Width,
+                                                         int InTexture2Height,
+                                                         int InTexture2GLId,
+                                                         int OutDisplayWidth,
+                                                         int OutDisplayHeight,
                                                          long pWindow,
                                                          long pDisplay,
                                                          boolean VSyncEnabled,

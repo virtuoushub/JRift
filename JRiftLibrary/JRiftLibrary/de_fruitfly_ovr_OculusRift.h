@@ -94,6 +94,14 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1configureRendering(
 
 /*
  * Class:     de_fruitfly_ovr_OculusRift
+ * Method:    resetRenderConfig
+ * Signature: ()V;
+ */
+JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1resetRenderConfig
+	(JNIEnv *env, jobject);
+
+/*
+ * Class:     de_fruitfly_ovr_OculusRift
  * Method:    beginFrame
  * Signature: (I)Lde/fruitfly/ovr/structs/FrameTiming;
  */

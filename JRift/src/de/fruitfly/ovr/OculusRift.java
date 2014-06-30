@@ -11,6 +11,7 @@ import java.io.File;
 public class OculusRift //implements IOculusRift
 {
 	private boolean initialized = false;
+    private boolean renderConfigured = false;
 
     public final String VERSION = "0.3.2.1";
 
@@ -82,6 +83,7 @@ public class OculusRift //implements IOculusRift
 
         _initSummary = "Not initialised";
         initialized = false;
+        renderConfigured = false;
     }
 
     public boolean getNextHmd()
@@ -128,10 +130,13 @@ public class OculusRift //implements IOculusRift
                                               boolean useTimewarp,
                                               boolean useVignette)
     {
-        return _configureRendering(true,
+        if (!initialized)
+            return null;
+
+        EyeRenderParams erp = _configureRendering(true,
                                    InTexture1Size.w,
                                    InTexture1Size.h,
-                                   glConfig.TexId1,
+                                   glConfig.TexId,
                                    0,
                                    0,
                                    0,
@@ -144,6 +149,11 @@ public class OculusRift //implements IOculusRift
                                    useChromaticAbCorrection,
                                    useTimewarp,
                                    useVignette);
+
+        if (erp != null)
+            renderConfigured = true;
+
+        return erp;
     }
 
     public EyeRenderParams configureRenderingDualTexture(Sizei InTexture1Size,
@@ -155,10 +165,13 @@ public class OculusRift //implements IOculusRift
                                                          boolean useTimewarp,
                                                          boolean useVignette)
     {
-        return _configureRendering(false,
+        if (!initialized)
+            return null;
+
+        EyeRenderParams erp = _configureRendering(false,
                                    InTexture1Size.w,
                                    InTexture1Size.h,
-                                   glConfig.TexId1,
+                                   glConfig.TexId,
                                    InTexture2Size.w,
                                    InTexture2Size.h,
                                    glConfig.TexId2,
@@ -171,6 +184,25 @@ public class OculusRift //implements IOculusRift
                                    useChromaticAbCorrection,
                                    useTimewarp,
                                    useVignette);
+
+        if (erp != null)
+            renderConfigured = true;
+
+        return erp;
+    }
+
+    public void resetRenderConfig()
+    {
+        if (!initialized)
+            return;
+
+        _resetRenderConfig();
+        renderConfigured = false;
+    }
+
+    public boolean isRenderConfigured()
+    {
+        return renderConfigured;
     }
 
     public FrameTiming beginFrameGetTiming()
@@ -187,6 +219,9 @@ public class OculusRift //implements IOculusRift
                                           float nearClip,
                                           float farClip)
     {
+        if (!initialized || !renderConfigured)
+            return null;
+
         return _getMatrix4fProjection(fov.UpTan,
                                       fov.DownTan,
                                       fov.LeftTan,
@@ -266,6 +301,7 @@ public class OculusRift //implements IOculusRift
                                                          boolean useChromaticAbCorrection,
                                                          boolean useTimewarp,
                                                          boolean useVignette);
+    protected native void            _resetRenderConfig();
 
     protected native FrameTiming     _beginFrame(int frameIndex);
     protected native Posef           _beginEyeRender(int eye);

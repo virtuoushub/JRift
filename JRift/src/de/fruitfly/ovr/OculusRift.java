@@ -207,11 +207,17 @@ public class OculusRift //implements IOculusRift
 
     public FrameTiming beginFrameGetTiming()
     {
+        if (!initialized || !renderConfigured)
+            return null;
+
         return _beginFrame(0);
     }
 
     public Posef beginEyeRender(EyeType eye)
     {
+        if (!initialized || !renderConfigured)
+            return null;
+
         return _beginEyeRender(eye.value());
     }
 
@@ -232,11 +238,17 @@ public class OculusRift //implements IOculusRift
 
     public void endEyeRender(EyeType eye)
     {
+        if (!initialized || !renderConfigured)
+            return;
+
         _endEyeRender(eye.value());
     }
 
     public void endFrame()
     {
+        if (!initialized || !renderConfigured)
+            return;
+
         _endFrame();
     }
 
@@ -336,7 +348,7 @@ public class OculusRift //implements IOculusRift
         //Launcher takes care of extracting natives
         if( is64bit )
         {
-            System.loadLibrary("JRiftLibrary64");
+            System.loadLibrary("JRiftLibrary64d");
             System.out.println("Loaded JRift native library (64bit)");
         }
         else

@@ -430,11 +430,11 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1beginFrame(JNIEnv *e
     if (!_initialised)
         return 0;
 
-    //if (!_renderConfigured)
-    //{
-    //    printf("beginFrame() - ERROR: Render config not set!\n");
-    //    return 0;
-    //}
+    if (!_renderConfigured)
+    {
+        printf("beginFrame() - ERROR: Render config not set!\n");
+        return 0;
+    }
 
     // A FrameIndex of 0 should be used if GetFrameTiming was not used.
     // TODO: Support GetFrameTiming!
@@ -458,11 +458,11 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1beginEyeRender(JNIEn
     if (!_initialised)
         return 0;
 
-    //if (!_renderConfigured)
-    //{
-    //    printf("beginEyeRender() - ERROR: Render config not set!\n");
-    //    return 0;
-    //}
+    if (!_renderConfigured)
+    {
+        printf("beginEyeRender() - ERROR: Render config not set!\n");
+        return 0;
+    }
 
     ovrEyeType eye = ovrEye_Left;
     if (Eye > 0)
@@ -524,11 +524,11 @@ JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1endEyeRender(JNIEnv *en
     if (!_initialised)
         return;
 
-    //if (!_renderConfigured)
-    //{
-    //    printf("endEyeRender() - ERROR: Render config not set!");
-    //    return;
-    //}
+    if (!_renderConfigured)
+    {
+        printf("endEyeRender() - ERROR: Render config not set!");
+        return;
+    }
 
     ovrEyeType eye = ovrEye_Left;
     if (Eye > 0)
@@ -542,11 +542,11 @@ JNIEXPORT void JNICALL Java_de_fruitfly_ovr_OculusRift__1endFrame(JNIEnv *env, j
     if (!_initialised)
         return;
 
-    //if (!_renderConfigured)
-    //{
-    //    printf("endFrame() - ERROR: Render config not set!\n");
-    //    return;
-    //}
+    if (!_renderConfigured)
+    {
+        printf("endFrame() - ERROR: Render config not set!\n");
+        return;
+    }
 
     // Let OVR do distortion rendering, Present and flush/sync
     ovrHmd_EndFrame(_pHmd);

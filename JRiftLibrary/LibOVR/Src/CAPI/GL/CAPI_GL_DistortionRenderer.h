@@ -84,6 +84,8 @@ protected:
         GLint TextureBinding;
         GLint VertexArray;
         GLint FrameBufferBinding;
+        GLint ElementArrayBufferBinding;
+        GLint ArrayBufferBinding;
         
         GLint Blend;
         GLint ColorWritemask[4];

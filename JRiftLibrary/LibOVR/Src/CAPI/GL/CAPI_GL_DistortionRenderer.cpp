@@ -119,6 +119,7 @@ bool DistortionRenderer::Initialize(const ovrRenderAPIConfig* apiConfig,
 									unsigned distortionCaps)
 {
 	GfxState = *new GraphicsState();
+	GfxState->Save();
 
     const ovrGLConfig* config = (const ovrGLConfig*)apiConfig;
 
@@ -153,6 +154,8 @@ bool DistortionRenderer::Initialize(const ovrRenderAPIConfig* apiConfig,
     pEyeTextures[1] = *new Texture(&RParams, 0, 0);
 
     initBuffersAndShaders();
+
+	GfxState->Restore();
 
     return true;
 }
@@ -352,6 +355,11 @@ void DistortionRenderer::GraphicsState::Save()
     glGetIntegerv(GL_COLOR_WRITEMASK, ColorWritemask);
     glGetIntegerv(GL_DITHER, &Dither);
     glGetIntegerv(GL_RASTERIZER_DISCARD, &RasterizerDiscard);
+	//if (GlMajorVersion >= 2)
+	//{
+	//	glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &ElementArrayBufferBinding);
+	//	glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &ArrayBufferBinding);
+	//}
     if (GlMajorVersion >= 3 && GlMajorVersion >= 2)
         glGetIntegerv(GL_SAMPLE_MASK, &SampleMask);
 	glGetIntegerv(GL_SCISSOR_TEST, &ScissorTest);
@@ -384,6 +392,11 @@ void DistortionRenderer::GraphicsState::Restore()
 	glColorMask((GLboolean)ColorWritemask[0], (GLboolean)ColorWritemask[1], (GLboolean)ColorWritemask[2], (GLboolean)ColorWritemask[3]);
     ApplyBool(GL_DITHER, Dither);
     ApplyBool(GL_RASTERIZER_DISCARD, RasterizerDiscard);
+	//if (GlMajorVersion >= 2)
+	//{
+	//	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER_BINDING, ElementArrayBufferBinding);
+	//	glBindBuffer(GL_ARRAY_BUFFER_BINDING, ArrayBufferBinding);
+	//}
     if (GlMajorVersion >= 3 && GlMajorVersion >= 2)
         ApplyBool(GL_SAMPLE_MASK, SampleMask);
     ApplyBool(GL_SCISSOR_TEST, ScissorTest);
@@ -758,6 +771,7 @@ void DistortionRenderer::initShaders()
 void DistortionRenderer::destroy()
 {
     GraphicsState* glState = (GraphicsState*)GfxState.GetPtr();
+	glState->Save();
 
 	for(int eyeNum = 0; eyeNum < 2; eyeNum++)
 	{
@@ -779,6 +793,8 @@ void DistortionRenderer::destroy()
 
     LatencyTesterQuadVB.Clear();
 	LatencyVAO = 0;
+
+	glState->Restore();
 }
 
 }}} // OVR::CAPI::GL

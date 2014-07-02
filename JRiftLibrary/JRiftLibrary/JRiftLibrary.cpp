@@ -252,10 +252,15 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1getFovTextureSize(JN
     ClearException(env);
 
     jobject jfovTextureInfo = env->NewObject(fovTextureInfo_Class, fovTextureInfo_constructor_MethodID,
+									recommendedTex0Size.w,
+									recommendedTex0Size.h,
+									recommendedTex1Size.w,
+									recommendedTex1Size.h,
                                     RenderTargetSize.w,
                                     RenderTargetSize.h,
-                                    scalew,
-                                    scaleh
+									_pHmdDesc->Resolution.w,
+									_pHmdDesc->Resolution.h,
+                                    (float)RenderScaleFactor
                                     );
 
     if (jfovTextureInfo == 0) PrintNewObjectException(env, "FovTextureInfo");
@@ -959,7 +964,7 @@ bool CacheJNIGlobals(JNIEnv *env)
                          fovTextureInfo_Class,
                          "de/fruitfly/ovr/structs/FovTextureInfo",
                          fovTextureInfo_constructor_MethodID,
-                         "(IIFF)V"))
+                         "(IIIIIIIIF)V"))
     {
         return false;
     }

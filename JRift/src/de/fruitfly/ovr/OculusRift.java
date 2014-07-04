@@ -5,6 +5,7 @@ import de.fruitfly.ovr.enums.EyeType;
 import de.fruitfly.ovr.enums.HandedSystem;
 import de.fruitfly.ovr.enums.RotateDirection;
 import de.fruitfly.ovr.structs.*;
+import net.minecraft.util.Vec3;
 
 import java.io.File;
 
@@ -17,6 +18,7 @@ public class OculusRift //implements IOculusRift
 
 	private HmdDesc hmdDesc = new HmdDesc();
     private SensorState sensorState = new SensorState();
+    private Posef lastPose[] = new Posef[2];
 
     public String _initSummary = "Not initialised";
 
@@ -24,6 +26,8 @@ public class OculusRift //implements IOculusRift
 	
 	public OculusRift()
     {
+        lastPose[0] = new Posef();
+        lastPose[1] = new Posef();
         resetHMDInfo();
 	}
 
@@ -212,7 +216,14 @@ public class OculusRift //implements IOculusRift
         if (!initialized || !renderConfigured)
             return null;
 
-        return _beginEyeRender(eye.value());
+        lastPose[eye.value()] = _beginEyeRender(eye.value());
+        return lastPose[eye.value()];
+    }
+
+    public Vec3 getEyePosition(EyeType eye)
+    {
+        Posef pose = lastPose[eye.value()];
+        return Vec3.createVectorHelper(pose.Position.x, pose.Position.y, pose.Position.z);
     }
 
     public Matrix4f getMatrix4fProjection(FovPort fov,

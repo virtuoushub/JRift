@@ -27,4 +27,10 @@ public class Posef
 
     public Quatf     Orientation = Quatf.IDENTITY;
     public Vector3f  Position = new Vector3f();
+
+    public String getPositionString()
+    {
+        return String.format("x: %.5f, y: %.5f, z: %.5f", new Object[]{Float.valueOf(Position.x), Float.valueOf(Position.y), Float.valueOf(Position.z)});
+    }
+
 }

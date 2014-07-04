@@ -124,11 +124,7 @@ public class OculusRift //implements IOculusRift
 
     public EyeRenderParams configureRendering(Sizei InTexture1Size,
                                               Sizei OutDisplaySize,
-                                              GLConfig glConfig,
-                                              boolean VSyncEnabled,
-                                              boolean useChromaticAbCorrection,
-                                              boolean useTimewarp,
-                                              boolean useVignette)
+                                              GLConfig glConfig)
     {
         if (!initialized)
             return null;
@@ -144,11 +140,12 @@ public class OculusRift //implements IOculusRift
                                    OutDisplaySize.h,
                                    glConfig.Window,
                                    glConfig.Display,
-                                   VSyncEnabled,
+                                   glConfig.VSyncEnabled,
                                    0,            // TODO: Support multisample?
-                                   useChromaticAbCorrection,
-                                   useTimewarp,
-                                   useVignette);
+                                   glConfig.useChromaticAbCorrection,
+                                   glConfig.useTimewarp,
+                                   glConfig.useVignette,
+                                   glConfig.useLowPersistence);
 
         if (erp != null)
             renderConfigured = true;
@@ -159,11 +156,7 @@ public class OculusRift //implements IOculusRift
     public EyeRenderParams configureRenderingDualTexture(Sizei InTexture1Size,
                                                          Sizei InTexture2Size,
                                                          Sizei OutDisplaySize,
-                                                         GLConfig glConfig,
-                                                         boolean VSyncEnabled,
-                                                         boolean useChromaticAbCorrection,
-                                                         boolean useTimewarp,
-                                                         boolean useVignette)
+                                                         GLConfig glConfig)
     {
         if (!initialized)
             return null;
@@ -179,11 +172,12 @@ public class OculusRift //implements IOculusRift
                                    OutDisplaySize.h,
                                    glConfig.Window,
                                    glConfig.Display,
-                                   VSyncEnabled,
+                                   glConfig.VSyncEnabled,
                                    0,            // TODO: Support multisample?
-                                   useChromaticAbCorrection,
-                                   useTimewarp,
-                                   useVignette);
+                                   glConfig.useChromaticAbCorrection,
+                                   glConfig.useTimewarp,
+                                   glConfig.useVignette,
+                                   glConfig.useLowPersistence);
 
         if (erp != null)
             renderConfigured = true;
@@ -312,7 +306,8 @@ public class OculusRift //implements IOculusRift
                                                          int MultiSample,
                                                          boolean useChromaticAbCorrection,
                                                          boolean useTimewarp,
-                                                         boolean useVignette);
+                                                         boolean useVignette,
+                                                         boolean useLowPersistence);
     protected native void            _resetRenderConfig();
 
     protected native FrameTiming     _beginFrame(int frameIndex);
@@ -348,7 +343,7 @@ public class OculusRift //implements IOculusRift
         //Launcher takes care of extracting natives
         if( is64bit )
         {
-            System.loadLibrary("JRiftLibrary64d");
+            System.loadLibrary("JRiftLibrary64");
             System.out.println("Loaded JRift native library (64bit)");
         }
         else

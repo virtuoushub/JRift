@@ -286,7 +286,8 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1configureRendering(
     jint MultiSample,
     jboolean UseChromAbCorrection,
     jboolean UseTimewarp,
-    jboolean UseVignette)
+    jboolean UseVignette,
+	jboolean UseLowPersistence)
 {
 	if (!_initialised)
 		return 0;
@@ -362,9 +363,10 @@ JNIEXPORT jobject JNICALL Java_de_fruitfly_ovr_OculusRift__1configureRendering(
     
 	ovrEyeRenderDesc EyeRenderDesc[2];
 
-    // Set VSync
+    // Set VSync and low persistence
     unsigned int HmdCaps = ovrHmd_GetEnabledCaps(_pHmd);
     SetBit(HmdCaps, ovrHmdCap_NoVSync, !VSyncEnabled);
+	SetBit(HmdCaps, ovrHmdCap_LowPersistence, UseLowPersistence);
     ovrHmd_SetEnabledCaps(_pHmd, HmdCaps); 
 
     // Configure render setup

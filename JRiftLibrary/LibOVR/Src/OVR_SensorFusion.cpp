@@ -751,15 +751,19 @@ void SensorFusion::ClearFocus()
 // Sets up head-and-neck model and device-to-pupil dimensions from the user's profile.
 void SensorFusion::SetUserHeadDimensions(Profile const &profile, HmdRenderInfo const &hmdRenderInfo)
 {
-    float neckeye[2];
+    float neckeye[2] = { 0.09f, 0.15f };
     int count = profile.GetFloatValues(OVR_KEY_NECK_TO_EYE_DISTANCE, neckeye, 2);
     // Make sure these are vaguely sensible values.
     if (count == 2)
     {
         OVR_ASSERT ( ( neckeye[0] > 0.05f ) && ( neckeye[0] < 0.5f ) );
         OVR_ASSERT ( ( neckeye[1] > 0.05f ) && ( neckeye[1] < 0.5f ) );
-        SetHeadModel ( Vector3f ( 0.0, neckeye[1], -neckeye[0] ) );
+        if (neckeye[0] == 0)
+            neckeye[0] = 0.09f;
+        if (neckeye[1] == 0)
+            neckeye[1] = 0.15f;
     }
+    SetHeadModel(Vector3f(0.0f, neckeye[0], -neckeye[1]));
 
     // Find the distance from the center of the screen to the "center eye"
     // This center eye is used by systems like rendering & audio to represent the player,

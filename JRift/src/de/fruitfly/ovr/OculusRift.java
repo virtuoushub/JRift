@@ -145,7 +145,7 @@ public class OculusRift //implements IOculusRift
                                    glConfig.Window,
                                    glConfig.Display,
                                    glConfig.VSyncEnabled,
-                                   0,            // TODO: Support multisample?
+                                   glConfig.MultiSampleCount,
                                    glConfig.useChromaticAbCorrection,
                                    glConfig.useTimewarp,
                                    glConfig.useVignette,
@@ -177,7 +177,7 @@ public class OculusRift //implements IOculusRift
                                    glConfig.Window,
                                    glConfig.Display,
                                    glConfig.VSyncEnabled,
-                                   0,            // TODO: Support multisample?
+                                   glConfig.MultiSampleCount,
                                    glConfig.useChromaticAbCorrection,
                                    glConfig.useTimewarp,
                                    glConfig.useVignette,

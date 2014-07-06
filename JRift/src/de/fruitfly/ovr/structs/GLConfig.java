@@ -6,6 +6,7 @@ public class GLConfig
     public int TexId2 = -1;
     public long Window = 0;
     public long Display = 0;
+    public int MultiSampleCount = 0;
     public boolean VSyncEnabled = true;
     public boolean useChromaticAbCorrection = true;
     public boolean useTimewarp = true;

@@ -12,26 +12,31 @@
   <description>Java Wrapper (JNI) for the Oculus Rift HMD and Sensors under Windows, OSX, and Linux.</description>
   <url>https://github.com/mabrowning/JRift</url>
 
+   <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
   <distributionManagement>
-	<repository>
-	  <id>minecrift</id>
-	  <url>file:../../repo/</url>
+  <repository>
+    <id>minecrift</id>
+    <url>file:../../repo/</url>
     </repository>
   </distributionManagement>
 
   <build>
-  	<sourceDirectory>${project.basedir}/src</sourceDirectory>
+    <sourceDirectory>${project.basedir}/src</sourceDirectory>
 
-	<plugins>
-	  <plugin>
-	    <artifactId>maven-compiler-plugin</artifactId>
-		<version>3.1</version>
-	    <configuration>
-	      <source>1.6</source>
-	      <target>1.6</target>
-	    </configuration>
-	  </plugin>
-	</plugins>
+  <plugins>
+    <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-compiler-plugin</artifactId>
+    <version>3.1</version>
+      <configuration>
+        <source>1.6</source>
+        <target>1.6</target>
+      </configuration>
+    </plugin>
+  </plugins>
   </build>
 
 </project>
